@@ -15,8 +15,8 @@ class Config:
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=int(os.getenv("JWT_REFRESH_TOKEN_DAYS", 30)))
     JWT_TOKEN_LOCATION = ["headers", "json"]
     JWT_REFRESH_JSON_KEY = "refresh_token"
-    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
-    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+    broker_url = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+    result_backend = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
     CORS_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:4200").split(",") if origin.strip()]
     RAZORPAY_ENABLED = os.getenv("RAZORPAY_ENABLED", "false").lower() == "true"
     RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
@@ -33,7 +33,7 @@ class Config:
     EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "mock" if APP_ENV != "production" else "none")
     EMAIL_API_KEY = os.getenv("EMAIL_API_KEY", "")
     EMAIL_FROM = os.getenv("EMAIL_FROM", "")
-    EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "Appointo Core")
+    EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "AppointoCare")
     SMS_ENABLED = os.getenv("SMS_ENABLED", "false").lower() == "true"
     SMS_PROVIDER = os.getenv("SMS_PROVIDER", "mock" if APP_ENV != "production" else "none")
     SMS_API_KEY = os.getenv("SMS_API_KEY", "")

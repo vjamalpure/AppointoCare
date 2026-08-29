@@ -4,8 +4,8 @@ from celery import Celery
 def make_celery(app):
     celery = Celery(
         app.import_name,
-        broker=app.config["CELERY_BROKER_URL"],
-        backend=app.config.get("CELERY_RESULT_BACKEND")
+        broker=app.config.get("broker_url"),
+        backend=app.config.get("result_backend")
     )
     celery.conf.update(app.config)
     celery.conf.enable_utc = True
