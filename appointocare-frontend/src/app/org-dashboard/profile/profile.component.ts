@@ -46,7 +46,7 @@ export class OrgProfileComponent implements OnInit {
 
   saveProfile() {
     this.loading = true;
-    const token = localStorage.getItem('appointocore_token');
+    const token = localStorage.getItem('appointocare_token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     const body = {
       name: this.profile.name,

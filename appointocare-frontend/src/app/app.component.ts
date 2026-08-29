@@ -8,7 +8,7 @@ import { Router, NavigationEnd } from '@angular/router';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'appointocore-frontend';
+  title = 'appointocare-frontend';
   isSidebarCollapsed = true;
   username: string = '';
   organizationName: string = '';

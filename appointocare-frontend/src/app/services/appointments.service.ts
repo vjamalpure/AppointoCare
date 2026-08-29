@@ -16,7 +16,7 @@ export class AppointmentService {
   constructor(private http: HttpClient) {}
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('appointocore_token');
+    const token = localStorage.getItem('appointocare_token');
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'

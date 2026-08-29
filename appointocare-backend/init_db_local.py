@@ -25,7 +25,7 @@ def parse_database_url():
         print("ERROR: DATABASE_URL environment variable is not set")
         print("Please set it in your .env file or as an environment variable")
         print("\nExample:")
-        print("  DATABASE_URL=postgresql://postgres:password@localhost:5432/appointocore")
+        print("  DATABASE_URL=postgresql://postgres:password@localhost:5432/appointocare")
         sys.exit(1)
 
     parsed = urlparse(database_url)
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         print("\nYou can now:")
         print("  1. Start backend: python run.py")
         print("  2. In another terminal, start Celery: celery -A celery_worker.celery worker --loglevel=info")
-        print("  3. In another terminal, start frontend: cd ../appointocore-frontend && npm start")
+        print("  3. In another terminal, start frontend: cd ../appointocare-frontend && npm start")
     else:
         print("✗ Database initialization failed!")
         sys.exit(1)

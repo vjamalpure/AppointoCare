@@ -2,11 +2,11 @@
 .env
 .env.*
 !.env.example
-appointocore-backend/.env
+appointocare-backend/.env
 
 # Preserve the former frontend repository metadata outside the root history
-appointocore-frontend/.git/
-appointocore-frontend/.git-frontend-history/
+appointocare-frontend/.git/
+appointocare-frontend/.git-frontend-history/
 
 # Python
 __pycache__/

@@ -20,7 +20,7 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "service": "appointocore-api"}, 200
+        return {"status": "ok", "service": "appointocare-api"}, 200
 
     @app.get("/ready")
     def ready():

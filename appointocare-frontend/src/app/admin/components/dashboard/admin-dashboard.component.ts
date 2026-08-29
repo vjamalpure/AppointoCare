@@ -34,7 +34,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadSummary() {
-    const token = localStorage.getItem('appointocore_token');
+    const token = localStorage.getItem('appointocare_token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http.get(`${environment.apiUrl}/admin/dashboard`, { headers }).subscribe((data: any) => {
       this.summary = data;
@@ -42,7 +42,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadAppointments() {
-    const token = localStorage.getItem('appointocore_token');
+    const token = localStorage.getItem('appointocare_token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http.get<any[]>(`${environment.apiUrl}/admin/appointments`, { headers }).subscribe((data) => {
       this.appointments = data.slice(0, 5); // Show only recent 5
@@ -50,7 +50,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadTransactions() {
-    const token = localStorage.getItem('appointocore_token');
+    const token = localStorage.getItem('appointocare_token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http.get<any[]>(`${environment.apiUrl}/admin/transactions`, { headers }).subscribe((data) => {
       this.transactions = data.slice(0, 5); // Show only recent 5

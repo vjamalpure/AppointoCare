@@ -13,8 +13,8 @@ interface LoginResp {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private accessTokenKey = 'appointocore_token';
-  private refreshTokenKey = 'appointocore_refresh_token';
+  private accessTokenKey = 'appointocare_token';
+  private refreshTokenKey = 'appointocare_refresh_token';
 
   constructor(private http: HttpClient, private router: Router) {}
 
