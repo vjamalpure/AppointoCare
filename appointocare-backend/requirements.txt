@@ -6,6 +6,6 @@ Flask-Cors==4.0.1
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
 Werkzeug==2.3.7
-celery==5.4.7
+celery==5.4.0
 redis==5.3.1
 gunicorn==23.0.0
