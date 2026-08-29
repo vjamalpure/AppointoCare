@@ -1,3 +1,4 @@
+import os
 from app import create_app, db
 from flask_cors import CORS
 from flask_migrate import Migrate
