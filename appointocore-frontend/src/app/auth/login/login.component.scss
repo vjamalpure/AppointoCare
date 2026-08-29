@@ -1,0 +1,235 @@
+/* Full-page background */
+
+
+.login-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  padding: 0;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+/* Card */
+
+
+.login-card {
+  background-color: #fff;
+  padding: 48px 40px 32px 40px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 410px;
+  min-height: 0;
+  box-shadow: 0 8px 32px rgba(37, 117, 252, 0.10), 0 1.5px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.3s cubic-bezier(.25,.8,.25,1);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+
+.org-code-group {
+  transition: visibility 0.2s, height 0.2s;
+}
+
+
+
+/* Header */
+
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+
+
+.login-header h1 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #2575fc;
+  margin: 0 0 4px 0;
+  text-align: center;
+  letter-spacing: -1px;
+}
+
+
+.subtitle {
+  text-align: center;
+  font-size: 15px;
+  color: #6a11cb;
+  margin-bottom: 22px;
+  font-weight: 500;
+}
+
+/* Role Toggle */
+.role-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.role-toggle button {
+  background: #f5f8ff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2575fc;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.role-toggle button.active, .role-toggle button:hover {
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  color: #fff;
+}
+
+/* Form Groups */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  padding: 12px 14px;
+  border: 1.5px solid #e0e7ef;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #f8fafd;
+  transition: all 0.3s;
+}
+
+
+.form-group input:focus {
+  border-color: #2575fc;
+  box-shadow: 0 0 0 2px rgba(37, 117, 252, 0.10);
+  outline: none;
+}
+
+/* Checkbox */
+.remember-me {
+  display: flex;
+  align-items: center;
+}
+
+.remember-me input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.remember-me label {
+  font-size: 13px;
+  color: #555;
+}
+
+/* Login Button */
+
+.login-btn {
+  width: 100%;
+  padding: 13px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(37,117,252,0.10);
+}
+
+.login-btn:hover {
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(37, 117, 252, 0.18);
+}
+
+/* Error Messages */
+.error,
+.server-error {
+  font-size: 12px;
+  color: #d32f2f;
+  margin-top: 5px;
+}
+
+/* Forgot Password */
+
+.forgot-password {
+  text-align: right;
+  margin-top: 12px;
+}
+
+.forgot-password a {
+  color: #2575fc;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+.login-footer {
+  margin-top: 28px;
+  text-align: center;
+  color: #b0b8c9;
+  font-size: 13px;
+}
+
+/* Responsive */
+
+
+@media (max-width: 600px) {
+  .login-wrapper {
+    align-items: flex-start;
+    height: 100vh;
+    min-height: 100vh;
+    padding: 0;
+    overflow-y: auto;
+  }
+  .login-card {
+    padding: 22px 7vw 18px 7vw;
+    max-width: 98vw;
+    margin: 6vw auto;
+    min-height: unset;
+  }
+  .login-header h1 {
+    font-size: 1.4rem;
+  }
+  .login-logo {
+    width: 38px;
+    height: 38px;
+  }
+  .login-btn {
+    font-size: 15px;
+    padding: 10px 0;
+  }
+  .role-toggle button {
+    font-size: 13px;
+    padding: 7px 10px;
+  }
+}

@@ -1,0 +1,95 @@
+<div class="dashboard-wrapper">
+
+  <!-- Stats Tiles -->
+  <div class="tiles-container">
+    <div class="tile total">
+      <i class="fas fa-calendar-alt"></i>
+      <h3>Total Appointments</h3>
+      <p>{{ getTotalAppointments() }}</p>
+    </div>
+    <div class="tile booked">
+      <i class="fas fa-bookmark"></i>
+      <h3>Booked</h3>
+      <p>{{ getBookedCount() }}</p>
+    </div>
+    <div class="tile completed">
+      <i class="fas fa-check-circle"></i>
+      <h3>Completed</h3>
+      <p>{{ getCompletedCount() }}</p>
+    </div>
+    <div class="tile cancelled">
+      <i class="fas fa-times-circle"></i>
+      <h3>Cancelled</h3>
+      <p>{{ getCancelledCount() }}</p>
+    </div>
+    <div class="tile paid">
+      <i class="fas fa-money-bill-wave"></i>
+      <h3>Total Paid</h3>
+      <p>{{ getTotalPaid() }}</p>
+    </div>
+    <div class="tile unpaid">
+      <i class="fas fa-exclamation-circle"></i>
+      <h3>Total Unpaid</h3>
+      <p>{{ getTotalUnpaid() }}</p>
+    </div>
+  </div>
+
+  <!-- Appointments -->
+  <div class="dashboard-content">
+    <section class="appointments-section">
+      <h2>Recent Appointments</h2>
+
+      <div *ngIf="dashboardData.appointments.length > 0; else noAppointments">
+        <div class="appointment-card" *ngFor="let appt of dashboardData.appointments">
+          <div class="appt-header">
+            <h4>{{ appt.customer_name }}</h4>
+            <span [style.background-color]="getApptStatusColor(appt.status)" class="status">{{ appt.status }}</span>
+          </div>
+          <p>{{ appt.customer_phone }} | {{ formatDate(appt.appointment_date) }}</p>
+          <p>Amount: {{ appt.amount || '-' }} | Method: {{ appt.payment_method || '-' }} | Transaction: {{ appt.transaction_status || '-' }}</p>
+          <div class="appt-actions">
+            <button (click)="openEditModal(appt)">Edit</button>
+            <button (click)="updateAppointmentStatus(appt.id, 'Completed')">Complete</button>
+            <button (click)="updateAppointmentStatus(appt.id, 'Cancelled')">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noAppointments>
+        <p>No appointments available.</p>
+      </ng-template>
+    </section>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-backdrop" *ngIf="showModal && editAppointment">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Appointment</h3>
+      <button (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <label>Appointment Date & Time
+        <input type="datetime-local" [(ngModel)]="editAppointmentDateTime" />
+      </label>
+      <label>Payment Status
+        <select [(ngModel)]="editAppointment.payment_status">
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
+        </select>
+      </label>
+      <label>Status
+        <select [(ngModel)]="editAppointment.status">
+          <option value="Booked">Booked</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button (click)="saveEdit()">Save</button>
+      <button (click)="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>

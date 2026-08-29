@@ -1,0 +1,67 @@
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  overflow: auto;
+  background: #fafafa;
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+app-toolbar {
+  flex: 0 0 64px;
+  width: 100%;
+  z-index: 1100;
+}
+
+app-footer {
+  flex: 0 0 50px;
+  width: 100%;
+  z-index: 1100;
+}
+
+.app-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: calc(100% - 64px - 50px); /* Remaining height */
+  overflow: hidden;
+}
+
+/* Sidebar width handled by class binding in component */
+app-sidebar {
+  flex: 0 0 220px;
+  height: 70%;
+  transition: flex-basis 0.3s ease, width 0.3s ease;
+}
+
+app-sidebar.collapsed {
+  flex: 0 0 60px;
+}
+
+/* Main content adjusts dynamically */
+.main-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #fafafa;
+  box-sizing: border-box;
+  transition: margin-left 0.3s ease;
+}
+
+/* Optional: if you want to shift content slightly when sidebar opens */
+.main-content.sidebar-open {
+  margin-left: 0;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 0; /* can add small margin if needed */
+}

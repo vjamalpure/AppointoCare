@@ -1,0 +1,162 @@
+<mat-card class="admin-panel-card">
+  <h2>Organizations</h2>
+  <div class="organizations-grid">
+    <div class="org-list-panel">
+      <table mat-table [dataSource]="organizations" class="mat-elevation-z8">
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let org">{{ org.id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let org">{{ org.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="code">
+          <th mat-header-cell *matHeaderCellDef>Code</th>
+          <td mat-cell *matCellDef="let org">{{ org.code }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="plan">
+          <th mat-header-cell *matHeaderCellDef>Plan</th>
+          <td mat-cell *matCellDef="let org">{{ org.subscription_plan }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let org">{{ org.subscription_status }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="users">
+          <th mat-header-cell *matHeaderCellDef>Users</th>
+          <td mat-cell *matCellDef="let org">{{ org.user_count || 0 }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let org">
+            <button mat-mini-button color="primary" (click)="selectOrganization(org)">Manage</button>
+            <button mat-mini-button color="warn" (click)="deleteOrganization(org)">Delete</button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <div class="org-detail-panel" *ngIf="selectedOrg">
+      <h3>Manage {{ selectedOrg.name }}</h3>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Organization Name</mat-label>
+        <input matInput [(ngModel)]="selectedOrg.name" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Organization Code</mat-label>
+        <input matInput [(ngModel)]="selectedOrg.code" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Subscription Plan</mat-label>
+        <mat-select [(ngModel)]="selectedOrg.subscription_plan">
+          <mat-option value="Basic">Basic</mat-option>
+          <mat-option value="Premium">Premium</mat-option>
+          <mat-option value="Enterprise">Enterprise</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Subscription Status</mat-label>
+        <mat-select [(ngModel)]="selectedOrg.subscription_status">
+          <mat-option value="Active">Active</mat-option>
+          <mat-option value="Paused">Paused</mat-option>
+          <mat-option value="Stopped">Stopped</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Subscription Start</mat-label>
+        <input matInput type="date" [(ngModel)]="selectedOrg.subscription_start" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Subscription End</mat-label>
+        <input matInput type="date" [(ngModel)]="selectedOrg.subscription_end" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Next Billing Date</mat-label>
+        <input matInput type="date" [(ngModel)]="selectedOrg.next_billing_date" />
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="updateOrganization()">Save Changes</button>
+
+      <div class="user-management">
+        <h4>Organization Users</h4>
+        <table mat-table [dataSource]="orgUsers" class="mat-elevation-z8">
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef>Username</th>
+            <td mat-cell *matCellDef="let user">{{ user.username }}</td>
+          </ng-container>
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let user">{{ user.role }}</td>
+          </ng-container>
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef>Active</th>
+            <td mat-cell *matCellDef="let user">{{ user.is_active ? 'Yes' : 'No' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let user">
+              <button mat-mini-button color="primary" (click)="editUser(user)">Edit</button>
+              <button mat-mini-button color="warn" (click)="deleteUser(user)">Delete</button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['username','role','active','actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['username','role','active','actions'];"></tr>
+        </table>
+
+        <div class="user-form">
+          <h5>Add User</h5>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Username</mat-label>
+            <input matInput [(ngModel)]="newUser.username" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" [(ngModel)]="newUser.password" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Role</mat-label>
+            <mat-select [(ngModel)]="newUser.role">
+              <mat-option value="Staff">Staff</mat-option>
+              <mat-option value="Manager">Manager</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button mat-raised-button color="accent" (click)="addUser()">Create User</button>
+        </div>
+
+        <div class="user-form" *ngIf="userEdit">
+          <h5>Edit User</h5>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Username</mat-label>
+            <input matInput [(ngModel)]="userEdit.username" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password (leave blank to keep current)</mat-label>
+            <input matInput type="password" [(ngModel)]="userEdit.password" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Role</mat-label>
+            <mat-select [(ngModel)]="userEdit.role">
+              <mat-option value="Staff">Staff</mat-option>
+              <mat-option value="Manager">Manager</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-checkbox [(ngModel)]="userEdit.is_active">Active</mat-checkbox>
+          <div class="user-edit-actions">
+            <button mat-raised-button color="primary" (click)="saveUser()">Save User</button>
+            <button mat-button color="warn" (click)="cancelEditUser()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-card>

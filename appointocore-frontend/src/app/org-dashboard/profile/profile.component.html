@@ -1,0 +1,46 @@
+<div class="org-profile">
+  <h2>Organization Profile</h2>
+  <mat-card *ngIf="!loading">
+    <form *ngIf="editMode; else viewMode" (ngSubmit)="saveProfile()">
+      <mat-form-field appearance="outline" class="profile-field">
+        <mat-label>Name</mat-label>
+        <input matInput [(ngModel)]="profile.name" name="name" required />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="profile-field">
+        <mat-label>Subscription Plan</mat-label>
+        <mat-select [(ngModel)]="profile.subscription.plan" name="plan">
+          <mat-option value="Basic">Basic</mat-option>
+          <mat-option value="Premium">Premium</mat-option>
+          <mat-option value="Enterprise">Enterprise</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="profile-field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="profile.subscription.status" name="status">
+          <mat-option value="Active">Active</mat-option>
+          <mat-option value="Paused">Paused</mat-option>
+          <mat-option value="Stopped">Stopped</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div class="profile-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading">Save</button>
+        <button mat-button type="button" (click)="cancelEdit()">Cancel</button>
+      </div>
+    </form>
+    <ng-template #viewMode>
+      <div class="profile-row"><strong>Name:</strong> {{ profile.name }}</div>
+      <div class="profile-row"><strong>Sector:</strong> {{ profile.sector }}</div>
+      <div class="profile-row"><strong>Subscription Plan:</strong> {{ profile.subscription?.plan }}</div>
+      <div class="profile-row"><strong>Status:</strong> {{ profile.subscription?.status }}</div>
+      <div class="profile-row"><strong>Start Date:</strong> {{ profile.subscription?.start_date | date:'mediumDate' }}</div>
+      <div class="profile-row"><strong>End Date:</strong> {{ profile.subscription?.end_date | date:'mediumDate' }}</div>
+      <div class="profile-row"><strong>Next Billing:</strong> {{ profile.subscription?.next_billing_date | date:'mediumDate' }}</div>
+      <div class="profile-actions">
+        <button mat-raised-button color="primary" (click)="enableEdit()">Edit</button>
+      </div>
+    </ng-template>
+    <mat-divider></mat-divider>
+    <div *ngIf="message" class="profile-message">{{ message }}</div>
+  </mat-card>
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+</div>

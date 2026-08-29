@@ -1,0 +1,13 @@
+<header class="toolbar">
+  <div class="toolbar-left">
+    <h1 class="app-title">AppointoCore</h1>
+    <span class="org-name" *ngIf="organizationName">{{ organizationName }}</span>
+  </div>
+
+  <div class="toolbar-right">
+    <div class="user-info">
+      <span class="username">{{ username }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+</header>

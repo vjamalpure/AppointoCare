@@ -1,0 +1,65 @@
+
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>AppointoCore</h1>
+      <p class="subtitle">Sign in to your account</p>
+    </div>
+
+    <div class="role-toggle">
+      <button type="button" [class.active]="selectedRole === 'admin'" (click)="selectedRole = 'admin'">Admin</button>
+      <button type="button" [class.active]="selectedRole === 'organization'" (click)="selectedRole = 'organization'">Organization</button>
+    </div>
+
+    <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" novalidate>
+      <!-- Organization Code (only for organization login) -->
+      <div class="form-group" *ngIf="selectedRole === 'organization'">
+        <label for="org">Organization Code</label>
+        <input type="text" id="org" name="org" [(ngModel)]="organization_code" [required]="selectedRole === 'organization'">
+        <div class="error" *ngIf="!organization_code && loginForm.submitted">
+          Organization code is required
+        </div>
+      </div>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" [(ngModel)]="username" required>
+        <div class="error" *ngIf="!username && loginForm.submitted">
+          Username is required
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" [(ngModel)]="password" required>
+        <div class="error" *ngIf="!password && loginForm.submitted">
+          Password is required
+        </div>
+      </div>
+
+      <!-- Remember Me -->
+      <div class="form-group remember-me">
+        <input type="checkbox" id="rememberMe" [(ngModel)]="rememberMe" name="rememberMe">
+        <label for="rememberMe">Remember me</label>
+      </div>
+
+      <!-- Login Button -->
+      <button type="submit" [disabled]="loading || loginForm.invalid" class="login-btn">
+        {{ loading ? 'Logging in...' : 'Login' }}
+      </button>
+
+      <!-- Error Message -->
+      <div class="server-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+      <!-- Forgot Password -->
+      <div class="forgot-password">
+        <a routerLink="/forgot-password">Forgot password?</a>
+      </div>
+    </form>
+    <div class="login-footer">
+      <span>© {{ currentYear }} AppointoCore. All rights reserved.</span>
+    </div>
+  </div>
+</div>

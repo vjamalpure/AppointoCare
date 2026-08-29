@@ -1,0 +1,24 @@
+<ng-container *ngIf="showLayout; else loginPage">
+  <app-toolbar
+    [username]="username"
+    [organizationName]="organizationName"
+    (toggleSidebar)="toggleSidebar()">
+  </app-toolbar>
+
+  <div class="app-body">
+    <app-sidebar
+      [class.collapsed]="isSidebarCollapsed"
+      (collapseChange)="onSidebarCollapse($event)">
+    </app-sidebar>
+
+    <div class="main-content" [class.sidebar-collapsed]="isSidebarCollapsed" [class.sidebar-open]="!isSidebarCollapsed">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</ng-container>
+
+<ng-template #loginPage>
+  <router-outlet></router-outlet>
+</ng-template>

@@ -1,0 +1,25 @@
+mat-card {
+  padding: 20px;
+  margin: 20px;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  th.mat-header-cell {
+    background-color: #607d8b;
+    color: white;
+    font-weight: 600;
+  }
+
+  td.mat-cell {
+    padding: 10px;
+  }
+
+  tr.mat-row:hover {
+    background-color: rgba(96, 125, 139, 0.1);
+  }
+}
