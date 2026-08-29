@@ -1,0 +1,40 @@
+<section class="workspace">
+  <header class="workspace-header">
+    <div>
+      <p class="eyebrow">Operations workspace</p>
+      <h1>Engage, schedule, grow</h1>
+    </div>
+    <button mat-stroked-button routerLink="/org-dashboard"><mat-icon>arrow_back</mat-icon> Dashboard</button>
+  </header>
+
+  <nav mat-tab-nav-bar [tabPanel]="panel">
+    <a mat-tab-link [active]="activeTab === 'reports'" (click)="activeTab = 'reports'">Overview</a>
+    <a mat-tab-link [active]="activeTab === 'campaigns'" (click)="activeTab = 'campaigns'">Campaigns</a>
+    <a mat-tab-link [active]="activeTab === 'notifications'" (click)="activeTab = 'notifications'">Notifications</a>
+    <a mat-tab-link [active]="activeTab === 'branches'" (click)="activeTab = 'branches'">Branches</a>
+  </nav>
+  <mat-tab-nav-panel #panel>
+    <div class="metrics" *ngIf="activeTab === 'reports'">
+      <mat-card><mat-icon>event</mat-icon><span>Appointments</span><strong>{{ report.appointments || 0 }}</strong></mat-card>
+      <mat-card><mat-icon>people</mat-icon><span>Customers</span><strong>{{ report.customers || 0 }}</strong></mat-card>
+      <mat-card><mat-icon>payments</mat-icon><span>Revenue</span><strong>₹{{ report.revenue || 0 }}</strong></mat-card>
+    </div>
+
+    <div class="split" *ngIf="activeTab === 'campaigns'">
+      <mat-card class="form-card"><h2>New campaign</h2>
+        <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="campaign.name"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Channel</mat-label><mat-select [(ngModel)]="campaign.channel"><mat-option value="WhatsApp">WhatsApp</mat-option><mat-option value="Email">Email</mat-option><mat-option value="SMS">SMS</mat-option></mat-select></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Message</mat-label><textarea matInput rows="4" [(ngModel)]="campaign.message"></textarea></mat-form-field>
+        <button mat-flat-button color="primary" (click)="createCampaign()">Create campaign</button>
+      </mat-card>
+      <div class="list"><h2>Campaign history</h2><mat-card *ngFor="let item of campaigns"><b>{{ item.name }}</b><span>{{ item.channel }} · {{ item.status }}</span></mat-card></div>
+    </div>
+
+    <div class="list" *ngIf="activeTab === 'notifications'"><h2>Notifications</h2><mat-card *ngFor="let item of notifications"><b>{{ item.title }}</b><span>{{ item.message }}</span><button mat-button *ngIf="item.status !== 'read'" (click)="markRead(item.id)">Mark read</button></mat-card><p *ngIf="!notifications.length">No notifications yet.</p></div>
+
+    <div class="split" *ngIf="activeTab === 'branches'">
+      <mat-card class="form-card"><h2>Add branch</h2><mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="branch.name"></mat-form-field><mat-form-field appearance="outline"><mat-label>Address</mat-label><input matInput [(ngModel)]="branch.address"></mat-form-field><mat-form-field appearance="outline"><mat-label>Phone</mat-label><input matInput [(ngModel)]="branch.phone"></mat-form-field><button mat-flat-button color="primary" (click)="createBranch()">Add branch</button></mat-card>
+      <div class="list"><h2>Your branches</h2><mat-card *ngFor="let item of branches"><b>{{ item.name }}</b><span>{{ item.address || 'Address not set' }}</span></mat-card></div>
+    </div>
+  </mat-tab-nav-panel>
+</section>

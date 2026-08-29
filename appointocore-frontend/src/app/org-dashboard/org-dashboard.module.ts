@@ -23,6 +23,7 @@ import { OrgTransactionsComponent } from './transactions/transactions.component'
 import { OrgProfileComponent } from './profile/profile.component';
 import { OrgSubscriptionComponent } from './subscription/subscription.component';
 import { DashboardComponent } from '../components/dashboard/dashboard.component';
+import { PlatformWorkspaceComponent } from '../platform/platform-workspace.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { DashboardComponent } from '../components/dashboard/dashboard.component'
     OrgTransactionsComponent,
     OrgProfileComponent,
     OrgSubscriptionComponent
+    ,PlatformWorkspaceComponent
   ],
   imports: [
     CommonModule,

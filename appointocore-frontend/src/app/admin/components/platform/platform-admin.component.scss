@@ -1,0 +1,8 @@
+.admin-platform { min-height: 100vh; padding: 2rem; background: #f5f7fb; color: #172033; }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 2rem; }
+header p { color: #0b7a75; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+h1 { margin: .25rem 0; font-size: clamp(2rem, 4vw, 3rem); } h2 { font-size: 1.1rem; }
+.columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.columns mat-card { padding: 1.25rem; margin-bottom: .75rem; border-radius: 8px; }
+.item-head { display: flex; justify-content: space-between; gap: 1rem; } .item-head span { color: #0b7a75; font-size: .85rem; }
+mat-card p { color: #687386; } @media (max-width: 700px) { .admin-platform { padding: 1rem; } .columns { grid-template-columns: 1fr; } header { flex-direction: column; } }

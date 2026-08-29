@@ -12,7 +12,7 @@ AppointoCare is an appointment and organization management application with an A
 
 Prerequisites: Docker Desktop with Compose enabled.
 
-1. Copy `.env.example` to `.env` in this directory and replace the secrets for anything beyond local development.
+1. Optional: copy `.env.example` to `.env` for explicit local settings. Compose also supplies these development defaults automatically.
 2. Start the full stack:
 
    ```bash
@@ -33,7 +33,44 @@ PostgreSQL data is stored in the `postgres_data` Docker volume. To remove the da
 docker compose down -v
 ```
 
-The backend waits for PostgreSQL and Redis, runs `flask db upgrade`, and then starts Gunicorn. The Celery worker starts after the backend is healthy.
+The backend waits for PostgreSQL and Redis, runs `flask db upgrade`, initializes demo data if `SEED_DEMO_DATA=true`, and then starts Gunicorn. The Celery worker starts after the backend is healthy. PostgreSQL data persists in the `postgres_data` volume, so the migration and seed are safe to run every time the containers start.
+
+### Demo logins
+
+With the default development Compose settings:
+
+| Role | Organization code | Username | Password |
+| --- | --- | --- | --- |
+| Super Admin | leave blank | `superadmin` | `Admin@12345` |
+| Organization Admin | `ORG1` | `org1` | `Org@12345` |
+| Organization Staff | `ORG1` | `staff1` | `Staff@12345` |
+
+The seed is idempotent: existing accounts and records are skipped. Set `SEED_DEMO_DATA=false` for an empty database or production deployment.
+
+### Versioned platform APIs
+
+The platform endpoints are available under `/api/v1/platform`:
+
+- `GET/POST /plans`: Super Admin subscription plan management.
+- `GET/POST /templates`: sector service templates; creation is restricted to Super Admin.
+- `GET/POST /campaigns`: organization-scoped campaign drafts and scheduling metadata.
+- `GET /notifications` and `POST /notifications/{id}/read`: organization notifications.
+- `GET/POST /branches`: organization-scoped branches.
+- `GET /reports/summary`: tenant-scoped KPI summary, or an optional organization filter for Admin.
+
+All tenant endpoints derive `organization_id` from the JWT claims. They do not trust a client-supplied organization ID.
+
+### Provider integrations
+
+Provider adapters live under `appointocore-backend/app/providers` and application services use those adapters instead of vendor SDKs. Development defaults to mock providers; production does not fall back to mocks. Configure a real provider only through environment variables:
+
+- `GET /api/v1/providers/status`: authenticated provider state inspection.
+- `POST /api/v1/providers/payments/orders`: create a payment order.
+- `POST /api/v1/providers/payments/verify`: verify a payment signature.
+- `POST /api/v1/providers/webhooks/razorpay`: signed, idempotent Razorpay webhook endpoint.
+- `GET/POST /api/v1/providers/webhooks/whatsapp`: Meta webhook verification and signed event intake.
+
+Without credentials, real-provider operations return a controlled provider configuration error. Mock operations are intended for development and automated tests only. Webhook endpoints never log access tokens or raw provider secrets.
 
 ## Run locally
 
@@ -65,6 +102,8 @@ Create the database, apply migrations, and start the API:
 flask --app run.py db upgrade
 python run.py
 ```
+
+For local PostgreSQL, use `postgresql://` with the PostgreSQL host, port, database, username, and password. Do not use the Docker hostname `db` from a process running directly on Windows; use `localhost` instead.
 
 In another terminal, start the worker from `appointocore-backend`:
 

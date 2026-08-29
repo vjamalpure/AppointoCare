@@ -1,0 +1,7 @@
+<section class="admin-platform">
+  <header><div><p>Platform configuration</p><h1>Plans and sector templates</h1></div><button mat-stroked-button routerLink="/admin-dashboard"><mat-icon>arrow_back</mat-icon> Dashboard</button></header>
+  <div class="columns">
+    <div><h2>Subscription plans</h2><mat-card *ngFor="let plan of plans"><div class="item-head"><b>{{ plan.name }}</b><span>{{ plan.is_active ? 'Active' : 'Inactive' }}</span></div><p>{{ plan.description || 'No description' }}</p><strong>₹{{ plan.price }} / {{ plan.billing_cycle }}</strong></mat-card><p *ngIf="!plans.length">No plans configured.</p></div>
+    <div><h2>Sector templates</h2><mat-card *ngFor="let template of templates"><div class="item-head"><b>{{ template.name }}</b><span>{{ template.services.length }} services</span></div><p>{{ template.description || 'Configurable service template' }}</p></mat-card><p *ngIf="!templates.length">No templates configured.</p></div>
+  </div>
+</section>

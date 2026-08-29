@@ -15,6 +15,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @NgModule({
   exports: [
@@ -34,6 +35,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatSnackBarModule,
     MatDialogModule,
     MatCheckboxModule
+    ,MatTabsModule
   ]
 })
 export class MaterialModule {}

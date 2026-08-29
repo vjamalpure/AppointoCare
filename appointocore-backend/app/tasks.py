@@ -1,8 +1,9 @@
 from datetime import datetime
-from time import sleep
 from app import create_app
 from app.celery import make_celery
-from app.models import db, MessageLog, Appointment, Organization
+from app.models import Appointment, Organization
+from app.services.notifications import send_notification
+from app.providers.base import ProviderError
 
 app = create_app()
 celery = make_celery(app)
@@ -14,25 +15,11 @@ def send_whatsapp_message(self, organization_id, recipient_number, message_conte
     if not org:
         return {"status": "organization_not_found"}
 
-    # Example async logging for WhatsApp messages; extend with Meta Cloud API integration later.
-    log = MessageLog(
-        organization_id=organization_id,
-        recipient_number=recipient_number,
-        message_type="WhatsApp",
-        message_content=message_content,
-        status="Scheduled",
-        related_appointment_id=None,
-        remarks="Scheduled via Celery task"
-    )
-    db.session.add(log)
-    db.session.commit()
-
-    sleep(1)
-    log.status = "Sent"
-    log.sent_at = datetime.utcnow()
-    db.session.commit()
-
-    return {"status": "sent", "recipient": recipient_number}
+    try:
+        result = send_notification("whatsapp", organization_id, recipient_number, message_content)
+    except ProviderError as exc:
+        raise self.retry(exc=exc, countdown=60, max_retries=3)
+    return {"status": result.status or "sent", "recipient": recipient_number, "provider": result.provider}
 
 
 @celery.task(bind=True)
@@ -41,9 +28,22 @@ def appointment_reminder(self, appointment_id):
     if not appointment:
         return {"status": "appointment_not_found"}
 
-    # Placeholder logic for appointment reminders.
-    return {
-        "status": "reminder_sent",
-        "appointment_id": appointment.id,
-        "customer_name": appointment.customer_name
-    }
+    if not app.config.get("REMINDERS_ENABLED", True):
+        return {"status": "disabled", "appointment_id": appointment.id}
+    try:
+        result = send_notification("whatsapp", appointment.organization_id, appointment.customer_phone, f"Reminder: your appointment is scheduled for {appointment.appointment_date.isoformat()}.")
+    except ProviderError as exc:
+        raise self.retry(exc=exc, countdown=300, max_retries=3)
+    return {"status": result.status or "sent", "appointment_id": appointment.id, "provider": result.provider}
+
+
+@celery.task(bind=True, autoretry_for=(ProviderError,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+def send_email_task(self, organization_id, recipient, subject, message):
+    result = send_notification("email", organization_id, recipient, message, subject=subject)
+    return {"status": result.status, "provider": result.provider}
+
+
+@celery.task(bind=True, autoretry_for=(ProviderError,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+def send_sms_task(self, organization_id, recipient, message):
+    result = send_notification("sms", organization_id, recipient, message)
+    return {"status": result.status, "provider": result.provider}

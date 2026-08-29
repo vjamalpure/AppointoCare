@@ -1,0 +1,19 @@
+:host { display: block; }
+.workspace { padding: 2rem; background: #f5f7fb; min-height: calc(100vh - 64px); color: #172033; }
+.workspace-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.eyebrow { color: #0b7a75; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+h1 { font-size: clamp(2rem, 4vw, 3rem); margin: .25rem 0 0; }
+h2 { font-size: 1.1rem; margin: 0 0 1rem; }
+.metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.metrics mat-card { display: grid; grid-template-columns: auto 1fr; gap: .25rem .75rem; padding: 1.25rem; border-radius: 8px; }
+.metrics mat-icon { color: #0b7a75; grid-row: span 2; }
+.metrics span { color: #687386; font-size: .85rem; }
+.metrics strong { font-size: 1.8rem; }
+.split { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+.form-card, .list mat-card { padding: 1.25rem; border-radius: 8px; }
+.form-card mat-form-field { width: 100%; display: block; }
+.list { display: grid; gap: .75rem; align-content: start; }
+.list mat-card { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.list mat-card b { min-width: 130px; }
+.list mat-card span { color: #687386; flex: 1; }
+@media (max-width: 700px) { .workspace { padding: 1rem; } .workspace-header { align-items: flex-start; flex-direction: column; } .metrics, .split { grid-template-columns: 1fr; } }

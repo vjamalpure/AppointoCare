@@ -15,7 +15,7 @@ const routes: Routes = [
     path: 'org-dashboard',
     loadChildren: () => import('./org-dashboard/org-dashboard.module').then(m => m.OrgDashboardModule),
     canActivate: [AuthGuard],
-    data: { expectedRole: 'Organization' }
+    data: { expectedRole: ['Organization', 'Manager', 'Staff'] }
   },
   {
     path: 'admin-dashboard',

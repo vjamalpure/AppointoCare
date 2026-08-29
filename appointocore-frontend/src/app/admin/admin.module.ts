@@ -17,6 +17,7 @@ import { OrganizationsComponent } from './components/organizations/organizations
 import { SubscriptionsComponent } from './components/subscriptions/subscriptions.component';
 import { TransactionsComponent } from './components/transactions/transactions.component';
 import { AdminDashboardComponent } from './components/dashboard/admin-dashboard.component';
+import { PlatformAdminComponent } from './components/platform/platform-admin.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { AdminDashboardComponent } from './components/dashboard/admin-dashboard.
     SubscriptionsComponent,
     TransactionsComponent,
     AdminDashboardComponent
+    , PlatformAdminComponent
   ],
   imports: [
     CommonModule,

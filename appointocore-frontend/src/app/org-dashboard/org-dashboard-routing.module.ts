@@ -7,6 +7,7 @@ import { OrgProfileComponent } from './profile/profile.component';
 import { OrgSubscriptionComponent } from './subscription/subscription.component';
 import { DashboardComponent } from '../components/dashboard/dashboard.component';
 import { AuthGuard } from '../guards/auth.guard';
+import { PlatformWorkspaceComponent } from '../platform/platform-workspace.component';
 
 const routes: Routes = [
   {
@@ -19,6 +20,7 @@ const routes: Routes = [
       { path: 'transactions', component: OrgTransactionsComponent },
       { path: 'profile', component: OrgProfileComponent },
       { path: 'subscription', component: OrgSubscriptionComponent }
+      ,{ path: 'workspace', component: PlatformWorkspaceComponent }
     ]
   }
 ];

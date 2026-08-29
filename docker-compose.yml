@@ -31,6 +31,15 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY:-appointocore-dev-secret-change-me}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-appointocore-dev-jwt-secret-change-me}
+      APP_ENV: ${APP_ENV:-development}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-superadmin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
+      ORG_USERNAME: ${ORG_USERNAME:-org1}
+      ORG_PASSWORD: ${ORG_PASSWORD:-Org@12345}
+      STAFF_USERNAME: ${STAFF_USERNAME:-staff1}
+      STAFF_PASSWORD: ${STAFF_PASSWORD:-Staff@12345}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-appointocore_dev_password}@db:5432/appointocore
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
@@ -42,7 +51,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import socket; s=socket.create_connection(('127.0.0.1', 8000), 2); s.close()\""]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=2)\""]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -53,6 +62,8 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY:-appointocore-dev-secret-change-me}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-appointocore-dev-jwt-secret-change-me}
+      APP_ENV: ${APP_ENV:-development}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-appointocore_dev_password}@db:5432/appointocore
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0

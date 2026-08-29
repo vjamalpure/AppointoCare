@@ -227,3 +227,104 @@ class AuditLog(db.Model):
     ip_address = db.Column(db.String(100), nullable=True)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class SubscriptionPlan(db.Model):
+    __tablename__ = "subscription_plans"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    price = db.Column(db.Float, nullable=False, default=0.0)
+    billing_cycle = db.Column(db.String(20), nullable=False, default="monthly")
+    feature_limits = db.Column(db.JSON, nullable=False, default=dict)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class Campaign(db.Model):
+    __tablename__ = "campaigns"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    channel = db.Column(db.String(30), nullable=False, default="WhatsApp")
+    message = db.Column(db.Text, nullable=False)
+    audience_filter = db.Column(db.JSON, nullable=False, default=dict)
+    status = db.Column(db.String(30), nullable=False, default="Draft")
+    scheduled_at = db.Column(db.DateTime, nullable=True)
+    sent_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class Notification(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False)
+    recipient_type = db.Column(db.String(30), nullable=False, default="organization")
+    recipient_id = db.Column(db.Integer, nullable=True)
+    channel = db.Column(db.String(30), nullable=False, default="in_app")
+    title = db.Column(db.String(150), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(30), nullable=False, default="unread")
+    read_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Branch(db.Model):
+    __tablename__ = "branches"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    address = db.Column(db.String(255), nullable=True)
+    phone = db.Column(db.String(30), nullable=True)
+    timezone = db.Column(db.String(50), nullable=False, default="UTC")
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class SectorTemplate(db.Model):
+    __tablename__ = "sector_templates"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    services = db.Column(db.JSON, nullable=False, default=list)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class PaymentOrder(db.Model):
+    __tablename__ = "payment_orders"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False)
+    appointment_id = db.Column(db.Integer, db.ForeignKey("appointments.id"), nullable=True)
+    provider = db.Column(db.String(40), nullable=False)
+    provider_order_id = db.Column(db.String(150), unique=True, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), nullable=False, default="INR")
+    status = db.Column(db.String(30), nullable=False, default="created")
+    provider_metadata = db.Column("metadata", db.JSON, nullable=False, default=dict)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class ProviderEvent(db.Model):
+    __tablename__ = "provider_events"
+
+    id = db.Column(db.Integer, primary_key=True)
+    provider = db.Column(db.String(40), nullable=False)
+    event_id = db.Column(db.String(200), nullable=False)
+    event_type = db.Column(db.String(100), nullable=False)
+    payload = db.Column(db.JSON, nullable=False, default=dict)
+    status = db.Column(db.String(30), nullable=False, default="received")
+    error_message = db.Column(db.String(500), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    processed_at = db.Column(db.DateTime, nullable=True)
+    __table_args__ = (db.UniqueConstraint("provider", "event_id", name="uq_provider_event"),)

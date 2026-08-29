@@ -1,12 +1,13 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
 from app.models import db, Service
+from app.security import require_roles
 
 service_bp = Blueprint("service_bp", __name__)
 
 
 @service_bp.route("/all", methods=["GET"])
-@jwt_required()
+@require_roles("Admin", "Organization", "Manager", "Staff")
 def get_services():
     claims = get_jwt()
     role = claims.get("role")
@@ -39,7 +40,7 @@ def get_services():
 
 
 @service_bp.route("/create", methods=["POST"])
-@jwt_required()
+@require_roles("Admin", "Organization", "Manager", "Staff")
 def create_service():
     claims = get_jwt()
     role = claims.get("role")
@@ -71,7 +72,7 @@ def create_service():
 
 
 @service_bp.route("/<int:service_id>", methods=["PATCH"])
-@jwt_required()
+@require_roles("Admin", "Organization", "Manager", "Staff")
 def update_service(service_id):
     claims = get_jwt()
     role = claims.get("role")
@@ -99,7 +100,7 @@ def update_service(service_id):
 
 
 @service_bp.route("/<int:service_id>", methods=["DELETE"])
-@jwt_required()
+@require_roles("Admin", "Organization", "Manager", "Staff")
 def delete_service(service_id):
     claims = get_jwt()
     role = claims.get("role")
