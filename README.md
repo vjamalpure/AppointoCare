@@ -1,300 +1,407 @@
-# AppointoCare
+# AppointoCare — Enterprise Multi-Industry SaaS Platform
 
-AppointoCare is an appointment and organization management application with an Angular frontend, Flask REST API, PostgreSQL database, Redis, and a Celery worker.
+<div align="center">
 
-## Quick Start
+![AppointoCare Platform](https://img.shields.io/badge/Platform-AppointoCare-4f46e5?style=for-the-badge&logo=shield)
+![Angular](https://img.shields.io/badge/Angular_18-DD0031?style=for-the-badge&logo=angular&logoColor=white)
+![Flask](https://img.shields.io/badge/Python_Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis_7-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![Celery](https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-Choose your preferred method:
+**The Intelligent Operating System for Modern Appointments, Multi-Industry CRM & Operations.**
 
-- **Docker Compose (Recommended for Development)**: Everything runs in containers. Simplest setup.
-- **Local Development**: Full control; requires installing PostgreSQL, Redis, Python, and Node.js locally.
+*Built for Clinics, Salons, Wealth Advisory, Luxury Retail, Insurance, Universities, Law Chambers, Real Estate, and Enterprise Consulting.*
 
-## Project Layout
-
-- `appointocare-frontend/`: Angular 18 application served by Nginx in production.
-- `appointocare-backend/`: Flask API, SQLAlchemy models, Alembic migrations, and Celery tasks.
-- `docker-compose.yml`: Local container orchestration for PostgreSQL, Redis, Flask, Celery, and Nginx.
+</div>
 
 ---
 
-# Run with Docker Compose (Recommended)
+## 📑 Table of Contents
 
-## Prerequisites for Docker Setup
+1. [Executive Overview](#1-executive-overview)
+2. [Supported Industry Verticals (9 Sectors)](#2-supported-industry-verticals-9-sectors)
+3. [Core Platform Features](#3-core-platform-features)
+4. [Market-Benchmarked Modular SaaS Add-ons](#4-market-benchmarked-modular-saas-add-ons)
+5. [Architecture & Technology Stack](#5-architecture--technology-stack)
+6. [Quick Start with Docker Compose (Recommended)](#6-quick-start-with-docker-compose-recommended)
+7. [Local Development Setup (Without Docker)](#7-local-development-setup-without-docker)
+8. [Demo Accounts & Credentials Reference](#8-demo-accounts--credentials-reference)
+9. [REST API Documentation & Endpoints](#9-rest-api-documentation--endpoints)
+10. [Environment Configuration Reference](#10-environment-configuration-reference)
+11. [Production Deployment Guidelines](#11-production-deployment-guidelines)
 
-- **Docker Desktop** (Windows, macOS) or **Docker Engine + Docker Compose** (Linux)
-- Download and install from: https://www.docker.com/products/docker-desktop
-- Verify installation: `docker --version` and `docker compose --version`
-- At least 4GB free RAM and 2GB disk space
+---
 
-## Step 1: Clone and Setup
+## 1. Executive Overview
 
+**AppointoCare** is an enterprise-grade, multi-tenant SaaS scheduling, CRM, and business operations platform. It eliminates rigid single-vertical constraints by natively supporting **9 distinct business sectors** through a reactive metadata engine that dynamically re-skins:
+
+- Terminology (Patients vs. Guests vs. Investors vs. Corporate Clients)
+- Intake forms and custom fields (Vitals & MRN vs. Asset Classes vs. Wardrobe Sizes)
+- WhatsApp automated bot menus & pre-visit instructions
+- Specialized operational workspaces & persistent cloud vaults
+- Market-benchmarked toggleable SaaS add-on modules
+
+---
+
+## 2. Supported Industry Verticals (9 Sectors)
+
+| # | Sector | Code | Demo Admin | Demo Staff | Benchmarked Standard | Specialized Workspace & Dossier |
+|---|---|---|---|---|---|---|
+| 1 | **Healthcare & Clinic** | `ORG1` | `org1` | `doc_sarah`, `dr_chen` | Practo Ray, Epic Systems | Clinical E-Prescriptions, Vitals (BP, SpO2, Pulse), Triage Matrix |
+| 2 | **Salon, Spa & Wellness** | `ORG2` | `org2` | `elena_stylist`, `marcus_spa` | Fresha, Zenoti | Treatment Suite Allocator, Chemical Formulation Cards, Spa Add-ons |
+| 3 | **Wealth & Advisory** | `ORG3` | `org3` | `alex_wealth`, `diana_advisor` | AdvisorEngine, Addepar | Accredited Investor KYC, Risk Profiling, Asset Allocator |
+| 4 | **Luxury Retail & Styling**| `ORG4` | `org4` | `chloe_couture`, `nathan_vip` | Farfetch Private Client | VIP Fitting Suite Allocator, Bespoke Sizing Cards, Lookbooks |
+| 5 | **Insurance Agency** | `ORG5` | `org5` | `victor_risk`, `grace_claims` | Applied Epic, Guidewire | Underwriting Risk Dossier, Sum Assured Calculator, Claims Vault |
+| 6 | **Academy & Admissions** | `ORG6` | `org6` | `prof_miller`, `dean_ross` | Naviance, Slate Technolutions | University Admissions Roadmap, GPA/SAT Score Tracking, Reach/Match/Safety |
+| 7 | **Legal & Consulting** | `ORG7` | `org7` | `attorney_blake`, `counsel_rachel` | Clio, Smokeball | Conflict of Interest Clearance, Billable Retainer Hours Ledger |
+| 8 | **Real Estate & Realty** | `ORG8` | `org8` | `broker_diana`, `arch_liam` | Buildium, AppFolio | Property Tour Itinerary Planner, Lockbox Access Codes, Wishlists |
+| 9 | **Enterprise Solutions** | `ORG9` | `org9` | `elizabeth_exec` | Accenture Client Exchange | SOW Deliverable Scope, Platinum SLA Tiers, Architecture Audits |
+
+---
+
+## 3. Core Platform Features
+
+### 🏢 Multi-Tenant & Multi-Industry Engine
+- **Tenant Isolation**: Secure, role-based boundary separation where all queries enforce cryptographic tenant isolation derived from validated JWT tokens.
+- **Dynamic Terminology Engine**: Reactive frontend automatically adopts industry terms (`Customer`, `Patient`, `Investor`, `Guest`, `Client`) across all UI elements, tables, and notifications.
+
+### 🤖 WhatsApp Meta Cloud AI Receptionist Bot
+- **24/7 Automated Bookings**: Self-service slot discovery and appointment booking directly from WhatsApp.
+- **Smart Receptionist Simulator**: Interactive reception bot with sector-tailored catalogs, branch addresses, and prep instructions.
+- **Automated Alerts**: Instant WhatsApp confirmations and appointment reminder dispatches.
+
+### 💳 Payment Processing & Invoicing
+- **Razorpay Integration**: Sandbox and production-ready payment orders, signature verification, and automated receipt generation.
+- **Invoices & Ledgers**: Transaction logging, paid vs. unpaid status management, and monthly revenue analytics.
+
+### 🛡️ Security, RBAC & Audit Trail
+- **Role-Based Access Control**: Strict multi-tier RBAC (`SuperAdmin`, `OrgAdmin`, `Manager`, `Staff`).
+- **Comprehensive Audit Trail**: Every status modification, add-on toggle, sector import, and payment verification is cryptographically logged with IP and user metadata.
+
+### 📊 Modern Visual Identity & Glassmorphism
+- **Futuristic Brand Logo**: Custom SVG mark combining a calendar grid, operational pulse line, and verification checkmark.
+- **Glassmorphic Design System**: Frosted glass top navigation bar, collapsible sleek sidebar, modern KPI stat cards with trend indicators, and standardized modal popups with entrance animations.
+- **Modern Dual-Panel Login**: Left product showcase panel with ambient mesh glow and feature cards; right elevated authentication hub with 1-click multi-industry demo selectors.
+
+---
+
+## 4. Market-Benchmarked Modular SaaS Add-ons
+
+AppointoCare includes **36 modular SaaS add-on engines** (4 per sector) that can be toggled on or off per organization with an audit trail:
+
+```
+├── Healthcare
+│   ├── Digital E-Prescription & Rx Writer (Practo Ray)
+│   ├── Vitals & Emergency Triage Matrix (Epic Systems)
+│   ├── Diagnostic Lab Packages & Report Vault (Practo Diagnostics)
+│   └── TPA / Insurance Pre-Authorization Checklist (Athenahealth)
+├── Salon & Spa
+│   ├── Treatment Suite & Hydrotherapy Allocator (Zenoti)
+│   ├── Chemical Formulation & Color Card (Fresha)
+│   ├── Spa Add-on & Upsell Service Engine (Booker)
+│   └── Stylist Station Conflict Manager (Mindbody)
+├── Wealth & Finance
+│   ├── Accredited Investor KYC Dossier (AdvisorEngine)
+│   ├── Target Asset Allocation Profiler (Addepar)
+│   ├── Fiduciary Compliance & Disclosures (eMoney)
+│   └── Risk Tolerance Scoring Engine (Riskalyze)
+├── Luxury Retail
+│   ├── VIP Fitting Suite Booking & Hospitality (Farfetch VIP)
+│   ├── Bespoke Wardrobe Sizing Card (Net-a-Porter)
+│   ├── Curated Lookbook Session Manager (Saks Fifth Ave)
+│   └── Private Client Gifting Registry (Harrods)
+├── Insurance
+│   ├── Underwriting Risk & Policy Dossier (Applied Epic)
+│   ├── Pre-Claims Evidence & Incident Vault (Guidewire)
+│   ├── Multi-Risk Actuarial Premium Calculator (Vertafore)
+│   └── Policyholder Medical & Hazard Declaration (Lemonade)
+├── Education & Counseling
+│   ├── University Admissions Roadmap & Milestones (Naviance)
+│   ├── Standardized Test Score Tracker (Slate Technolutions)
+│   ├── Statement of Purpose & Recommendation Vault (Cialfo)
+│   └── Visa & Financial Clearance Checklist (IDP Connect)
+├── Legal & Management Consulting
+│   ├── Conflict of Interest Clearance Engine (Clio)
+│   ├── Billable Retainer Hours Ledger (Smokeball)
+│   ├── Client Trust Account (IOLTA) Tracker (PracticePanther)
+│   └── Privileged Legal Dossier & Evidence Vault (MyCase)
+├── Real Estate & Realty
+│   ├── Property Tour Itinerary & Routing Planner (ShowingTime)
+│   ├── Lockbox & Private Access Code Vault (Buildium)
+│   ├── Buyer Preference & Property Matcher (AppFolio)
+│   └── Escrow & Closing Milestones Checklist (Dotloop)
+└── Enterprise Solutions
+    ├── SOW Milestone & Deliverable Delivery Tracker (Accenture)
+    ├── SLA Performance & Response Monitor (ServiceNow)
+    ├── Enterprise Architecture Compliance Review (SAP)
+    └── Multi-Stakeholder Sign-Off & Approval Matrix (Salesforce)
+```
+
+---
+
+## 5. Architecture & Technology Stack
+
+```
+                                  [ Browser / Client ]
+                                           │
+                                  Port 4200 (HTTP)
+                                           │
+                         ┌─────────────────┴─────────────────┐
+                         │      Nginx Reverse Proxy          │
+                         │   (appointocare-frontend-1)       │
+                         │     Angular 18 SPA Assets         │
+                         └─────────────────┬─────────────────┘
+                                           │
+                                  Port 8000 (API / Reverse Proxy)
+                                           │
+                         ┌─────────────────┴─────────────────┐
+                         │         Flask REST API            │
+                         │    (appointocare-backend-1)       │
+                         │   Python 3.12, SQLAlchemy, JWT    │
+                         └───────┬───────────────────┬───────┘
+                                 │                   │
+                     Port 5432   │                   │  Port 6379
+                                 ▼                   ▼
+                     ┌──────────────────┐    ┌──────────────────┐
+                     │  PostgreSQL 16   │    │     Redis 7      │
+                     │ (appointocare-db)│    │ (appointocare-   │
+                     │  Relational Data │    │      redis)      │
+                     └──────────────────┘    └─────────┬────────┘
+                                                       │
+                                                       ▼
+                                             ┌──────────────────┐
+                                             │  Celery Worker   │
+                                             │ (appointocare-   │
+                                             │     celery)      │
+                                             └──────────────────┘
+```
+
+### Component Details
+- **Frontend**: Angular 18, Angular Material 18, RxJS, Chart.js / ng2-charts, Custom Glassmorphic SCSS.
+- **Backend API**: Python 3.12, Flask, Flask-JWT-Extended, Flask-SQLAlchemy, Marshmallow, Alembic.
+- **Database**: PostgreSQL 16 with JSONB support for dynamic sector custom fields and specialized dossiers.
+- **Cache / Message Broker**: Redis 7.
+- **Asynchronous Tasks**: Celery Worker for background jobs and notification broadcasts.
+- **Orchestration**: Docker Compose with health checks and volume persistence.
+
+---
+
+## 6. Quick Start with Docker Compose (Recommended)
+
+### Prerequisites
+- **Docker Desktop** (Windows / macOS) or **Docker Engine + Docker Compose** (Linux).
+- At least 4GB RAM and 5GB free disk space.
+
+### 1. Clone the Repository
 ```bash
-# Clone the repository (if not already done)
 git clone https://github.com/vjamalpure/AppointoCare.git
 cd AppointoCare
-
-# Optional: Copy the environment example to .env for customization
-# On Windows PowerShell
-Copy-Item .env.example .env
-
-# On macOS/Linux
-cp .env.example .env
 ```
 
-## Step 2: Start Docker Containers
-
+### 2. Launch All Services
 ```bash
-# Build and start all containers in the background
+# Build and run all 5 containers in the background
 docker compose up --build -d
-
-# Or run in foreground to see logs (press Ctrl+C to stop)
-docker compose up --build
 ```
 
-**✨ Fully Automatic Database Initialization:**
-
-Docker automatically handles **everything** on first run:
-
-1. **PostgreSQL Startup** - Database server starts and becomes healthy (15-30 seconds)
-2. **Create Database** - Runs `init_db.py` to create `appointocare` schema if it doesn't exist
-3. **Database Migrations** - Runs `flask db upgrade` to create all tables and schema
-4. **Demo Data Seeding** - Populates sample data (admin user, organization, services, plans, etc.)
-5. **Redis Startup** - Cache and broker service starts
-6. **Backend API** - Flask API becomes healthy and ready for requests
-7. **Celery Worker** - Background job processor starts
-8. **Frontend** - Angular app builds and serves on Nginx
-
-**Total startup time:** 1-2 minutes on first run, 20-30 seconds on subsequent runs.
-
-✅ **You can login immediately after startup completes!**
-
-All database operations are **idempotent** — the database schema is created only once, and subsequent container restarts won't recreate it or reseed data.
-
-## Step 3: Access the Application
-
-Once all containers are running and healthy:
-
-- **Frontend**: http://localhost:4200
-- **API**: http://localhost:8000
-- **PostgreSQL**: localhost:5432 (if needed for direct connections)
-- **Redis**: localhost:6379 (if needed for direct connections)
-
-## Step 4: Log In
-
-Use one of the demo accounts below. The credentials are automatically seeded during container startup.
-
-| Role | Organization Code | Username | Password |
-|---|---|---|---|
-| **Super Admin** | *(leave blank)* | `superadmin` | `Admin@12345` |
-| **Organization Admin** | `ORG1` | `org1` | `Org@12345` |
-| **Organization Staff** | `ORG1` | `staff1` | `Staff@12345` |
-
-## Docker Compose Commands
-
+### 3. Verify Container Health
 ```bash
-# Check status of all containers
 docker compose ps
-
-# View live logs from all services
-docker compose logs -f
-
-# View logs from a specific service (backend, frontend, db, redis, celery)
-docker compose logs -f backend
-
-# Stop all containers (data persists)
-docker compose stop
-
-# Start containers again after stopping
-docker compose start
-
-# Stop and remove all containers (data persists in volume)
-docker compose down
-
-# Stop containers and delete all data
-docker compose down -v
-
-# Rebuild images and start fresh
-docker compose up --build -d
-
-# Execute a command in a running container
-docker compose exec backend flask --app run.py db upgrade
-docker compose exec backend python create_users.py
 ```
+You should see all 5 containers active and healthy:
+- `appointocare-frontend-1` (Port 4200)
+- `appointocare-backend-1` (Port 8000)
+- `appointocare-db-1` (Port 5432)
+- `appointocare-redis-1` (Port 6379)
+- `appointocare-celery-1`
 
-## Customizing Docker Environment
-
-Edit `.env` or `.env.example` to override defaults:
-
-```dotenv
-# Change admin credentials
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=YourPassword123
-
-# Change organization user credentials
-ORG_USERNAME=hospital1
-ORG_PASSWORD=OrgPassword123
-
-# Disable demo data seed (empty database)
-SEED_DEMO_DATA=false
-
-# Production mode (no mock providers)
-APP_ENV=production
-
-# PostgreSQL password
-POSTGRES_PASSWORD=YourDbPassword
-```
-
-Restart containers for changes to take effect:
-
-```bash
-docker compose restart backend
-```
-
-## Troubleshooting Docker Setup
-
-**Q: Port 4200 or 8000 is already in use**
-
-A: Change the port in `docker-compose.yml` or stop the conflicting service:
-
-```bash
-# Find and stop services using the port
-lsof -i :4200  # macOS/Linux
-Get-Process -Id (Get-NetTCPConnection -LocalPort 4200).OwningProcess  # Windows
-
-# Change ports in docker-compose.yml and rebuild
-docker compose up --build -d
-```
-
-**Q: Database migration failed or tables are missing**
-
-A: Recreate the database:
-
-```bash
-docker compose down -v
-docker compose up --build -d
-```
-
-**Q: Demo data not seeding or accounts not found**
-
-A: Ensure `SEED_DEMO_DATA=true` in `.env` and check logs:
-
-```bash
-docker compose logs backend | grep -i "demo\|seed\|admin"
-
-# If needed, manually run the seed
-docker compose exec backend python create_users.py
-```
-
-**Q: Out of disk space or low performance**
-
-A: Clean up Docker resources:
-
-```bash
-docker system prune -a
-docker volume prune
-```
+### 4. Open in Browser
+- **Frontend App**: [http://localhost:4200](http://localhost:4200)
+- **Backend API**: [http://localhost:8000](http://localhost:8000)
 
 ---
 
-# Run Locally (Without Docker)
+## 7. Local Development Setup (Without Docker)
 
-## Prerequisites for Local Development
+### Prerequisites
+- Python 3.10+
+- Node.js 18+ and npm
+- PostgreSQL 14+ running on port 5432
+- Redis 6+ running on port 6379
 
-### Required Software
-
-1. **Python 3.12+**
-   - Download: https://www.python.org/downloads/
-   - Verify: `python --version`
-
-2. **PostgreSQL 12+**
-   - Download: https://www.postgresql.org/download/
-   - Windows installer recommended
-   - Verify: `psql --version`
-   - Create a database: `createdb appointocare`
-
-3. **Redis 6+**
-   - Download: https://redis.io/download/
-   - On Windows, use Windows Subsystem for Linux (WSL) or use pre-built binaries
-   - Verify: `redis-cli ping` (should respond with `PONG`)
-
-4. **Node.js 20+ and npm**
-   - Download: https://nodejs.org/
-   - Verify: `node --version` and `npm --version`
-
-### Verify All Prerequisites
-
-```powershell
-# Windows PowerShell
-python --version
-psql --version
-redis-cli --version
-node --version
-npm --version
-```
-
-## Step 1: Clone Repository
-
+### Backend Setup
 ```bash
-git clone https://github.com/vjamalpure/AppointoCare.git
-cd AppointoCare
-```
-
-## Step 2: Start PostgreSQL and Redis
-
-### Windows
-
-```powershell
-# PostgreSQL should auto-start, verify it's running
-psql -U postgres -c "SELECT version();"
-
-# Start Redis (in a separate terminal)
-redis-server
-```
-
-### macOS/Linux
-
-```bash
-# Start PostgreSQL
-brew services start postgresql  # macOS with Homebrew
-sudo systemctl start postgresql  # Linux
-
-# Start Redis
-brew services start redis  # macOS with Homebrew
-sudo systemctl start redis  # Linux
-```
-
-## Step 3: Setup Backend
-
-```powershell
-# Windows PowerShell
 cd appointocare-backend
 
-# Create virtual environment
+# 1. Create and activate virtual environment
 python -m venv venv
+# On Windows PowerShell:
 .\venv\Scripts\Activate.ps1
+# On macOS/Linux:
+source venv/bin/activate
 
-# Install dependencies
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# Create .env file with local configuration
-Copy-Item .env.example .env
+# 3. Configure environment
+cp .env.example .env
+
+# 4. Initialize database and migrations
+python init_db_local.py
+
+# 5. Start Flask development server
+python run.py
+# Server runs at http://localhost:8000
 ```
 
-Edit `appointocare-backend/.env` with local values:
+### Celery Background Worker (Second Terminal)
+```bash
+cd appointocare-backend
+.\venv\Scripts\Activate.ps1
+celery -A celery_worker.celery worker --loglevel=info
+```
+
+### Frontend Setup (Third Terminal)
+```bash
+cd appointocare-frontend
+
+# 1. Install dependencies
+npm ci
+
+# 2. Start Angular development server
+npm start
+# App opens at http://localhost:4200
+```
+
+---
+
+## 8. Demo Accounts & Credentials Reference
+
+The application seeds default accounts for instant evaluation:
+
+### Super Admin
+| Role | Username | Password | Organization Code | Capabilities |
+|---|---|---|---|---|
+| **Super Admin** | `superadmin` | `Admin@12345` | *(Leave blank)* | Platform overview, global appointments, tenant provisioning, plan management, system audit logs |
+
+### Organization Admins (All 9 Sectors)
+| Sector | Code | Organization Name | Username | Password |
+|---|---|---|---|---|
+| **Healthcare** | `ORG1` | City Care Health & Dental | `org1` | `Org@12345` |
+| **Salon & Spa** | `ORG2` | Apex Aesthetics & Wellness Spa | `org2` | `Org@12345` |
+| **Finance** | `ORG3` | Vanguard Wealth Advisory | `org3` | `Org@12345` |
+| **Luxury Retail** | `ORG4` | Aura Haute Couture & Styling | `org4` | `Org@12345` |
+| **Insurance** | `ORG5` | Sovereign Life Insurance | `org5` | `Org@12345` |
+| **Education** | `ORG6` | Beacon Global University Counseling | `org6` | `Org@12345` |
+| **Legal** | `ORG7` | Sterling & Blackwood Legal | `org7` | `Org@12345` |
+| **Real Estate** | `ORG8` | Sovereign Realty & Architecture | `org8` | `Org@12345` |
+| **Enterprise** | `ORG9` | Vanguard Global Enterprise | `org9` | `Org@12345` |
+
+### Specialized Staff Members
+| Role | Specialization | Username | Password | Org Code |
+|---|---|---|---|---|
+| **Doctor** | Chief Surgeon / General Medicine | `doc_sarah` | `Staff@12345` | `ORG1` |
+| **Physician** | Senior Dental Specialist | `dr_chen` | `Staff@12345` | `ORG1` |
+| **Stylist** | Master Aesthetician | `elena_stylist`| `Staff@12345` | `ORG2` |
+| **Advisor** | Senior Wealth Portfolio Manager | `alex_wealth` | `Staff@12345` | `ORG3` |
+| **Realtor** | Commercial Broker | `marcus_realty`| `Staff@12345` | `ORG8` |
+| **Consultant**| Principal Enterprise Consultant | `elizabeth_exec`| `Staff@12345` | `ORG9` |
+
+> 💡 **Tip:** On the [Login Page](http://localhost:4200/login), you can click any of the **1-Click Multi-Industry Demo Access** chips to populate credentials and switch view instantly!
+
+---
+
+## 9. REST API Documentation & Endpoints
+
+### Authentication
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "username": "org1",
+  "password": "Org@12345",
+  "org_code": "ORG1"
+}
+```
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
+  "role": "Organization",
+  "organization_code": "ORG1",
+  "organization_name": "City Care Health & Dental",
+  "sector": "Healthcare"
+}
+```
+
+### Modular Industry Suite & SaaS Add-ons
+- `GET /api/v1/industry-suite/addons`: Retrieve all 4 market-benchmarked add-ons for the tenant's active sector.
+- `POST /api/v1/industry-suite/addons/toggle`: Toggle an add-on module on/off with audit logging:
+  ```json
+  { "addon_id": "addon_eprescription", "enabled": true }
+  ```
+- `GET /api/v1/industry-suite/records`: Query specialized dossiers and records (filter by `record_type`, `sector`).
+- `POST /api/v1/industry-suite/records`: Create a specialized industry record (E-Prescription, Retainer, Lookbook, SOW):
+  ```json
+  {
+    "record_type": "prescription",
+    "title": "Clinical Rx: Patient Consultation",
+    "data": { "vitals_bp": "120/80", "diagnosis": "Acute Bronchitis", "medications": [...] }
+  }
+  ```
+- `DELETE /api/v1/industry-suite/records/<id>`: Delete a specialized dossier.
+- `GET /api/v1/industry-suite/benchmarks`: Retrieve peer platform comparisons and operational efficiency gain benchmarks.
+
+### Multi-Sector Services Catalog
+- `GET /api/v1/services`: List services for the organization.
+- `POST /api/v1/services`: Create a new custom service.
+- `PUT /api/v1/services/<id>`: Update an existing service.
+- `DELETE /api/v1/services/<id>`: Remove a service.
+- `POST /api/v1/services/import-sector`: 1-click import standard catalog presets for any of the 9 sectors.
+
+### Customer CRM & 360 Timeline
+- `GET /api/v1/customers`: List customers with contact details and metadata.
+- `POST /api/v1/customers`: Create a customer record.
+- `GET /api/v1/customers/<id>/timeline`: Full 360 customer timeline (appointments, WhatsApp conversations, payments).
+
+### WhatsApp Receptionist Bot
+- `POST /api/v1/whatsapp/simulate-chat`: Context-aware conversational AI receptionist:
+  ```json
+  { "message": "1", "phone": "+919876543210" }
+  ```
+- `GET /api/v1/whatsapp/logs`: View incoming and outgoing message logs.
+- `GET /api/v1/whatsapp/config`: View Meta WhatsApp Cloud API credentials.
+
+### Payments & Razorpay Sandbox
+- `GET /api/v1/payments/config`: View gateway configuration and sandbox readiness.
+- `POST /api/v1/payments/create-order`: Create a Razorpay order.
+- `POST /api/v1/payments/verify`: Verify Razorpay signature and generate invoice.
+
+### Security Audit Logs
+- `GET /api/v1/audit-logs`: Searchable platform audit trail with action, category, IP address, and metadata.
+
+---
+
+## 10. Environment Configuration Reference
+
+Edit `appointocare-backend/.env` or `.env`:
 
 ```dotenv
+# Application Environment
 APP_ENV=development
-SECRET_KEY=local-dev-secret-change-me
-JWT_SECRET_KEY=local-jwt-secret-change-me
+SECRET_KEY=appointocare-ultra-secure-key-2026
+JWT_SECRET_KEY=appointocare-jwt-signature-key-2026
 
-# PostgreSQL local connection
-DATABASE_URL=postgresql://postgres:password@localhost:5432/appointocare
+# Database & Cache Connection
+DATABASE_URL=postgresql://postgres:password@db:5432/appointocare
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
 
-# Redis local connection
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
-
-# Demo data seeding
+# Seeding & Initial Credentials
 SEED_DEMO_DATA=true
 ADMIN_USERNAME=superadmin
 ADMIN_PASSWORD=Admin@12345
@@ -302,440 +409,36 @@ ORG_USERNAME=org1
 ORG_PASSWORD=Org@12345
 STAFF_USERNAME=staff1
 STAFF_PASSWORD=Staff@12345
-```
 
-## Step 4: Initialize Database and Seed Demo Data
+# Razorpay Integration (Optional)
+RAZORPAY_ENABLED=true
+RAZORPAY_KEY_ID=rzp_test_sandbox_key
+RAZORPAY_KEY_SECRET=rzp_test_sandbox_secret
 
-The easiest way is to use the automated initialization script:
-
-```powershell
-# Windows PowerShell (in appointocare-backend directory with venv activated)
-
-# Automated: Checks database, creates if needed, runs migrations, and seeds data
-python init_db_local.py
-```
-
-**What this does:**
-- ✓ Checks if database `appointocare` exists on PostgreSQL
-- ✓ Creates it if it doesn't exist
-- ✓ Applies all migrations (creates tables and schema)
-- ✓ Seeds demo users and data (if `SEED_DEMO_DATA=true`)
-
-**Alternative manual steps** (if you prefer):
-
-```powershell
-# Create database manually (if init_db_local.py didn't work)
-# Connect to PostgreSQL and run:
-psql -U postgres -c "CREATE DATABASE appointocare;"
-
-# Then apply migrations manually
-flask --app run.py db upgrade
-
-# Then seed demo data
-python create_users.py
-```
-
-## Step 5: Start Backend API
-
-```powershell
-# In appointocare-backend directory with venv activated
-python run.py
-
-# Backend will start at http://localhost:8000
-# Press Ctrl+C to stop
-```
-
-## Step 6: Start Celery Worker (In a New Terminal)
-
-```powershell
-# In appointocare-backend directory with venv activated
-celery -A celery_worker.celery worker --loglevel=info
-
-# Worker will start and listen for background tasks
-# Press Ctrl+C to stop
-```
-
-## Step 7: Setup Frontend
-
-In a new terminal (third terminal window):
-
-```bash
-# Navigate to frontend directory
-cd appointocare-frontend
-
-# Install dependencies
-npm ci
-
-# Start development server
-npm start
-
-# Frontend will open at http://localhost:4200
-```
-
-## Local Development URLs
-
-- **Frontend**: http://localhost:4200
-- **Backend API**: http://localhost:8000
-- **PostgreSQL**: localhost:5432
-- **Redis**: localhost:6379
-
-## Local Development Demo Logins
-
-| Role | Organization Code | Username | Password |
-|---|---|---|---|
-| **Super Admin** | *(leave blank)* | `superadmin` | `Admin@12345` |
-| **Organization Admin** | `ORG1` | `org1` | `Org@12345` |
-| **Organization Staff** | `ORG1` | `staff1` | `Staff@12345` |
-
-## Useful Local Development Commands
-
-```powershell
-# Backend: Run tests
-cd appointocare-backend
-python -m unittest discover -s tests -v
-
-# Backend: Apply a specific migration
-flask --app run.py db upgrade
-
-# Backend: Create a new migration after model changes
-flask --app run.py db revision --autogenerate -m "Description of changes"
-
-# Frontend: Build for production
-cd appointocare-frontend
-npm run build
-
-# Frontend: Run unit tests
-npm test
-```
-
-## Troubleshooting Local Setup
-
-**Q: "Cannot connect to PostgreSQL"**
-
-A: Verify PostgreSQL is running and the connection string is correct:
-
-```powershell
-psql -U postgres -d appointocare -h localhost
-```
-
-**Q: "Redis connection refused"**
-
-A: Verify Redis is running:
-
-```bash
-redis-cli ping
-```
-
-**Q: "Port 8000 or 4200 is already in use"**
-
-A: Change the port or kill the process:
-
-```powershell
-# Find process using port
-Get-Process -Id (Get-NetTCPConnection -LocalPort 8000).OwningProcess
-
-# Kill process
-Stop-Process -Id <PID> -Force
-
-# Or change port in backend: python run.py --port 8001
-```
-
-**Q: "Module not found" errors in backend**
-
-A: Ensure virtual environment is activated and dependencies are installed:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+# WhatsApp Meta Cloud API (Optional)
+WHATSAPP_ENABLED=true
+WHATSAPP_PROVIDER=mock # Use 'meta' for live production Meta Cloud API
+WHATSAPP_PHONE_NUMBER_ID=1092837465
+WHATSAPP_ACCESS_TOKEN=EAAB...
 ```
 
 ---
 
-# API Documentation
+## 11. Production Deployment Guidelines
 
-## Base URL
-
-- **Local/Docker**: `http://localhost:8000`
-- **Production**: `https://yourdomain.com`
-
-## Authentication
-
-All API endpoints (except `/health`, `/ready`, and `/auth/login`) require JWT authentication.
-
-Login endpoint:
-
-```
-POST /auth/login
-Content-Type: application/json
-
-{
-  "org_code": "ORG1",
-  "username": "org1",
-  "password": "Org@12345"
-}
-```
-
-Response:
-
-```json
-{
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGc..."
-}
-```
-
-Include the token in subsequent requests:
-
-```
-Authorization: Bearer <access_token>
-```
-
-## API Endpoints Summary
-
-### Health Check
-
-- `GET /health` - Service health check
-- `GET /ready` - Service readiness check
-
-### Platform Endpoints
-
-## API Endpoints Summary
-
-### Health Check
-
-- `GET /health` - Service health check
-- `GET /ready` - Service readiness check
-
-### Platform Endpoints
-
-The platform endpoints are available under `/api/v1/platform`:
-
-- `GET/POST /plans`: Super Admin subscription plan management.
-- `GET/POST /templates`: sector service templates; creation is restricted to Super Admin.
-- `GET/POST /campaigns`: organization-scoped campaign drafts and scheduling metadata.
-- `GET /notifications` and `POST /notifications/{id}/read`: organization notifications.
-- `GET/POST /branches`: organization-scoped branches.
-- `GET /reports/summary`: tenant-scoped KPI summary, or an optional organization filter for Admin.
-
-All tenant endpoints derive `organization_id` from the JWT claims. They do not trust a client-supplied organization ID.
-
-### Provider Endpoints
-
-Provider adapters live under `appointocare-backend/app/providers` and application services use those adapters instead of vendor SDKs. Development defaults to mock providers; production does not fall back to mocks. Configure a real provider only through environment variables:
-
-- `GET /api/v1/providers/status`: authenticated provider state inspection.
-- `POST /api/v1/providers/payments/orders`: create a payment order.
-- `POST /api/v1/providers/payments/verify`: verify a payment signature.
-- `POST /api/v1/providers/webhooks/razorpay`: signed, idempotent Razorpay webhook endpoint.
-- `GET/POST /api/v1/providers/webhooks/whatsapp`: Meta webhook verification and signed event intake.
-
-Without credentials, real-provider operations return a controlled provider configuration error. Mock operations are intended for development and automated tests only. Webhook endpoints never log access tokens or raw provider secrets.
+For production deployments:
+1. **Secrets Management**: Supply environment variables through Docker Secrets, AWS Secrets Manager, or HashiCorp Vault instead of checked-in `.env` files.
+2. **Database Resilience**: Use a managed PostgreSQL service (Amazon RDS, Google Cloud SQL, or Azure Database for PostgreSQL) with automated point-in-time recovery.
+3. **TLS/SSL Encryption**: Configure SSL certificates via Let's Encrypt or your cloud load balancer.
+4. **Data Seeding**: Set `SEED_DEMO_DATA=false` in production environments.
+5. **Worker Scaling**: Scale Celery worker replicas based on WhatsApp and notification queue depths:
+   ```bash
+   docker compose up --scale celery=3 -d
+   ```
 
 ---
 
-# Database Schema
+## 📄 License & Attribution
 
-## Database Name: `appointocare`
-
-The project uses a **PostgreSQL database named `appointocare`** (the lowercase project name).
-
-### Database Creation
-
-The database is created automatically in both Docker and local setups:
-
-**Docker:**
-- PostgreSQL creates `appointocare` database on container startup
-- `init_db.py` runs in the backend entrypoint as a safety check
-
-**Local Development:**
-- `init_db_local.py` checks if `appointocare` exists and creates it if needed
-- No manual `createdb` commands required
-
-### Database Location
-
-- **Docker:** Inside PostgreSQL container at `db:5432/appointocare`
-- **Local:** On host PostgreSQL at `localhost:5432/appointocare`
-- **Connection String:** `postgresql://postgres:password@host:5432/appointocare`
-
-### Database Schema Objects
-
-After initialization, the `appointocare` database contains:
-
-- **Tables:** Users, Organizations, Appointments, Services, Subscriptions, Payments, Notifications, Branches, Sector Templates, etc.
-- **Migrations:** Managed by Alembic (see `appointocare-backend/migrations/versions/`)
-- **Seed Data:** Demo admin, organization, staff, customers, and service data
-
-All tables are created and seeded automatically during startup.
-
----
-
-For production deployment, ensure:
-
-1. Use environment variables from a secrets manager, not `.env` files
-2. Set `APP_ENV=production`
-3. Set `SEED_DEMO_DATA=false`
-4. Use strong, unique passwords for all services
-5. Enable HTTPS/TLS
-6. Set up proper database backups
-7. Use a production-grade web server (Nginx, HAProxy)
-8. Configure firewall rules
-9. Set up monitoring and logging
-10. Review the Docker image for security best practices
-
----
-
-# Development Tools
-
-## Frontend Development
-
-```bash
-cd appointocare-frontend
-
-# Start development server with hot reload
-npm start
-
-# Build for production
-npm run build
-
-# Run unit tests
-npm test
-
-# Run linting
-npm run lint
-```
-
-## Backend Development
-
-```bash
-cd appointocare-backend
-
-# Run tests
-python -m unittest discover -s tests -v
-
-# Database migrations
-flask --app run.py db revision --autogenerate -m "Description"
-flask --app run.py db upgrade
-flask --app run.py db downgrade
-
-# Seed demo data
-python create_users.py
-
-# Format code
-black app/ tests/
-
-# Lint code
-flake8 app/ tests/
-```
-
----
-
-# Configuration Reference
-
-## Environment Variables
-
-### Application
-
-- `APP_ENV`: `development` or `production`
-- `SECRET_KEY`: Flask secret key (change in production)
-- `JWT_SECRET_KEY`: JWT signing key (change in production)
-- `JWT_ACCESS_TOKEN_HOURS`: Access token expiration (default: 1)
-- `JWT_REFRESH_TOKEN_DAYS`: Refresh token expiration (default: 30)
-
-### Database
-
-- `DATABASE_URL`: PostgreSQL connection string
-- `SQLALCHEMY_ECHO`: Log SQL queries (true/false)
-
-### Cache & Background Jobs
-
-- `CELERY_BROKER_URL`: Redis broker URL
-- `CELERY_RESULT_BACKEND`: Redis result backend URL
-
-### Seeding
-
-- `SEED_DEMO_DATA`: Enable demo data seed (true/false)
-- `ADMIN_USERNAME`: Demo admin username
-- `ADMIN_PASSWORD`: Demo admin password
-- `ORG_USERNAME`: Demo organization username
-- `ORG_PASSWORD`: Demo organization password
-- `STAFF_USERNAME`: Demo staff username
-- `STAFF_PASSWORD`: Demo staff password
-
-### Providers (Optional)
-
-- `RAZORPAY_ENABLED`: Enable Razorpay payment provider
-- `RAZORPAY_KEY_ID`: Razorpay API key
-- `RAZORPAY_KEY_SECRET`: Razorpay API secret
-- `RAZORPAY_WEBHOOK_SECRET`: Razorpay webhook secret
-- `WHATSAPP_ENABLED`: Enable WhatsApp integration
-- `WHATSAPP_PROVIDER`: `mock` or `meta`
-- `WHATSAPP_ACCESS_TOKEN`: Meta WhatsApp API token
-- `WHATSAPP_PHONE_NUMBER_ID`: Meta WhatsApp phone number ID
-- `WHATSAPP_WEBHOOK_VERIFY_TOKEN`: Webhook verification token
-- `WHATSAPP_APP_SECRET`: Meta app secret
-
-### CORS
-
-- `CORS_ORIGINS`: Allowed origins (comma-separated)
-
-## Notes
-
-- Do not use the example secrets in production.
-- The frontend production image includes an Nginx fallback to `index.html`, so Angular client-side routes work on direct navigation.
-- If a PostgreSQL password contains URL-reserved characters, URL-encode it before putting it in `DATABASE_URL`.
-- Compose uses `db` and `redis` as service hostnames. Local development uses `localhost`.
-
----
-
-# Additional Resources
-
-## Database Migrations
-
-Alembic handles all database schema changes. To create a new migration after modifying models:
-
-```bash
-cd appointocare-backend
-flask --app run.py db revision --autogenerate -m "Description of your changes"
-flask --app run.py db upgrade
-```
-
-## Seeding Sample Data
-
-The `sample_data.py` script creates large test datasets. **Warning:** It clears existing tables, so use only in development:
-
-```bash
-cd appointocare-backend
-python sample_data.py
-```
-
-## Running Tests
-
-```bash
-cd appointocare-backend
-python -m unittest discover -s tests -v
-```
-
-## Monitoring and Logging
-
-Celery worker logs are visible in the Celery container:
-
-```bash
-docker compose logs -f celery
-```
-
-Backend API logs are available from the backend container:
-
-```bash
-docker compose logs -f backend
-```
-
----
-
-# Support and Contributing
-
-For issues, suggestions, or contributions, please refer to the GitHub repository:
-https://github.com/vjamalpure/AppointoCare
-
----
-
-**Last Updated**: 2024
+Copyright © 2026 **AppointoCare**. All rights reserved.
+Developed for high-velocity multi-industry SaaS deployment.

@@ -19,6 +19,8 @@ export interface IndustryConfig {
   id: string;
   name: string;
   sector: string;
+  icon?: string;
+  gradient?: string;
   description?: string;
   defaultServices?: IndustryServicePreset[];
   badgeColor: {
@@ -52,6 +54,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'healthcare',
     name: 'Hospital & Medical Clinic',
     sector: 'Healthcare',
+    icon: 'medical_services',
+    gradient: 'linear-gradient(135deg, #059669 0%, #0d9488 100%)',
     badgeColor: {
       bg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       text: 'text-emerald-700',
@@ -118,6 +122,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'finance',
     name: 'Wealth & Financial Advisory',
     sector: 'Finance',
+    icon: 'account_balance',
+    gradient: 'linear-gradient(135deg, #4f46e5 0%, #0284c7 100%)',
     badgeColor: {
       bg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
       text: 'text-indigo-700',
@@ -177,6 +183,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'retail',
     name: 'Luxury Retail & Personal Styling',
     sector: 'Retail',
+    icon: 'shopping_bag',
+    gradient: 'linear-gradient(135deg, #7c3aed 0%, #d97706 100%)',
     badgeColor: {
       bg: 'bg-amber-50 text-amber-700 border-amber-200',
       text: 'text-amber-700',
@@ -236,6 +244,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'insurance',
     name: 'Life & General Insurance Agency',
     sector: 'Insurance',
+    icon: 'verified_user',
+    gradient: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
     badgeColor: {
       bg: 'bg-cyan-50 text-cyan-700 border-cyan-200',
       text: 'text-cyan-700',
@@ -254,40 +264,49 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     appointmentPluralLabel: 'Policy Consultations',
     branchLabel: 'Agency Branch Office',
     branchPluralLabel: 'Agency Offices',
-    serviceLabel: 'Insurance Product Review',
-    servicePluralLabel: 'Insurance & Coverage Products',
-    sampleBookingNotes: 'Client purchasing commercial liability umbrella policy; needs fleet vehicle coverage analysis.',
-    defaultWhatsAppTemplate: 'Hello {customer_name}, your insurance policy review for {service_name} is scheduled for {appointment_date} at {organization_name} ({branch_name}). Licensed Agent: {staff_name}.',
-    sampleCustomerTags: ['Term Life', 'Commercial Fleet', 'Pending Claim', 'Annual Review', 'High Coverage'],
+    serviceLabel: 'Insurance Policy / Coverage',
+    servicePluralLabel: 'Insurance Products',
+    sampleBookingNotes: 'Client seeking term life policy with critical illness rider. Medical declaration complete; non-smoker.',
+    defaultWhatsAppTemplate: 'Policy Reference: {customer_name}, your underwriting review for {service_name} at {organization_name} ({branch_name}) is scheduled for {appointment_date} with Agent {staff_name}.',
+    sampleCustomerTags: ['High Value Policy', 'Clean Underwriting', 'Term Life', 'Commercial Fleet', 'Claim Pending'],
     servicePresets: [
       {
-        name: 'Term & Life Insurance Policy Advisory',
-        category: 'Life & Health',
+        name: 'Term Life & Critical Illness Advisory',
+        category: 'Life',
         duration_minutes: 45,
-        price: 65,
-        description: 'Actuarial mortality analysis, whole life vs term comparison, cash value rider review, and beneficiary designation.'
+        price: 80,
+        description: 'Sum assured calibration, underwriting eligibility screening, premium riders breakdown, and beneficiary assignment.'
       },
       {
-        name: 'Health Insurance Claims Review',
-        category: 'Claims',
-        duration_minutes: 30,
-        price: 50,
-        description: 'Deductible verification, pre-authorization appeal assistance, co-insurance calculation, and claim settlement filing.'
+        name: 'Auto & Commercial Fleet Insurance Plan',
+        category: 'Property & Casualty',
+        duration_minutes: 45,
+        price: 90,
+        description: 'Comprehensive collision liability structuring, third-party damage indemnification, and deductible optimization.'
       },
       {
-        name: 'Commercial & Motor Risk Assessment',
+        name: 'Health & Medical Shield Consultation',
+        category: 'Health',
+        duration_minutes: 45,
+        price: 70,
+        description: 'Cashless hospital network routing, pre-existing condition waiting periods analysis, and family floater coverage.'
+      },
+      {
+        name: 'Business Liability & Property Coverage',
         category: 'Commercial',
         duration_minutes: 60,
-        price: 120,
-        description: 'Property liability underwriting, fleet hazard inspection, business interruption rider, and workman compensation review.'
+        price: 160,
+        description: 'Directors and officers liability, commercial property catastrophe shielding, and worker compensation audit.'
       }
     ]
   },
 
   education: {
     id: 'education',
-    name: 'Academy & University Counseling',
+    name: 'Academy & University Counseling Hub',
     sector: 'Education',
+    icon: 'school',
+    gradient: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
     badgeColor: {
       bg: 'bg-blue-50 text-blue-700 border-blue-200',
       text: 'text-blue-700',
@@ -347,6 +366,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'salon',
     name: 'Premium Salon & Aesthetics Spa',
     sector: 'Salon & Wellness',
+    icon: 'spa',
+    gradient: 'linear-gradient(135deg, #e11d48 0%, #c026d3 100%)',
     badgeColor: {
       bg: 'bg-rose-50 text-rose-700 border-rose-200',
       text: 'text-rose-700',
@@ -406,6 +427,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'legal',
     name: 'Strategic Management & Legal Advisory',
     sector: 'Consultancy',
+    icon: 'gavel',
+    gradient: 'linear-gradient(135deg, #334155 0%, #1e293b 100%)',
     badgeColor: {
       bg: 'bg-slate-100 text-slate-800 border-slate-300',
       text: 'text-slate-800',
@@ -465,6 +488,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'realestate',
     name: 'Real Estate & Architecture Advisory',
     sector: 'Real Estate',
+    icon: 'apartment',
+    gradient: 'linear-gradient(135deg, #059669 0%, #b45309 100%)',
     badgeColor: {
       bg: 'bg-teal-50 text-teal-700 border-teal-200',
       text: 'text-teal-700',
@@ -517,6 +542,8 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
     id: 'custom',
     name: 'Custom Enterprise & Professional Services',
     sector: 'Professional Services',
+    icon: 'business_center',
+    gradient: 'linear-gradient(135deg, #1e293b 0%, #4f46e5 100%)',
     badgeColor: {
       bg: 'bg-violet-50 text-violet-700 border-violet-200',
       text: 'text-violet-700',
@@ -578,36 +605,43 @@ export function normalizeIndustryKey(str?: string | null): string {
   if (s.includes('wealth') || s.includes('finan') || s.includes('asset') || s.includes('invest') || s.includes('bank')) {
     return 'finance';
   }
-  if (s.includes('retail') || s.includes('styl') || s.includes('fashion') || s.includes('boutique') || s.includes('couture')) {
+  if (s.includes('retail') || s.includes('cloth') || s.includes('apparel') || s.includes('boutique') || s.includes('fashion') || s.includes('styling')) {
     return 'retail';
   }
-  if (s.includes('insur') || s.includes('risk') || s.includes('policy') || s.includes('underwrit')) {
+  if (s.includes('insur') || s.includes('policy') || s.includes('underwrit') || s.includes('claim')) {
     return 'insurance';
   }
-  if (s.includes('counsel') || s.includes('academ') || s.includes('univers') || s.includes('school') || s.includes('educat')) {
+  if (s.includes('edu') || s.includes('school') || s.includes('academy') || s.includes('college') || s.includes('counsel') || s.includes('tutor') || s.includes('admiss')) {
     return 'education';
   }
-  if (s.includes('salon') || s.includes('spa') || s.includes('aesthetic') || s.includes('beauty') || s.includes('wellness')) {
+  if (s.includes('salon') || s.includes('spa') || s.includes('beauty') || s.includes('hair') || s.includes('wellness') || s.includes('barber')) {
     return 'salon';
   }
-  if (s.includes('legal') || s.includes('law') || s.includes('consult') || s.includes('strateg') || s.includes('attorney')) {
+  if (s.includes('law') || s.includes('legal') || s.includes('attorney') || s.includes('counsel') || s.includes('consult')) {
     return 'legal';
   }
-  if (s.includes('real') || s.includes('estate') || s.includes('property') || s.includes('realty') || s.includes('architect')) {
+  if (s.includes('real') || s.includes('estate') || s.includes('propert') || s.includes('realt') || s.includes('architect')) {
     return 'realestate';
   }
-  if (s.includes('custom') || s.includes('enterpris') || s.includes('profession') || s.includes('generic')) {
-    return 'custom';
-  }
-  return 'healthcare';
+  return 'custom';
 }
 
 /**
- * Retrieves the full IndustryConfig given a template name, sector, or ID.
+ * Retrieves the full IndustryConfig for a given sector name or key.
  */
 export function getIndustryConfig(industryTemplateOrSector?: string | null): IndustryConfig {
   const key = normalizeIndustryKey(industryTemplateOrSector);
-  return (INDUSTRY_CONFIGS[key] || INDUSTRY_CONFIGS['healthcare']) as IndustryConfig;
+  const config = INDUSTRY_CONFIGS[key] || INDUSTRY_CONFIGS['healthcare'];
+  const categories = Array.from(new Set((config.servicePresets || []).map(s => s.category)));
+
+  return {
+    ...config,
+    icon: config.icon || 'domain',
+    gradient: config.gradient || 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)',
+    serviceCategories: categories.length > 0 ? categories : ['General', 'Consultation', 'Premium'],
+    customFields: getIndustryCustomFields(industryTemplateOrSector),
+    infoMessages: getIndustryInfoMessages(industryTemplateOrSector)
+  } as IndustryConfig;
 }
 
 /**

@@ -106,6 +106,12 @@ export class ToolbarComponent implements OnInit, OnDestroy {
     return `${config.sector}`;
   }
 
+  getSectorIcon(): string {
+    const sector = this.authService.getSector();
+    const config = this.industry.getConfig(sector);
+    return config?.icon || 'category';
+  }
+
   getRoleDisplayName(): string {
     if (this.role === 'Admin' || this.role === 'SuperAdmin') return 'Super Admin';
     if (this.role === 'Organization') {

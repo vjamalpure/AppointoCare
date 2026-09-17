@@ -34,7 +34,7 @@
       {{ organizationName }}
     </span>
     <span class="sector-chip" *ngIf="role !== 'Admin' && role !== 'SuperAdmin'">
-      <mat-icon>category</mat-icon>
+      <mat-icon>{{ getSectorIcon() }}</mat-icon>
       {{ getSectorBadge() }}
     </span>
   </div>
