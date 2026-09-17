@@ -93,12 +93,15 @@ export class IndustryService {
 
   // --- Industry Suite Backend API Integrations ---
 
-  public getAddons(orgId?: number): Observable<{ organization_id: number; sector: string; addons: SectorAddon[] }> {
+  public getAddons(orgId?: number, allSectors = false): Observable<any> {
     let params = new HttpParams();
     if (orgId) {
       params = params.set('organization_id', String(orgId));
     }
-    return this.http.get<{ organization_id: number; sector: string; addons: SectorAddon[] }>(
+    if (allSectors) {
+      params = params.set('all_sectors', 'true');
+    }
+    return this.http.get<any>(
       `${this.baseUrl}/api/v1/industry-suite/addons`,
       { params }
     );
@@ -112,8 +115,11 @@ export class IndustryService {
     });
   }
 
-  public getRecords(filters?: { record_type?: string; appointment_id?: number; customer_id?: number }): Observable<IndustryRecordItem[]> {
+  public getRecords(filters?: { record_type?: string; appointment_id?: number; customer_id?: number; organization_id?: any; all?: boolean; sector?: string }): Observable<IndustryRecordItem[]> {
     let params = new HttpParams();
+    if (filters?.all) params = params.set('all', 'true');
+    if (filters?.organization_id) params = params.set('organization_id', String(filters.organization_id));
+    if (filters?.sector) params = params.set('sector', filters.sector);
     if (filters?.record_type) params = params.set('record_type', filters.record_type);
     if (filters?.appointment_id) params = params.set('appointment_id', String(filters.appointment_id));
     if (filters?.customer_id) params = params.set('customer_id', String(filters.customer_id));
@@ -129,7 +135,10 @@ export class IndustryService {
     return this.http.delete<any>(`${this.baseUrl}/api/v1/industry-suite/records/${id}`);
   }
 
-  public getBenchmarks(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/benchmarks`);
+  public getBenchmarks(all = false, sector?: string): Observable<any> {
+    let params = new HttpParams();
+    if (all) params = params.set('all', 'true');
+    if (sector) params = params.set('sector', sector);
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/benchmarks`, { params });
   }
 }

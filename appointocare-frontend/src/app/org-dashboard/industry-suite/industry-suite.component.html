@@ -445,7 +445,7 @@
       </div>
 
       <div class="records-list" *ngIf="!loading && records.length > 0">
-        <div class="record-item" *ngFor="let rec of records">
+        <div class="record-item" *ngFor="let rec of records" (click)="inspectRecord(rec)">
           <div class="rec-icon">
             <mat-icon>{{ config?.icon || 'article' }}</mat-icon>
           </div>
@@ -458,14 +458,152 @@
             <div class="rec-date">
               <mat-icon>schedule</mat-icon>
               <span>{{ rec.created_at | date:'medium' }}</span>
+              <span *ngIf="rec.created_by_user" style="margin-left: 0.75rem;">• Signed by: {{ rec.created_by_user }}</span>
             </div>
           </div>
-          <div class="rec-actions">
+          <div class="rec-actions" (click)="$event.stopPropagation()">
+            <button mat-stroked-button color="primary" class="inspect-chip-btn" (click)="inspectRecord(rec)">
+              <mat-icon>visibility</mat-icon> View Dossier
+            </button>
             <button class="delete-btn" (click)="deleteRecord(rec.id)" title="Delete record">
               <mat-icon>delete_outline</mat-icon>
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Specialized Record Inspection Modal -->
+  <div class="record-modal-backdrop" *ngIf="selectedRecord" (click)="closeInspection()">
+    <div class="record-modal-card" (click)="$event.stopPropagation()">
+      <div class="record-modal-header">
+        <div class="modal-header-left">
+          <div class="modal-icon-badge">
+            <mat-icon>{{ config?.icon || 'description' }}</mat-icon>
+          </div>
+          <div>
+            <h3>{{ selectedRecord.title }}</h3>
+            <div class="modal-meta-pills">
+              <span class="meta-pill sector-pill-tag">{{ selectedRecord.sector }}</span>
+              <span class="meta-pill type-pill-tag">{{ selectedRecord.record_type }}</span>
+              <span class="meta-pill status-pill-tag">{{ selectedRecord.status || 'Active' }}</span>
+              <span class="meta-pill user-pill-tag" *ngIf="selectedRecord.created_by_user">Author: {{ selectedRecord.created_by_user }}</span>
+            </div>
+          </div>
+        </div>
+        <button class="modal-close-btn" (click)="closeInspection()" title="Close">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="record-modal-body">
+        <!-- If medications are present (Healthcare) -->
+        <div class="specialized-block" *ngIf="selectedRecord.data?.medications?.length">
+          <h4><mat-icon>medical_services</mat-icon> Clinical Medication Regimen</h4>
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>Drug / Molecule</th>
+                <th>Dosage & Frequency</th>
+                <th>Duration</th>
+                <th>Instructions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of selectedRecord.data.medications">
+                <td><strong>{{ m.name }}</strong></td>
+                <td>{{ m.dosage }}</td>
+                <td>{{ m.duration }}</td>
+                <td>{{ m.instructions }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- If tour stops are present (Real Estate) -->
+        <div class="specialized-block" *ngIf="selectedRecord.data?.tour_stops?.length">
+          <h4><mat-icon>tour</mat-icon> Scheduled Property Tour Itinerary</h4>
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Property Address</th>
+                <th>Time Slot</th>
+                <th>Lockbox Access</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of selectedRecord.data.tour_stops">
+                <td><strong>{{ s.order || 1 }}</strong></td>
+                <td>{{ s.address }}</td>
+                <td><span class="time-badge">{{ s.time }}</span></td>
+                <td><code>{{ s.lockbox }}</code></td>
+                <td>{{ s.notes || 'Concierge notified' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- If curated garments are present (Retail) -->
+        <div class="specialized-block" *ngIf="selectedRecord.data?.curated_garments?.length">
+          <h4><mat-icon>checkroom</mat-icon> Curated Runway Lookbook</h4>
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Garment Name</th>
+                <th>Color / Fabric</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let g of selectedRecord.data.curated_garments">
+                <td><code>{{ g.sku }}</code></td>
+                <td><strong>{{ g.name }}</strong></td>
+                <td>{{ g.color }}</td>
+                <td>{{ g.price | currency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- If phase milestones are present (Enterprise) -->
+        <div class="specialized-block" *ngIf="selectedRecord.data?.phase_milestones?.length">
+          <h4><mat-icon>assignment_turned_in</mat-icon> SOW Phase Gate Deliverables</h4>
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>Milestone Deliverable</th>
+                <th>SLA Target</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of selectedRecord.data.phase_milestones">
+                <td><strong>{{ m.name }}</strong></td>
+                <td>{{ m.sla_days }} days</td>
+                <td><span class="milestone-badge">{{ m.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Dynamic Data Grid for all other attributes -->
+        <div class="data-attributes-grid" *ngIf="getFormattedAttributes(selectedRecord.data).length">
+          <div class="attr-card" *ngFor="let item of getFormattedAttributes(selectedRecord.data)">
+            <span class="attr-label">{{ item.label }}</span>
+            <span class="attr-value">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="record-modal-footer">
+        <button mat-stroked-button (click)="closeInspection()">Close</button>
+        <button mat-flat-button color="primary" (click)="printDossier()">
+          <mat-icon>print</mat-icon> Print / Export Dossier
+        </button>
       </div>
     </div>
   </div>

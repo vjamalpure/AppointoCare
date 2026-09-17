@@ -188,6 +188,35 @@ export class IndustrySuiteComponent implements OnInit {
     }
   }
 
+  selectedRecord: IndustryRecordItem | null = null;
+
+  inspectRecord(rec: IndustryRecordItem): void {
+    this.selectedRecord = rec;
+  }
+
+  closeInspection(): void {
+    this.selectedRecord = null;
+  }
+
+  getFormattedAttributes(data: any): { label: string; value: string }[] {
+    if (!data) return [];
+    const ignored = ['medications', 'tour_stops', 'curated_garments', 'phase_milestones'];
+    const attrs: { label: string; value: string }[] = [];
+    for (const key of Object.keys(data)) {
+      if (ignored.includes(key)) continue;
+      const val = data[key];
+      if (val === undefined || val === null || val === '') continue;
+      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const formattedVal = typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val);
+      attrs.push({ label: formattedKey, value: formattedVal });
+    }
+    return attrs;
+  }
+
+  printDossier(): void {
+    window.print();
+  }
+
   getRecordTypeForSector(): string {
     switch (this.sector) {
       case 'Healthcare': return 'prescription';

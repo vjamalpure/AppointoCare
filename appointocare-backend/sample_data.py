@@ -1,8 +1,9 @@
 """
-Comprehensive Sample Data Migration Script for AppointoCare Backend
+Comprehensive Sample Data Migration Script for AppointoCare Multi-Industry Platform
 Seeds users of each level (SuperAdmin, Org Admins, Staff/Specialists/Managers),
 all 9 industry sectors, branches, services, customers/patients, appointments,
-transactions, subscriptions, plans, templates, and message logs.
+transactions, subscriptions, plans, templates, notifications, audit logs,
+and rich specialized IndustryRecord entries for all market-leading sector features.
 
 Can be run standalone:
     python sample_data.py [--reset]
@@ -32,7 +33,8 @@ from app.models import (
     SectorTemplate,
     MessageLog,
     AuditLog,
-    Notification
+    Notification,
+    IndustryRecord
 )
 from app.utils.hash_helper import hash_password
 
@@ -40,7 +42,7 @@ DEFAULT_ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@12345")
 DEFAULT_ORG_PASSWORD = os.getenv("ORG_PASSWORD", "Org@12345")
 DEFAULT_STAFF_PASSWORD = os.getenv("STAFF_PASSWORD", "Staff@12345")
 
-# All 9 multi-industry organizations
+# All 9 multi-industry organizations with market-leading platform features & records
 SAMPLE_ORGANIZATIONS = [
     {
         "name": "City Care Health & Dental",
@@ -65,14 +67,69 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "Pediatric Routine Wellness Exam", "category": "Pediatrics", "price": 140.0, "duration": 30},
         ],
         "customers": [
-            {"name": "Michael Harrison", "phone": "+1 555-1101", "email": "michael.h@example.com", "gender": "Male"},
-            {"name": "Sarah Connor", "phone": "+1 555-1102", "email": "s.connor@example.com", "gender": "Female"},
-            {"name": "David Miller", "phone": "+1 555-1103", "email": "dmiller@example.com", "gender": "Male"},
+            {"name": "Michael Harrison", "phone": "+1 555-1101", "email": "michael.h@example.com", "gender": "Male", "mrn": "MRN-2026-901"},
+            {"name": "Sarah Connor", "phone": "+1 555-1102", "email": "s.connor@example.com", "gender": "Female", "mrn": "MRN-2026-902"},
+            {"name": "David Miller", "phone": "+1 555-1103", "email": "dmiller@example.com", "gender": "Male", "mrn": "MRN-2026-903"},
+            {"name": "Emma Watson", "phone": "+1 555-1104", "email": "emma.w@example.com", "gender": "Female", "mrn": "MRN-2026-904"},
         ],
         "appointments": [
             {"customer": "Michael Harrison", "phone": "+1 555-1101", "service": "General Physician Consultation", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 120.0},
             {"customer": "Sarah Connor", "phone": "+1 555-1102", "service": "Comprehensive Dental Cleaning & Exam", "days_offset": 1, "status": "Booked", "payment": "Unpaid", "amount": 180.0},
             {"customer": "David Miller", "phone": "+1 555-1103", "service": "Orthopedic Assessment & Digital X-Ray", "days_offset": -1, "status": "Completed", "payment": "Paid", "amount": 260.0},
+            {"customer": "Emma Watson", "phone": "+1 555-1104", "service": "Pediatric Routine Wellness Exam", "days_offset": -2, "status": "Completed", "payment": "Paid", "amount": 140.0},
+        ],
+        "industry_records": [
+            {
+                "title": "Dr. Sarah Rx - Michael Harrison (Post-Op Antibiotic & Analgesic)",
+                "record_type": "prescription",
+                "customer_phone": "+1 555-1101",
+                "status": "Active",
+                "data": {
+                    "prescriber": "Dr. Sarah Jenkins, MD (Board Certified)",
+                    "rx_number": "RX-2026-HC-00812",
+                    "diagnosis": "Acute bacterial maxillary sinusitis with localized dental inflammation.",
+                    "vitals": {"bp": "122/78 mmHg", "pulse": "72 bpm", "temp": "98.6 °F", "spo2": "99%"},
+                    "medications": [
+                        {"name": "Amoxicillin / Clavulanate 625mg", "dosage": "1 tablet twice daily", "duration": "7 days", "instructions": "Take with meals. Complete entire course."},
+                        {"name": "Ibuprofen 400mg", "dosage": "1 tablet as needed", "duration": "5 days", "instructions": "Take with food for pain."}
+                    ],
+                    "refills": 0,
+                    "signed_electronically": True
+                }
+            },
+            {
+                "title": "Comprehensive Triage Intake & Vitals Matrix - Sarah Connor",
+                "record_type": "triage",
+                "customer_phone": "+1 555-1102",
+                "status": "Active",
+                "data": {
+                    "triage_level": "Tier 3 - Semi-Urgent",
+                    "blood_pressure": "135/85 mmHg",
+                    "pulse_rate": "84 bpm",
+                    "body_temperature": "99.1 °F",
+                    "spo2_oxygen": "97%",
+                    "allergies": ["Penicillin", "Latex"],
+                    "presenting_complaint": "Persistent severe right-side dental pain radiating to jaw.",
+                    "attending_nurse": "Staff RN Lisa"
+                }
+            },
+            {
+                "title": "Executive Health & Lipid Panel Diagnostic Report - David Miller",
+                "record_type": "lab_report",
+                "customer_phone": "+1 555-1103",
+                "status": "Completed",
+                "data": {
+                    "panel_name": "Executive Lipid & Comprehensive Metabolic Profile",
+                    "total_cholesterol": "192 mg/dL",
+                    "hdl": "54 mg/dL",
+                    "ldl": "116 mg/dL",
+                    "triglycerides": "110 mg/dL",
+                    "fasting_glucose": "94 mg/dL",
+                    "hba1c": "5.4%",
+                    "lab_accession_id": "METRO-LAB-2026-9901",
+                    "interpretation": "Normal metabolic markers. Optimal glycemic index."
+                }
+            }
         ]
     },
     {
@@ -96,11 +153,59 @@ SAMPLE_ORGANIZATIONS = [
         ],
         "customers": [
             {"name": "Jessica Alba", "phone": "+1 555-2101", "email": "jessica.a@example.com", "gender": "Female"},
-            {"name": "Victoria Beckham", "phone": "+1 555-2102", "email": "v.beckham@example.com", "gender": "Female"}
+            {"name": "Victoria Beckham", "phone": "+1 555-2102", "email": "v.beckham@example.com", "gender": "Female"},
+            {"name": "Sophia Loren", "phone": "+1 555-2103", "email": "sophia.l@example.com", "gender": "Female"}
         ],
         "appointments": [
             {"customer": "Jessica Alba", "phone": "+1 555-2101", "service": "Hydra-Facial & Dermaplaning Session", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 220.0},
-            {"customer": "Victoria Beckham", "phone": "+1 555-2102", "service": "Balayage Color & Master Precision Cut", "days_offset": 2, "status": "Booked", "payment": "Unpaid", "amount": 310.0}
+            {"customer": "Victoria Beckham", "phone": "+1 555-2102", "service": "Balayage Color & Master Precision Cut", "days_offset": 2, "status": "Booked", "payment": "Unpaid", "amount": 310.0},
+            {"customer": "Sophia Loren", "phone": "+1 555-2103", "service": "Hot Stone Aromatherapy Deep Massage", "days_offset": -1, "status": "Completed", "payment": "Paid", "amount": 160.0}
+        ],
+        "industry_records": [
+            {
+                "title": "Suite Allocation - Hydrotherapy Sanctuary Suite 2 (Jessica Alba)",
+                "record_type": "room_allocation",
+                "customer_phone": "+1 555-2101",
+                "status": "Active",
+                "data": {
+                    "suite_name": "Suite 2 - Hydrotherapy & Aromatherapy Sanctuary",
+                    "lead_aesthetician": "Olivia Vance (Senior Aesthetician)",
+                    "ambient_temperature": "24°C",
+                    "scent_profile": "Organic Eucalyptus & Lavender Infusion",
+                    "suite_amenities": ["Heated ergonomic contour table", "Chromotherapy soft illumination", "Soundproof acoustical enclosure"]
+                }
+            },
+            {
+                "title": "Bespoke Balayage Color Formula Card - Victoria Beckham",
+                "record_type": "formula_card",
+                "customer_phone": "+1 555-2102",
+                "status": "Active",
+                "data": {
+                    "color_system": "Wella Illumina High-Lift Blend",
+                    "formula_ratio": "9/60 (45g) + 10/1 (15g) with 20 Vol Color Touch Developer",
+                    "processing_duration": "35 minutes at room temp",
+                    "patch_test_date": "2026-09-12",
+                    "patch_test_result": "Negative / Clear",
+                    "hair_porosity": "Medium",
+                    "scalp_sensitivity": "None observed"
+                }
+            },
+            {
+                "title": "VIP Spa Add-on Ritual & Upsell Package - Sophia Loren",
+                "record_type": "upsell_package",
+                "customer_phone": "+1 555-2103",
+                "status": "Completed",
+                "data": {
+                    "base_treatment": "Hot Stone Aromatherapy Deep Massage",
+                    "selected_upsells": [
+                        {"name": "24K Gold Collagen Eye Treatment", "price": 45.0},
+                        {"name": "Organic Moroccan Rosehip Scalp Ritual", "price": 35.0},
+                        {"name": "Volcanic Basalt Heated Foot Compress", "price": 30.0}
+                    ],
+                    "additional_total": 110.0,
+                    "guest_experience_rating": "5 / 5 Stars"
+                }
+            }
         ]
     },
     {
@@ -123,10 +228,59 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "Retirement & Estate Liquidity Planning", "category": "Estate", "price": 350.0, "duration": 45}
         ],
         "customers": [
-            {"name": "Marcus Vance", "phone": "+1 555-3101", "email": "marcus.v@example.com", "gender": "Male"}
+            {"name": "Marcus Vance", "phone": "+1 555-3101", "email": "marcus.v@example.com", "gender": "Male"},
+            {"name": "Helena Montgomery", "phone": "+1 555-3102", "email": "h.montgomery@example.com", "gender": "Female"}
         ],
         "appointments": [
-            {"customer": "Marcus Vance", "phone": "+1 555-3101", "service": "High-Net-Worth Portfolio Restructuring", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 500.0}
+            {"customer": "Marcus Vance", "phone": "+1 555-3101", "service": "High-Net-Worth Portfolio Restructuring", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 500.0},
+            {"customer": "Helena Montgomery", "phone": "+1 555-3102", "service": "Cross-Border Tax & Trust Structuring", "days_offset": 1, "status": "Booked", "payment": "Paid", "amount": 650.0}
+        ],
+        "industry_records": [
+            {
+                "title": "FINRA Rule 2111 KYC & Suitability Dossier - Marcus Vance",
+                "record_type": "kyc_dossier",
+                "customer_phone": "+1 555-3101",
+                "status": "Active",
+                "data": {
+                    "investor_accreditation": "Qualified Purchaser (Securities Act 3c7)",
+                    "verified_liquid_net_worth": "$4,200,000 USD",
+                    "annual_earned_income": "$750,000 USD",
+                    "risk_tolerance_class": "Moderate-Aggressive Capital Appreciation",
+                    "investment_horizon": "10 - 15 Years",
+                    "aml_ofac_screening": "Clear / No PEP or Sanction Hits",
+                    "certifying_officer": "Alex Vance, CFP, CFA"
+                }
+            },
+            {
+                "title": "Q4 Strategic Asset Allocation Matrix - Marcus Vance",
+                "record_type": "portfolio_allocation",
+                "customer_phone": "+1 555-3101",
+                "status": "Active",
+                "data": {
+                    "benchmark_target": "Global Balanced 70/30 Index",
+                    "target_allocations": {
+                        "public_equities_pct": 60,
+                        "private_credit_pct": 15,
+                        "fixed_income_pct": 15,
+                        "cash_and_alternatives_pct": 10
+                    },
+                    "rebalancing_drift": "+4.2% Overweight in US Tech Equity",
+                    "recommended_trade": "Trim US Large Cap equity; reallocate $250k into Tax-Exempt Municipal Bonds."
+                }
+            },
+            {
+                "title": "Form ADV Part 2A & Fiduciary Engagement Disclosure - Helena Montgomery",
+                "record_type": "fiduciary_letter",
+                "customer_phone": "+1 555-3102",
+                "status": "Active",
+                "data": {
+                    "engagement_type": "Discretionary Multi-Family Office Mandate",
+                    "advisory_fee_schedule": "0.65% AUM per annum billed quarterly in arrears",
+                    "custodian_bank": "BNY Mellon Pershing",
+                    "fiduciary_standard": "SEC Section 206 Standard of Utmost Good Faith",
+                    "effective_date": "2026-09-10"
+                }
+            }
         ]
     },
     {
@@ -147,10 +301,57 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "Commercial Liability & Cyber Shield Review", "category": "Corporate", "price": 250.0, "duration": 60}
         ],
         "customers": [
-            {"name": "Ethan Hunt", "phone": "+1 555-4101", "email": "ethan.h@example.com", "gender": "Male"}
+            {"name": "Ethan Hunt", "phone": "+1 555-4101", "email": "ethan.h@example.com", "gender": "Male"},
+            {"name": "Robert Langdon", "phone": "+1 555-4102", "email": "r.langdon@example.com", "gender": "Male"}
         ],
         "appointments": [
-            {"customer": "Ethan Hunt", "phone": "+1 555-4101", "service": "Commercial Liability & Cyber Shield Review", "days_offset": 1, "status": "Booked", "payment": "Paid", "amount": 250.0}
+            {"customer": "Ethan Hunt", "phone": "+1 555-4101", "service": "Commercial Liability & Cyber Shield Review", "days_offset": 1, "status": "Booked", "payment": "Paid", "amount": 250.0},
+            {"customer": "Robert Langdon", "phone": "+1 555-4102", "service": "Whole-Life & Term Policy Underwriting", "days_offset": -1, "status": "Completed", "payment": "Paid", "amount": 0.0}
+        ],
+        "industry_records": [
+            {
+                "title": "Key-Person Term Life Quote & Actuarial Breakdown - Ethan Hunt",
+                "record_type": "premium_quote",
+                "customer_phone": "+1 555-4101",
+                "status": "Active",
+                "data": {
+                    "policy_tier": "20-Year Level Term Key-Person Life",
+                    "total_sum_assured": "$2,500,000 USD",
+                    "underwriting_class": "Preferred Plus Non-Smoker",
+                    "annual_premium": 1450.0,
+                    "monthly_premium": 125.0,
+                    "included_riders": ["Accelerated Death Benefit for Terminal Illness", "Accidental Death & Dismemberment Rider"]
+                }
+            },
+            {
+                "title": "Medical & Hazard Underwriting Questionnaire - Robert Langdon",
+                "record_type": "underwriting_dossier",
+                "customer_phone": "+1 555-4102",
+                "status": "Completed",
+                "data": {
+                    "applicant_age": 48,
+                    "body_mass_index": 23.8,
+                    "tobacco_use": "Non-Smoker (Verified Cotinine Screen Negative)",
+                    "hazardous_activities": "Occasional international field research (Low Risk)",
+                    "cardiovascular_history": "Clear / Normal EKG on file",
+                    "underwriting_verdict": "Standard Table A / Approved with No Exclusions"
+                }
+            },
+            {
+                "title": "FNOL Claim Adjudication Docket #CLM-2026-0819 - Ethan Hunt",
+                "record_type": "claim_file",
+                "customer_phone": "+1 555-4101",
+                "status": "Settled",
+                "data": {
+                    "claim_id": "CLM-2026-0819",
+                    "policy_number": "POL-NY-77291-L",
+                    "incident_type": "Inpatient Emergency Surgery Reimbursement",
+                    "claimed_amount": 14200.0,
+                    "adjudicated_amount": 13800.0,
+                    "deductible_applied": 400.0,
+                    "status": "Approved & Disbursed to Healthcare Provider"
+                }
+            }
         ]
     },
     {
@@ -171,10 +372,61 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "Bespoke Suiting & Tailoring Fitting", "category": "Tailoring", "price": 150.0, "duration": 45}
         ],
         "customers": [
-            {"name": "Claire Dupont", "phone": "+1 555-5101", "email": "c.dupont@example.com", "gender": "Female"}
+            {"name": "Claire Dupont", "phone": "+1 555-5101", "email": "c.dupont@example.com", "gender": "Female"},
+            {"name": "Vivienne Westwood VIP", "phone": "+1 555-5102", "email": "vip.client@example.com", "gender": "Female"}
         ],
         "appointments": [
-            {"customer": "Claire Dupont", "phone": "+1 555-5101", "service": "VIP Runway Wardrobe Consultation", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 300.0}
+            {"customer": "Claire Dupont", "phone": "+1 555-5101", "service": "VIP Runway Wardrobe Consultation", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 300.0},
+            {"customer": "Vivienne Westwood VIP", "phone": "+1 555-5102", "service": "Bespoke Suiting & Tailoring Fitting", "days_offset": 3, "status": "Booked", "payment": "Paid", "amount": 150.0}
+        ],
+        "industry_records": [
+            {
+                "title": "Haute Couture Anatomical Sizing Matrix - Claire Dupont",
+                "record_type": "sizing_matrix",
+                "customer_phone": "+1 555-5101",
+                "status": "Active",
+                "data": {
+                    "measurements": {
+                        "bust": "34B",
+                        "waist": "26.0 in",
+                        "high_hip": "33.5 in",
+                        "low_hip": "36.0 in",
+                        "shoulder_breadth": "15.0 in",
+                        "inseam": "31.5 in",
+                        "sleeve_length": "23.0 in"
+                    },
+                    "posture_notes": "Slight erect posture, right shoulder +0.5cm height variation.",
+                    "fabric_preferences": ["Pure Mulberry Silk", "Loro Piana Double-Faced Cashmere", "French Chantilly Lace"]
+                }
+            },
+            {
+                "title": "Chambre Privée Lounge Reservation - Claire Dupont",
+                "record_type": "vip_lounge",
+                "customer_phone": "+1 555-5101",
+                "status": "Active",
+                "data": {
+                    "reserved_suite": "The Platinum Mirror Salon (Chambre Privée 1)",
+                    "beverage_service": "Dom Pérignon 2013 Brut & Sparkling San Pellegrino",
+                    "curated_soundtrack": "Acoustic Paris Classical Lounge",
+                    "accompanying_guests": 1,
+                    "personal_concierge": "Jean-Luc (Senior Wardrobe Director)"
+                }
+            },
+            {
+                "title": "Autumn/Winter Paris Runway Curation Lookbook",
+                "record_type": "lookbook",
+                "customer_phone": "+1 555-5101",
+                "status": "Active",
+                "data": {
+                    "capsule_collection": "AURA Fall Couture 2026",
+                    "curated_garments": [
+                        {"sku": "AURA-C-011", "name": "Double-Breasted Cashmere Trench", "color": "Camel", "price": 3800.0},
+                        {"sku": "AURA-C-042", "name": "Silk Crepe-de-Chine Evening Slip Gown", "color": "Midnight Navy", "price": 4200.0},
+                        {"sku": "AURA-A-108", "name": "Hand-Stitched Italian Nappa Gloves", "color": "Bordeaux", "price": 650.0}
+                    ],
+                    "total_lookbook_value": 8650.0
+                }
+            }
         ]
     },
     {
@@ -195,10 +447,60 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "SOP & Research Statement Review", "category": "Editorial", "price": 250.0, "duration": 45}
         ],
         "customers": [
-            {"name": "Alexander Young", "phone": "+1 555-6101", "email": "ayoung@example.com", "gender": "Male"}
+            {"name": "Alexander Young", "phone": "+1 555-6101", "email": "ayoung@example.com", "gender": "Male"},
+            {"name": "Sophia Chen", "phone": "+1 555-6102", "email": "schen@example.com", "gender": "Female"}
         ],
         "appointments": [
-            {"customer": "Alexander Young", "phone": "+1 555-6101", "service": "Ivy League Admissions Strategy Call", "days_offset": 1, "status": "Booked", "payment": "Paid", "amount": 400.0}
+            {"customer": "Alexander Young", "phone": "+1 555-6101", "service": "Ivy League Admissions Strategy Call", "days_offset": 1, "status": "Booked", "payment": "Paid", "amount": 400.0},
+            {"customer": "Sophia Chen", "phone": "+1 555-6102", "service": "SOP & Research Statement Review", "days_offset": -1, "status": "Completed", "payment": "Paid", "amount": 250.0}
+        ],
+        "industry_records": [
+            {
+                "title": "Class of 2027 College Shortlist - Alexander Young",
+                "record_type": "university_shortlist",
+                "customer_phone": "+1 555-6101",
+                "status": "Active",
+                "data": {
+                    "intended_major": "Computer Science & Artificial Intelligence",
+                    "unweighted_gpa": "3.96 / 4.0",
+                    "standardized_tests": "SAT 1550 (Math 800, EBRW 750)",
+                    "reach_universities": ["Stanford University", "MIT", "Carnegie Mellon SCS"],
+                    "match_universities": ["Georgia Institute of Technology", "Univ of Michigan Ann Arbor", "UT Austin"],
+                    "safety_universities": ["Purdue University", "Univ of Maryland College Park"]
+                }
+            },
+            {
+                "title": "Admissions Milestones & Common App Timetable - Alexander Young",
+                "record_type": "application_milestones",
+                "customer_phone": "+1 555-6101",
+                "status": "Active",
+                "data": {
+                    "early_action_deadline": "Nov 01, 2026 (Stanford REA)",
+                    "common_app_essay_status": "Draft 3 - Counselor Revision in Progress",
+                    "letters_of_recommendation": {
+                        "ap_calculus_bc_teacher": "Submitted",
+                        "ap_physics_c_teacher": "Submitted",
+                        "guidance_counselor": "Drafted"
+                    },
+                    "financial_aid_profile": "CSS Profile & FAFSA verified"
+                }
+            },
+            {
+                "title": "Personal Statement Hook & Narrative Rubric - Sophia Chen",
+                "record_type": "sop_review",
+                "customer_phone": "+1 555-6102",
+                "status": "Completed",
+                "data": {
+                    "essay_prompt": "Common App: Lessons from a Obstacle or Failure",
+                    "evaluation_scores": {
+                        "narrative_hook": "9 / 10",
+                        "originality_and_voice": "8.5 / 10",
+                        "intellectual_curiosity": "9 / 10",
+                        "grammar_and_mechanics": "9.5 / 10"
+                    },
+                    "counselor_editorial_remarks": "Compelling narrative opening on computational biology laboratory trial. Sharpen concluding paragraph to clearly synthesize prospective undergraduate research goals."
+                }
+            }
         ]
     },
     {
@@ -219,10 +521,57 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "Intellectual Property & Patent Defense", "category": "IP", "price": 700.0, "duration": 60}
         ],
         "customers": [
-            {"name": "Jonathan Vance", "phone": "+1 555-7101", "email": "jvance@example.com", "gender": "Male"}
+            {"name": "Jonathan Vance", "phone": "+1 555-7101", "email": "jvance@example.com", "gender": "Male"},
+            {"name": "Nexus Ventures Group", "phone": "+1 555-7102", "email": "contact@nexusvc.com", "gender": "Corporate"}
         ],
         "appointments": [
-            {"customer": "Jonathan Vance", "phone": "+1 555-7101", "service": "M&A Due Diligence & Corporate Counsel", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 850.0}
+            {"customer": "Jonathan Vance", "phone": "+1 555-7101", "service": "M&A Due Diligence & Corporate Counsel", "days_offset": 0, "status": "Booked", "payment": "Paid", "amount": 850.0},
+            {"customer": "Nexus Ventures Group", "phone": "+1 555-7102", "service": "Intellectual Property & Patent Defense", "days_offset": 2, "status": "Booked", "payment": "Paid", "amount": 700.0}
+        ],
+        "industry_records": [
+            {
+                "title": "Project Apex M&A Ethical Conflict Check Clearance",
+                "record_type": "conflict_clearance",
+                "customer_phone": "+1 555-7101",
+                "status": "Active",
+                "data": {
+                    "matter_code": "MAT-2026-MA-041",
+                    "matter_title": "Acquisition of CloudScale Technologies Ltd",
+                    "adverse_parties_queried": ["CloudScale Ltd", "Venture Partners LLC", "Apex Holdings Group"],
+                    "database_search_result": "Zero adverse engagements found across 10-year historical firm registry.",
+                    "ethical_wall_required": False,
+                    "clearance_status": "CLEARED BY SENIOR ETHICS COMMITTEE",
+                    "managing_partner": "Eleanor Sterling, Esq."
+                }
+            },
+            {
+                "title": "Corporate Retainer Depletion & Billable Ledger - Jonathan Vance",
+                "record_type": "retainer_ledger",
+                "customer_phone": "+1 555-7101",
+                "status": "Active",
+                "data": {
+                    "initial_retainer_deposit": 35000.0,
+                    "partner_hourly_rate": 850.0,
+                    "associate_hourly_rate": 450.0,
+                    "hours_billed_to_date": 18.5,
+                    "current_retainer_balance": 19275.0,
+                    "weekly_burn_rate": "4.2 hours / week",
+                    "replenishment_threshold": 5000.0
+                }
+            },
+            {
+                "title": "Series B Stock Purchase Agreement - Redline v4.2 Privileged Docket",
+                "record_type": "privileged_dossier",
+                "customer_phone": "+1 555-7102",
+                "status": "Active",
+                "data": {
+                    "document_title": "Definitive Series B Preferred Stock Purchase Agreement",
+                    "privilege_designation": "ATTORNEY-CLIENT PRIVILEGED & STRICTLY CONFIDENTIAL",
+                    "indemnification_cap": "Capped at 10% total transaction purchase price",
+                    "escrow_holdback": "$2,400,000 USD held for 18 calendar months",
+                    "rep_and_warranty_insurance": "Bound with Lloyd's Syndicate"
+                }
+            }
         ]
     },
     {
@@ -243,10 +592,57 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "Architectural Design Feasibility Review", "category": "Architecture", "price": 450.0, "duration": 60}
         ],
         "customers": [
-            {"name": "Lady Catherine", "phone": "+1 555-8101", "email": "catherine@example.com", "gender": "Female"}
+            {"name": "Lady Catherine", "phone": "+1 555-8101", "email": "catherine@example.com", "gender": "Female"},
+            {"name": "Lord Sterling", "phone": "+1 555-8102", "email": "sterling.re@example.com", "gender": "Male"}
         ],
         "appointments": [
-            {"customer": "Lady Catherine", "phone": "+1 555-8101", "service": "Luxury Penthouse Private Showing", "days_offset": 2, "status": "Booked", "payment": "Paid", "amount": 0.0}
+            {"customer": "Lady Catherine", "phone": "+1 555-8101", "service": "Luxury Penthouse Private Showing", "days_offset": 2, "status": "Booked", "payment": "Paid", "amount": 0.0},
+            {"customer": "Lord Sterling", "phone": "+1 555-8102", "service": "Architectural Design Feasibility Review", "days_offset": -1, "status": "Completed", "payment": "Paid", "amount": 450.0}
+        ],
+        "industry_records": [
+            {
+                "title": "Bespoke TriBeCa & SoHo Penthouse VIP Showing Tour",
+                "record_type": "tour_itinerary",
+                "customer_phone": "+1 555-8101",
+                "status": "Active",
+                "data": {
+                    "tour_date": "Tomorrow at 10:00 AM",
+                    "client_target_budget": "$18,000,000 - $25,000,000 USD",
+                    "tour_stops": [
+                        {"order": 1, "address": "111 West 57th St, Penthouse 64", "time": "10:30 AM", "lockbox": "Concierge Check-in", "mls_id": "MLS# 994012", "notes": "Shoe covers mandatory. Key fob on file."},
+                        {"order": 2, "address": "432 Park Avenue, Suite 78", "time": "12:15 PM", "lockbox": "Private Key Escort", "mls_id": "MLS# 994088", "notes": "Central Park panoramic views. High-speed private elevator."},
+                        {"order": 3, "address": "56 Leonard Street, Penthouse 52", "time": "02:30 PM", "lockbox": "LB-4109", "mls_id": "MLS# 995123", "notes": "Cantilever terrace access with private infinity hot tub."}
+                    ]
+                }
+            },
+            {
+                "title": "JPMorgan Private Bank Proof of Funds & Pre-Approval - Lady Catherine",
+                "record_type": "proof_of_funds",
+                "customer_phone": "+1 555-8101",
+                "status": "Active",
+                "data": {
+                    "financial_institution": "JPMorgan Chase Private Bank",
+                    "verified_liquid_funds": "$32,000,000 USD",
+                    "earnest_money_deposit_capability": "Up to $3,500,000 wire within 2 business hours",
+                    "validation_date": "2026-09-14",
+                    "verifying_principal_broker": "Marcus Sterling (Licensed RE Broker)"
+                }
+            },
+            {
+                "title": "Commercial SoHo Mixed-Use Architectural Feasibility Study",
+                "record_type": "zoning_feasibility",
+                "customer_phone": "+1 555-8102",
+                "status": "Completed",
+                "data": {
+                    "property_address": "184 Mercer Street, SoHo Historic District",
+                    "acquisition_price": 14500000.0,
+                    "gross_annual_rent": 1120000.0,
+                    "operating_expenses": 320000.0,
+                    "net_operating_income": 800000.0,
+                    "projected_cap_rate": "5.52%",
+                    "zoning_classification": "M1-5B (Commercial & Ground-Floor Retail Compliant)"
+                }
+            }
         ]
     },
     {
@@ -267,10 +663,56 @@ SAMPLE_ORGANIZATIONS = [
             {"name": "AI Transformation & Workflow Blueprint", "category": "AI", "price": 1500.0, "duration": 120}
         ],
         "customers": [
-            {"name": "William Sterling", "phone": "+1 555-9101", "email": "wsterling@example.com", "gender": "Male"}
+            {"name": "William Sterling", "phone": "+1 555-9101", "email": "wsterling@example.com", "gender": "Male"},
+            {"name": "Global Fintech Conglomerate", "phone": "+1 555-9102", "email": "cio@globalfintech.com", "gender": "Corporate"}
         ],
         "appointments": [
-            {"customer": "William Sterling", "phone": "+1 555-9101", "service": "Enterprise Cloud Architecture Audit", "days_offset": 1, "status": "Booked", "payment": "Paid", "amount": 1200.0}
+            {"customer": "William Sterling", "phone": "+1 555-9101", "service": "Enterprise Cloud Architecture Audit", "days_offset": 1, "status": "Booked", "payment": "Paid", "amount": 1200.0},
+            {"customer": "Global Fintech Conglomerate", "phone": "+1 555-9102", "service": "AI Transformation & Workflow Blueprint", "days_offset": -1, "status": "Completed", "payment": "Paid", "amount": 1500.0}
+        ],
+        "industry_records": [
+            {
+                "title": "SOW Deliverables & Phase Gate Tracker - Hybrid Cloud Kubernetes",
+                "record_type": "sow_deliverables",
+                "customer_phone": "+1 555-9101",
+                "status": "Active",
+                "data": {
+                    "sow_id": "SOW-2026-ENT-009",
+                    "total_contract_value": 450000.0,
+                    "current_active_phase": "Phase 2: Multi-Region Kubernetes Failover",
+                    "phase_milestones": [
+                        {"name": "Cloud Baseline Architecture & Threat Model", "sla_days": 30, "status": "Completed & Formally Signed Off"},
+                        {"name": "Zero-Trust Service Mesh & IAM Hardening", "sla_days": 45, "status": "In Progress (85%)"},
+                        {"name": "Production DR Chaos Testing & Cutover", "sla_days": 60, "status": "Scheduled for Q4"}
+                    ],
+                    "client_executive_lead": "William Sterling (Chief Information Officer)"
+                }
+            },
+            {
+                "title": "Multi-Region Cloud Architecture & SOC2 Type II Audit Dossier",
+                "record_type": "architecture_dossier",
+                "customer_phone": "+1 555-9102",
+                "status": "Active",
+                "data": {
+                    "infrastructure_provider": "AWS + Google Cloud Hybrid Multi-Tenant",
+                    "security_standards": ["SOC2 Type II", "HIPAA Omnibus", "ISO 27001", "PCI-DSS v4.0"],
+                    "rto_rpo_targets": "RTO < 4 minutes, RPO < 15 seconds",
+                    "automated_traffic_routing": "Cloudflare Global Anycast + AWS Route53 Failover",
+                    "encryption_posture": "AES-256 at rest, TLS 1.3 in transit with Mutual TLS (mTLS)"
+                }
+            },
+            {
+                "title": "Executive Steering Committee - AI Automation Blueprint Q4",
+                "record_type": "executive_briefing",
+                "customer_phone": "+1 555-9101",
+                "status": "Active",
+                "data": {
+                    "committee_attendees": ["Chief Executive Officer", "Chief Technology Officer", "Chief Risk Officer", "Lead Enterprise Architect"],
+                    "consensus_decision": "Approved production rollout of generative clinical triage & WhatsApp conversational engine across 3 flagship branches.",
+                    "allocated_capital_budget": "$350,000 Capex allocated for H1 implementation.",
+                    "next_audit_date": "2026-10-15"
+                }
+            }
         ]
     }
 ]
@@ -318,27 +760,21 @@ def seed_all_sample_data(reset=False):
     If reset=True, it clears application data tables safely without dropping alembic_version.
     """
     print("=" * 60)
-    print("Starting AppointoCare Comprehensive Sample Data Migration")
+    print("Starting AppointoCare Comprehensive Multi-Industry Data Migration")
     print("=" * 60)
 
     if reset:
-        print("Reset flag detected: Clearing previous domain records...")
-        db.session.query(MessageLog).delete()
-        db.session.query(AuditLog).delete()
-        db.session.query(Notification).delete()
-        db.session.query(AppointmentTransaction).delete()
-        db.session.query(Appointment).delete()
-        db.session.query(Patient).delete()
-        db.session.query(Customer).delete()
-        db.session.query(Service).delete()
-        db.session.query(Branch).delete()
-        db.session.query(User).delete()
-        db.session.query(Subscription).delete()
-        db.session.query(OrganizationTransaction).delete()
-        db.session.query(Organization).delete()
-        db.session.query(Admin).delete()
-        db.session.query(SubscriptionPlan).delete()
-        db.session.query(SectorTemplate).delete()
+        print("Reset flag detected: Safely clearing previous domain records with CASCADE...")
+        table_list = [
+            'payment_orders', 'provider_events', 'campaigns', 'notifications',
+            'industry_records', 'message_logs', 'audit_logs',
+            'appointment_transactions', 'organization_transactions',
+            'appointments', 'patients', 'customers', 'services', 'branches',
+            'users', 'subscriptions', 'subscription_plans', 'sector_templates',
+            'organizations', 'admins'
+        ]
+        truncate_sql = f"TRUNCATE TABLE {', '.join(table_list)} RESTART IDENTITY CASCADE;"
+        db.session.execute(db.text(truncate_sql))
         db.session.commit()
         print("✓ Previous domain records cleared.")
 
@@ -358,7 +794,7 @@ def seed_all_sample_data(reset=False):
     else:
         admin.password = hash_password(DEFAULT_ADMIN_PASSWORD)
         db.session.commit()
-        print(f"✓ SuperAdmin updated: {admin_user}")
+        print(f"✓ SuperAdmin verified: {admin_user}")
 
     # 2. Subscription Plans
     for plan_data in SUBSCRIPTION_PLANS:
@@ -396,7 +832,7 @@ def seed_all_sample_data(reset=False):
     db.session.commit()
     print("✓ Sector Templates synchronized.")
 
-    # 4. Organizations, Branches, Staff, Services, Customers, Appointments
+    # 4. Organizations, Branches, Staff, Services, Customers, Appointments, Industry Records
     now = datetime.utcnow()
     for org_data in SAMPLE_ORGANIZATIONS:
         org = Organization.query.filter_by(code=org_data["code"]).first()
@@ -415,7 +851,7 @@ def seed_all_sample_data(reset=False):
             )
             db.session.add(org)
             db.session.flush()
-            print(f"  + Created Organization: {org.name} ({org.code})")
+            print(f"  + Provisioned Organization: {org.name} ({org.code}) [{org.sector}]")
         else:
             org.name = org_data["name"]
             org.sector = org_data["sector"]
@@ -427,16 +863,17 @@ def seed_all_sample_data(reset=False):
         # Organization Transaction (Subscription Invoice)
         existing_tx = OrganizationTransaction.query.filter_by(organization_id=org.id).first()
         if not existing_tx:
+            plan_amt = 149.0 if org_data["plan"] == "Professional" else (499.0 if org_data["plan"] == "Enterprise" else 49.0)
             db.session.add(OrganizationTransaction(
                 organization_id=org.id,
-                amount=149.0 if org_data["plan"] == "Professional" else (499.0 if org_data["plan"] == "Enterprise" else 49.0),
+                amount=plan_amt,
                 transaction_type="Subscription",
                 payment_method="Card",
                 invoice_id=f"INV-{org.code}-{now.strftime('%Y%m')}",
                 status="Success",
                 processed_by_type="Admin",
                 processed_by_id=admin.id,
-                remarks=f"Automated annual plan renewal for {org.name}"
+                remarks=f"Annual plan subscription payment for {org.name}"
             ))
 
         # Branches
@@ -478,11 +915,12 @@ def seed_all_sample_data(reset=False):
                     category=svc_info["category"],
                     price=svc_info["price"],
                     duration_minutes=svc_info["duration"],
-                    description=f"{svc_info['name']} provided by specialized experts at {org.name}.",
+                    description=f"{svc_info['name']} provided by specialized professionals at {org.name}.",
                     active=True
                 ))
 
         # Customers & Patients
+        cust_map = {}
         for cust_info in org_data["customers"]:
             customer = Customer.query.filter_by(organization_id=org.id, phone=cust_info["phone"]).first()
             if not customer:
@@ -493,9 +931,10 @@ def seed_all_sample_data(reset=False):
                     email=cust_info["email"],
                     gender=cust_info["gender"],
                     source="Online Booking",
-                    notes="Verified verified client"
+                    notes=f"Registered VIP Client with {org.name}"
                 )
                 db.session.add(customer)
+                db.session.flush()
 
             patient = Patient.query.filter_by(organization_id=org.id, phone=cust_info["phone"]).first()
             if not patient:
@@ -507,11 +946,12 @@ def seed_all_sample_data(reset=False):
                     gender=cust_info["gender"]
                 )
                 db.session.add(patient)
+            cust_map[cust_info["phone"]] = customer.id
 
-        # Commit so appointments can link foreign keys
         db.session.flush()
 
         # Appointments
+        appt_map = {}
         for appt_info in org_data["appointments"]:
             appt_time = (now + timedelta(days=appt_info["days_offset"])).replace(hour=10, minute=30, second=0, microsecond=0)
             existing_appt = Appointment.query.filter_by(
@@ -531,20 +971,21 @@ def seed_all_sample_data(reset=False):
                 )
                 db.session.add(appt)
                 db.session.flush()
+                appt_map[appt_info["phone"]] = appt.id
 
-                # Appointment Transaction if paid
+                # Appointment Transaction
                 if appt_info["payment"] == "Paid" and appt_info["amount"] > 0:
                     db.session.add(AppointmentTransaction(
                         appointment_id=appt.id,
                         organization_id=org.id,
                         amount=appt_info["amount"],
                         transaction_type="Payment",
-                        payment_method="UPI" if org.sector == "Healthcare" else "Card",
+                        payment_method="Card" if org.sector != "Healthcare" else "UPI",
                         transaction_reference=f"TXN-{appt.id}-{int(datetime.utcnow().timestamp())}",
                         status="Success",
                         processed_by_type="Organization",
                         processed_by_id=org.id,
-                        remarks=f"Payment received for {appt_info['service']}"
+                        remarks=f"Payment for {appt_info['service']}"
                     ))
 
                 # MessageLog
@@ -554,15 +995,75 @@ def seed_all_sample_data(reset=False):
                     message_type="WhatsApp",
                     message_content=f"Hello {appt_info['customer']}, your booking for {appt_info['service']} at {org.name} is confirmed for {appt_time.strftime('%b %d, %Y at %I:%M %p')}.",
                     status="Delivered",
-                    sent_at=now - timedelta(hours=2),
+                    sent_at=now - timedelta(hours=1),
                     related_appointment_id=appt.id
                 ))
+            else:
+                appt_map[appt_info["phone"]] = existing_appt.id
+
+        # Specialized Industry Records (Vault)
+        for rec_info in org_data.get("industry_records", []):
+            existing_rec = IndustryRecord.query.filter_by(
+                organization_id=org.id,
+                title=rec_info["title"]
+            ).first()
+
+            if not existing_rec:
+                cust_phone = rec_info.get("customer_phone")
+                c_id = cust_map.get(cust_phone)
+                a_id = appt_map.get(cust_phone)
+
+                ind_rec = IndustryRecord(
+                    organization_id=org.id,
+                    appointment_id=a_id,
+                    customer_id=c_id,
+                    sector=org.sector,
+                    record_type=rec_info["record_type"],
+                    title=rec_info["title"],
+                    data=rec_info["data"],
+                    status=rec_info.get("status", "Active"),
+                    created_by_user=org_data["staff"][0]["username"] if org_data["staff"] else "staff",
+                    created_at=now - timedelta(hours=4)
+                )
+                db.session.add(ind_rec)
+
+        # Audit Logs for Organization
+        db.session.add(AuditLog(
+            organization_id=org.id,
+            action="SECTOR_SUITE_INITIALIZED",
+            details=f"Configured market-leading suite for {org.sector} with active add-ons",
+            ip_address="127.0.0.1"
+        ))
+
+        # Organization In-App Notifications
+        db.session.add(Notification(
+            organization_id=org.id,
+            recipient_type="organization",
+            recipient_id=org.id,
+            channel="in_app",
+            title=f"Market-Ready {org.sector} Workspace Activated",
+            message=f"Your specialized {org.sector} enterprise suite and modular SaaS add-ons are fully configured and ready for live operations.",
+            status="unread",
+            created_at=now - timedelta(hours=3)
+        ))
+
+        # SuperAdmin Platform Alert for this Organization
+        db.session.add(Notification(
+            organization_id=org.id,
+            recipient_type="admin",
+            recipient_id=admin.id,
+            channel="in_app",
+            title=f"Tenant Provisioned: {org.name} ({org.code})",
+            message=f"{org.name} onboarded into {org.sector} sector cluster on {org.subscription_plan} tier.",
+            status="unread",
+            created_at=now - timedelta(hours=2)
+        ))
 
         db.session.commit()
 
     print("=" * 60)
     print("✓ AppointoCare Sample Data Migration Completed Successfully!")
-    print("  Organizations : 9 Multi-Industry Entities (ORG1 to ORG9)")
+    print(f"  Organizations : {len(SAMPLE_ORGANIZATIONS)} Multi-Industry Tenants (ORG1 to ORG9)")
     print("  SuperAdmin    : superadmin / Admin@12345")
     print("  Org Admins    : org1..org9 / Org@12345")
     print("  Staff Users   : staff1, doc_sarah, alex_wealth, etc. / Staff@12345")

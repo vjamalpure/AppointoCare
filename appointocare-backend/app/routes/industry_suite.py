@@ -372,6 +372,15 @@ def _get_sector_key(sector_name: str) -> str:
 def get_addons():
     claims = get_jwt()
     role = claims.get("role")
+    all_sectors = request.args.get("all_sectors") == "true"
+
+    if all_sectors and role == "Admin":
+        # Return all sectors and their catalog of add-ons
+        return jsonify({
+            "all_sectors": True,
+            "sectors": SECTOR_ADDONS
+        })
+
     org_id = get_organization_id() if role != "Admin" else int(request.args.get("organization_id") or 1)
     org = Organization.query.get(org_id)
     sector_key = _get_sector_key(org.sector if org else "Healthcare")
@@ -400,7 +409,7 @@ def get_addons():
 def toggle_addon():
     claims = get_jwt()
     role = claims.get("role")
-    org_id = get_organization_id() if role != "Admin" else int(request.args.get("organization_id") or 1)
+    org_id = get_organization_id() if role != "Admin" else int(request.json.get("organization_id") or 1)
     data = request.json or {}
 
     addon_id = data.get("addon_id")
@@ -439,13 +448,19 @@ def toggle_addon():
 def get_records():
     claims = get_jwt()
     role = claims.get("role")
-    org_id = get_organization_id() if role != "Admin" else request.args.get("organization_id")
-    if not org_id:
-        org_id = 1
-    else:
-        org_id = int(org_id)
+    query = IndustryRecord.query
 
-    query = IndustryRecord.query.filter_by(organization_id=org_id)
+    if role != "Admin":
+        org_id = get_organization_id()
+        query = query.filter_by(organization_id=org_id)
+    else:
+        org_param = request.args.get("organization_id")
+        if org_param and org_param != "all":
+            query = query.filter_by(organization_id=int(org_param))
+
+    sector_param = request.args.get("sector")
+    if sector_param and sector_param != "all":
+        query = query.filter_by(sector=_get_sector_key(sector_param))
 
     record_type = request.args.get("record_type")
     if record_type:
@@ -459,12 +474,15 @@ def get_records():
     if customer_id:
         query = query.filter_by(customer_id=int(customer_id))
 
-    records = query.order_by(IndustryRecord.created_at.desc()).limit(100).all()
+    records = query.order_by(IndustryRecord.created_at.desc()).limit(150).all()
+    org_dict = {o.id: (o.name, o.code) for o in Organization.query.all()}
 
     return jsonify([
         {
             "id": r.id,
             "organization_id": r.organization_id,
+            "organization_name": org_dict.get(r.organization_id, ("Unknown", ""))[0],
+            "organization_code": org_dict.get(r.organization_id, ("Unknown", ""))[1],
             "appointment_id": r.appointment_id,
             "customer_id": r.customer_id,
             "sector": r.sector,
@@ -536,9 +554,7 @@ def delete_record(record_id):
 @require_roles(*ORG_ROLES)
 def get_benchmarks():
     claims = get_jwt()
-    org_id = get_organization_id() or 1
-    org = Organization.query.get(org_id)
-    sector_key = _get_sector_key(org.sector if org else "Healthcare")
+    role = claims.get("role")
 
     benchmarks = {
         "Healthcare": {
@@ -596,6 +612,19 @@ def get_benchmarks():
             "recommended_addons": ["addon_sow_milestones", "addon_architecture_review", "addon_executive_briefing"]
         }
     }
+
+    if request.args.get("all") == "true":
+        return jsonify({
+            "all_benchmarks": benchmarks
+        })
+
+    sector_arg = request.args.get("sector")
+    if sector_arg:
+        sector_key = _get_sector_key(sector_arg)
+    else:
+        org_id = get_organization_id() if role != "Admin" else int(request.args.get("organization_id") or 1)
+        org = Organization.query.get(org_id)
+        sector_key = _get_sector_key(org.sector if org else "Healthcare")
 
     return jsonify({
         "sector": sector_key,

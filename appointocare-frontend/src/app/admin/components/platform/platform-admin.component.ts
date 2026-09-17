@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PlatformService } from '../../../services/platform.service';
+import { IndustryService } from '../../../services/industry.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -18,8 +19,26 @@ export class PlatformAdminComponent implements OnInit {
   savingWhatsApp = false;
   savingPayment = false;
 
+  // Multi-Industry Benchmarking & Add-on Engine state
+  allBenchmarks: Record<string, any> = {};
+  allAddonsCatalog: Record<string, any> = {};
+  allIndustryRecords: any[] = [];
+  selectedSector: string = 'Healthcare';
+  sectorsList: string[] = [
+    'Healthcare',
+    'Salon',
+    'Finance',
+    'Insurance',
+    'Retail',
+    'Education',
+    'Consultancy',
+    'Real Estate',
+    'Professional Services'
+  ];
+
   constructor(
     private platform: PlatformService,
+    public industryService: IndustryService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -34,6 +53,52 @@ export class PlatformAdminComponent implements OnInit {
     this.platform.getWhatsAppConfig().subscribe(data => this.whatsappConfig = data);
     this.platform.getPaymentConfig().subscribe(data => this.paymentConfig = data);
     this.platform.getSecretsStatus().subscribe(data => this.secretsStatus = data);
+
+    // Multi-Industry Engine
+    this.industryService.getBenchmarks(true).subscribe({
+      next: (res) => this.allBenchmarks = res.all_benchmarks || {}
+    });
+    this.industryService.getAddons(undefined, true).subscribe({
+      next: (res) => this.allAddonsCatalog = res.sectors || {}
+    });
+    this.industryService.getRecords({ all: true }).subscribe({
+      next: (res) => this.allIndustryRecords = res || []
+    });
+  }
+
+  selectSector(sector: string): void {
+    this.selectedSector = sector;
+  }
+
+  getSectorIcon(sector: string): string {
+    switch (sector) {
+      case 'Healthcare': return 'medical_services';
+      case 'Salon': return 'spa';
+      case 'Finance': return 'account_balance';
+      case 'Retail': return 'shopping_bag';
+      case 'Insurance': return 'verified_user';
+      case 'Education': return 'school';
+      case 'Consultancy': return 'gavel';
+      case 'Real Estate': return 'apartment';
+      case 'Professional Services': return 'business_center';
+      default: return 'domain';
+    }
+  }
+
+  getSectorRecordCount(sector: string): number {
+    return this.allIndustryRecords.filter(r => r.sector === sector || (sector === 'Salon' && r.sector.includes('Salon'))).length;
+  }
+
+  getRecordsForSector(sector: string): any[] {
+    return this.allIndustryRecords.filter(r => r.sector === sector || (sector === 'Salon' && r.sector.includes('Salon')));
+  }
+
+  getCurrentSectorBenchmarks(): any {
+    return this.allBenchmarks[this.selectedSector] || null;
+  }
+
+  getCurrentSectorAddons(): any[] {
+    return this.allAddonsCatalog[this.selectedSector] || [];
   }
 
   saveEnvConfig(): void {
