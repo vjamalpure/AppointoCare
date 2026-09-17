@@ -3,6 +3,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NotificationService, AppNotification } from '../../../services/notification.service';
+import { IndustryService } from '../../../services/industry.service';
 
 @Component({
   selector: 'app-toolbar',
@@ -21,6 +22,7 @@ export class ToolbarComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
+    private industry: IndustryService,
     private router: Router,
     private notificationService: NotificationService
   ) {}
@@ -92,10 +94,25 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   }
 
   getRoleScopeNotice(): string {
-    if (this.role === 'Admin') return 'Super Admin • Org Changes, Payments & Inquiries';
-    if (this.role === 'Organization') return 'Clinic Admin • Payments & Practice Updates';
-    if (this.role === 'Staff') return 'Staff • Bookings & Patient Schedule';
-    return 'Role Scoped Feed';
+    if (this.role === 'Admin' || this.role === 'SuperAdmin') return 'Super Admin • Org Changes, Payments & Inquiries';
+    const terms = this.industry.getTerms();
+    if (this.role === 'Organization') return `${terms.name} • Practice Updates`;
+    return `${this.role || 'Staff'} • Schedule & Client Feed`;
+  }
+
+  getSectorBadge(): string {
+    const sector = this.authService.getSector();
+    const config = this.industry.getConfig(sector);
+    return `${config.sector}`;
+  }
+
+  getRoleDisplayName(): string {
+    if (this.role === 'Admin' || this.role === 'SuperAdmin') return 'Super Admin';
+    if (this.role === 'Organization') {
+      const config = this.industry.getConfig(this.authService.getSector());
+      return `${config.sector} Portal`;
+    }
+    return `${this.role || 'Staff'} Portal`;
   }
 
   getCategoryIcon(category: string): string {
@@ -157,13 +174,6 @@ export class ToolbarComponent implements OnInit, OnDestroy {
         }
       });
     }
-  }
-
-  getRoleDisplayName(): string {
-    if (this.role === 'Admin') return 'Super Admin';
-    if (this.role === 'Organization') return 'Clinic Admin';
-    if (this.role === 'Staff') return 'Staff Member';
-    return this.role || 'User';
   }
 
   logout(): void {

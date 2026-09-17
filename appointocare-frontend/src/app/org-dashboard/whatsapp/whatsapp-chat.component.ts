@@ -1,5 +1,6 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { PlatformService } from '../../services/platform.service';
+import { IndustryService } from '../../services/industry.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -16,20 +17,15 @@ export class WhatsAppChatComponent implements OnInit {
   sendingDirect = false;
   simulating = false;
 
+  // Multi-Industry Engine
+  sector = 'Healthcare';
+  terms: any;
+  industryConfig: any;
+  whatsappDefaults: any;
+
   // Bot Simulator State
   botState = 'MENU_CHOICE';
-  chatHistory: { sender: 'user' | 'bot'; text: string; time: string }[] = [
-    {
-      sender: 'user',
-      text: 'Hi',
-      time: '10:14 AM'
-    },
-    {
-      sender: 'bot',
-      text: '👋 Hello Eleanor Vance! Welcome to *City Care Health & Dental*.\n\nPlease select an option by replying with a number:\n\n1️⃣ *Book Appointment*\n2️⃣ *View My Appointments*\n3️⃣ *Cancel an Appointment*\n4️⃣ *Pay Pending Invoice Online*\n5️⃣ *Connect to Support Representative*',
-      time: '10:14 AM'
-    }
-  ];
+  chatHistory: { sender: 'user' | 'bot'; text: string; time: string }[] = [];
 
   userInput = '';
   simulatedPhone = '+1 555-0199';
@@ -40,21 +36,57 @@ export class WhatsAppChatComponent implements OnInit {
     recipient_name: '',
     recipient_phone: '+1 ',
     template: 'appointment_reminder',
-    custom_text: 'Hello, this is a friendly reminder for your upcoming dental checkup tomorrow at 2:30 PM. Reply 1 to confirm.'
+    custom_text: ''
   };
 
-  templates = [
-    { id: 'appointment_reminder', name: 'Appointment Reminder (24h prior)', text: 'Hello, this is a friendly reminder for your upcoming dental checkup tomorrow at 2:30 PM. Reply 1 to confirm.' },
-    { id: 'payment_link', name: 'Razorpay Invoice Payment Link', text: 'Hi, your invoice of $85.00 for Dental Cleaning is ready. Secure link: https://appointo.core/pay/live?order=rzp_9901' },
-    { id: 'feedback_request', name: 'Post-Visit Feedback Survey', text: 'Thank you for visiting City Care! How was your appointment today with Dr. Sarah? Rate us from 1 (Poor) to 5 (Excellent).' }
-  ];
+  templates: { id: string; name: string; text: string }[] = [];
 
   constructor(
     private platform: PlatformService,
+    public industryService: IndustryService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
+    this.sector = this.industryService.getSector();
+    this.terms = this.industryService.getTerms(this.sector);
+    this.industryConfig = this.industryService.getConfig(this.sector);
+    this.whatsappDefaults = this.industryService.getWhatsAppDefaults(this.sector);
+
+    // Dynamic initial chatbot history
+    this.chatHistory = [
+      {
+        sender: 'user',
+        text: 'Hi',
+        time: '10:14 AM'
+      },
+      {
+        sender: 'bot',
+        text: this.whatsappDefaults.welcomeMessage.replace('{customer_name}', this.simulatedName),
+        time: '10:14 AM'
+      }
+    ];
+
+    // Dynamic templates
+    this.templates = [
+      {
+        id: 'appointment_reminder',
+        name: `${this.terms.appointmentLabel} Reminder (24h prior)`,
+        text: this.industryConfig.defaultWhatsAppTemplate
+      },
+      {
+        id: 'payment_link',
+        name: 'Razorpay Invoice & Fee Link',
+        text: `Hi {customer_name}, your invoice for ${this.terms.serviceLabel} is ready. Secure online checkout: https://appointocare.app/pay?order=rzp_${Date.now().toString().slice(-4)}`
+      },
+      {
+        id: 'feedback_request',
+        name: 'Post-Visit Feedback & NPS Survey',
+        text: `Thank you for visiting! How was your experience today with your ${this.terms.staffLabel.toLowerCase()}? Rate us from 1 (Poor) to 5 (Excellent).`
+      }
+    ];
+
+    this.directMessage.custom_text = this.templates[0].text;
     this.loadData();
   }
 
@@ -96,9 +128,7 @@ export class WhatsAppChatComponent implements OnInit {
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
         this.scrollToBottom();
-        // Refresh logs and quota count
         this.platform.getWhatsAppLogs().subscribe(l => this.logs = l);
-        this.platform.getWhatsAppConfig().subscribe(c => this.config = c);
       },
       error: () => {
         this.simulating = false;
@@ -123,7 +153,6 @@ export class WhatsAppChatComponent implements OnInit {
       next: () => {
         this.sendingDirect = false;
         this.snackBar.open('WhatsApp broadcast dispatched via Meta Cloud API!', 'Dismiss', { duration: 3000 });
-        this.directMessage.custom_text = '';
         this.loadData();
       },
       error: () => {

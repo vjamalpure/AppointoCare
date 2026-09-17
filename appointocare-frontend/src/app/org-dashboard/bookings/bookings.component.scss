@@ -157,3 +157,51 @@
     transform: translateY(0);
   }
 }
+
+.title-with-sector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.sector-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.service-cell-content {
+  display: flex;
+  flex-direction: column;
+
+  .service-title {
+    font-weight: 600;
+    color: var(--slate-900);
+  }
+
+  .service-notes {
+    font-size: 12px;
+    color: var(--slate-500);
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.full-span {
+  grid-column: 1 / -1;
+}
+

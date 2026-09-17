@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PlatformService } from '../../services/platform.service';
+import { IndustryService } from '../../services/industry.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -33,19 +34,28 @@ export class ServicesComponent implements OnInit {
   sectors = [
     { label: 'All Sectors', value: 'ALL' },
     { label: 'Healthcare & Clinic', value: 'Healthcare' },
-    { label: 'Financial Services', value: 'Finance' },
-    { label: 'Salon & Wellness', value: 'Salon' },
-    { label: 'Retail & Service Shop', value: 'Retail' },
-    { label: 'Consultancy & Legal', value: 'Consultancy' },
-    { label: 'Education & Coaching', value: 'Education' }
+    { label: 'Wealth & Financial Advisory', value: 'Finance' },
+    { label: 'Salon & Wellness Spa', value: 'Salon' },
+    { label: 'Luxury Retail & Styling', value: 'Retail' },
+    { label: 'Life & General Insurance', value: 'Insurance' },
+    { label: 'Academy & University Counseling', value: 'Education' },
+    { label: 'Legal & Management Consulting', value: 'Consultancy' },
+    { label: 'Real Estate & Architecture', value: 'Real Estate' },
+    { label: 'Enterprise Consulting Solutions', value: 'Professional Services' }
   ];
 
   constructor(
     private platform: PlatformService,
+    public industryService: IndustryService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
+    const orgSector = this.industryService.getSector();
+    if (orgSector) {
+      this.selectedTemplateToImport = orgSector;
+      this.currentService.sector = orgSector;
+    }
     this.loadServices();
     this.loadTemplates();
   }
@@ -93,13 +103,14 @@ export class ServicesComponent implements OnInit {
 
   openCreateDialog(): void {
     this.isEditMode = false;
+    const orgSector = this.industryService.getSector();
     this.currentService = {
       name: '',
       category: 'General Service',
       price: 50,
       duration_minutes: 30,
       active: true,
-      sector: 'Healthcare'
+      sector: orgSector || 'Healthcare'
     };
     this.showDialog = true;
   }

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PlatformService } from '../../services/platform.service';
+import { IndustryService } from '../../services/industry.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -13,6 +14,11 @@ export class CustomersComponent implements OnInit {
   searchTerm = '';
   selectedTag = 'ALL';
   loading = false;
+
+  // Multi-Industry terms
+  sector = 'Healthcare';
+  terms: any;
+  config: any;
 
   // Selected customer timeline modal/drawer
   selectedCustomer: any = null;
@@ -31,14 +37,21 @@ export class CustomersComponent implements OnInit {
     notes: ''
   };
 
-  tags = ['ALL', 'VIP', 'General', 'Dental', 'Preventive', 'Corporate'];
+  tags: string[] = ['ALL', 'VIP', 'General', 'Corporate'];
 
   constructor(
     private platform: PlatformService,
+    public industryService: IndustryService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
+    this.sector = this.industryService.getSector();
+    this.terms = this.industryService.getTerms(this.sector);
+    this.config = this.industryService.getConfig(this.sector);
+    if (this.config?.sampleCustomerTags?.length) {
+      this.tags = ['ALL', ...this.config.sampleCustomerTags];
+    }
     this.loadCustomers();
   }
 
@@ -51,7 +64,7 @@ export class CustomersComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.snackBar.open('Failed to load customers', 'Dismiss', { duration: 3000 });
+        this.snackBar.open(`Failed to load ${this.terms?.customerPluralLabel || 'customers'}`, 'Dismiss', { duration: 3000 });
         this.loading = false;
       }
     });
@@ -87,9 +100,7 @@ export class CustomersComponent implements OnInit {
       error: () => {
         this.customerTimeline = {
           customer,
-          appointments: [],
-          transactions: [],
-          messages: []
+          timeline: []
         };
         this.loadingTimeline = false;
       }
@@ -108,7 +119,7 @@ export class CustomersComponent implements OnInit {
       email: '',
       gender: 'Female',
       address: '',
-      tags: 'General',
+      tags: this.tags[1] || 'General',
       notes: ''
     };
     this.showAddDialog = true;
@@ -122,22 +133,22 @@ export class CustomersComponent implements OnInit {
 
     this.platform.createCustomer(this.newCustomer).subscribe({
       next: (created: any) => {
-        this.snackBar.open(`Customer ${created.name || 'record'} added!`, 'Dismiss', { duration: 3000 });
+        this.snackBar.open(`${this.terms?.customerLabel || 'Record'} ${created.name || ''} registered successfully!`, 'Dismiss', { duration: 3000 });
         this.showAddDialog = false;
         this.loadCustomers();
       },
       error: () => {
-        this.snackBar.open('Failed to create customer', 'Dismiss', { duration: 3000 });
+        this.snackBar.open(`Failed to register ${this.terms?.customerLabel || 'customer'}`, 'Dismiss', { duration: 3000 });
       }
     });
   }
 
   deleteCustomer(id: number, event: Event): void {
     event.stopPropagation();
-    if (confirm('Are you sure you want to remove this customer profile?')) {
+    if (confirm(`Are you sure you want to remove this ${this.terms?.customerLabel?.toLowerCase() || 'client'} profile?`)) {
       this.platform.deleteCustomer(id).subscribe({
         next: () => {
-          this.snackBar.open('Customer removed', 'Dismiss', { duration: 2500 });
+          this.snackBar.open('Profile removed', 'Dismiss', { duration: 2500 });
           if (this.selectedCustomer?.id === id) {
             this.closeTimeline();
           }

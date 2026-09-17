@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="header-section">
     <div class="title-group">
-      <div class="badge-pill">META CLOUD API SUITE</div>
+      <div class="badge-pill">META CLOUD API • {{ sector | uppercase }}</div>
       <h1 class="page-title">WhatsApp Bot & Communication Hub</h1>
       <p class="subtitle">Official Meta WhatsApp Business API integration with automated 24/7 conversational booking and instant payment triggers</p>
     </div>
@@ -121,8 +121,8 @@
               <mat-icon>local_hospital</mat-icon>
             </div>
             <div class="wa-info">
-              <span class="wa-name">City Care Health & Dental</span>
-              <span class="wa-sub">Official Business Account • Online</span>
+              <span class="wa-name">{{ config?.verified_name || (sector + ' Reception Desk') }}</span>
+              <span class="wa-sub">Official Verified Account • Online 24/7</span>
             </div>
           </div>
           <div class="wa-actions">
@@ -158,10 +158,11 @@
 
         <!-- Interactive Quick Option Chips -->
         <div class="quick-chips">
-          <button class="chip-btn" (click)="sendSimulatedMessage('1')">1️⃣ Book Slot</button>
-          <button class="chip-btn" (click)="sendSimulatedMessage('2')">2️⃣ My Bookings</button>
-          <button class="chip-btn" (click)="sendSimulatedMessage('4')">4️⃣ Pay Invoice</button>
-          <button class="chip-btn" (click)="sendSimulatedMessage('MENU')">🔄 Menu</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('1')">1️⃣ Book</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('2')">2️⃣ Catalog</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('3')">3️⃣ Locations</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('4')">4️⃣ Prep Info</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('Hi')">🔄 Menu</button>
         </div>
 
         <!-- WhatsApp Input Box -->

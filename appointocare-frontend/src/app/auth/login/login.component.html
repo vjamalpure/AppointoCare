@@ -12,23 +12,11 @@
         </svg>
       </div>
       <h1 class="brand-title">AppointoCare</h1>
-      <p class="brand-subtitle">Enterprise Healthcare & Appointment Management</p>
+      <p class="brand-subtitle">Universal Multi-Industry Scheduling & Operations Platform</p>
     </div>
 
-    <!-- Segmented Role Selector -->
+    <!-- Segmented 3-Tier Role Selector -->
     <div class="role-selector" role="tablist">
-      <button 
-        type="button" 
-        role="tab"
-        id="role-organization-tab"
-        class="role-tab" 
-        [class.active]="selectedRole === 'organization'" 
-        (click)="setRole('organization')">
-        <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-        </svg>
-        <span>Organization / Clinic</span>
-      </button>
       <button 
         type="button" 
         role="tab"
@@ -39,7 +27,31 @@
         <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 00-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm0 4a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
         </svg>
-        <span>Platform Admin</span>
+        <span>Super Admin</span>
+      </button>
+      <button 
+        type="button" 
+        role="tab"
+        id="role-organization-tab"
+        class="role-tab" 
+        [class.active]="selectedRole === 'organization'" 
+        (click)="setRole('organization')">
+        <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+        <span>Org Admin</span>
+      </button>
+      <button 
+        type="button" 
+        role="tab"
+        id="role-staff-tab"
+        class="role-tab" 
+        [class.active]="selectedRole === 'staff'" 
+        (click)="setRole('staff')">
+        <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+        </svg>
+        <span>Staff User</span>
       </button>
     </div>
 
@@ -54,11 +66,11 @@
 
     <!-- Login Form -->
     <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="login-form" novalidate>
-      <!-- Organization Code (shown only when Organization role is active) -->
-      <div class="form-group" *ngIf="selectedRole === 'organization'">
+      <!-- Organization Code (shown for Organization and Staff roles) -->
+      <div class="form-group" *ngIf="selectedRole !== 'admin'">
         <div class="label-row">
           <label for="orgCode">Organization Code</label>
-          <span class="label-hint">e.g. ORG1</span>
+          <span class="label-hint">e.g. ORG1..ORG9</span>
         </div>
         <div class="input-wrapper">
           <svg class="input-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -69,19 +81,24 @@
             id="orgCode" 
             name="organization_code" 
             [(ngModel)]="organization_code" 
-            (input)="clearError()"
-            placeholder="Enter Organization Code (e.g. ORG1)" 
+            #orgCodeInput="ngModel"
+            required
             autocomplete="organization"
-            [required]="selectedRole === 'organization'">
+            placeholder="Enter Org Code (e.g. ORG1)" 
+            class="form-control"
+            [class.is-invalid]="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
         </div>
-        <div class="field-error" *ngIf="!organization_code && loginForm.submitted">
-          Organization code is required
+        <div class="field-error" *ngIf="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
+          Organization code is required for tenant access.
         </div>
       </div>
 
       <!-- Username -->
       <div class="form-group">
-        <label for="username">Username</label>
+        <div class="label-row">
+          <label for="username">Username</label>
+          <span class="label-hint" *ngIf="selectedRole === 'admin'">superadmin</span>
+        </div>
         <div class="input-wrapper">
           <svg class="input-icon" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
@@ -91,19 +108,23 @@
             id="username" 
             name="username" 
             [(ngModel)]="username" 
-            (input)="clearError()"
-            placeholder="Enter your username" 
+            #usernameInput="ngModel"
+            required
             autocomplete="username"
-            required>
+            placeholder="Enter username" 
+            class="form-control"
+            [class.is-invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
         </div>
-        <div class="field-error" *ngIf="!username && loginForm.submitted">
-          Username is required
+        <div class="field-error" *ngIf="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
+          Username is required.
         </div>
       </div>
 
       <!-- Password -->
       <div class="form-group">
-        <label for="password">Password</label>
+        <div class="label-row">
+          <label for="password">Password</label>
+        </div>
         <div class="input-wrapper">
           <svg class="input-icon" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
@@ -113,13 +134,15 @@
             id="password" 
             name="password" 
             [(ngModel)]="password" 
-            (input)="clearError()"
-            placeholder="Enter your password" 
+            #passwordInput="ngModel"
+            required
             autocomplete="current-password"
-            required>
+            placeholder="Enter password" 
+            class="form-control has-toggle"
+            [class.is-invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
           <button 
             type="button" 
-            class="password-toggle" 
+            class="password-toggle-btn" 
             (click)="togglePasswordVisibility()" 
             [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
             tabindex="-1">
@@ -129,19 +152,23 @@
             </svg>
             <svg *ngIf="showPassword" class="toggle-icon" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
-              <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.064 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+              <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
             </svg>
           </button>
         </div>
-        <div class="field-error" *ngIf="!password && loginForm.submitted">
-          Password is required
+        <div class="field-error" *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+          Password is required.
         </div>
       </div>
 
-      <!-- Remember Me & Forgot Password Row -->
-      <div class="form-row-actions">
-        <label class="remember-toggle">
-          <input type="checkbox" id="rememberMe" [(ngModel)]="rememberMe" name="rememberMe">
+      <!-- Remember Me & Forgot Password -->
+      <div class="form-actions-row">
+        <label class="remember-label">
+          <input 
+            type="checkbox" 
+            name="rememberMe" 
+            [(ngModel)]="rememberMe" 
+            class="remember-checkbox">
           <span class="checkbox-custom"></span>
           <span class="remember-text">Remember me</span>
         </label>
@@ -160,38 +187,29 @@
         <span>{{ loading ? 'Signing in...' : 'Sign In' }}</span>
       </button>
 
-      <!-- Quick Demo Access Section -->
+      <!-- Multi-Industry Quick Demo Access Section -->
       <div class="demo-helpers">
         <div class="demo-header">
-          <span class="demo-title">Quick Demo Logins</span>
+          <span class="demo-title">Multi-Industry 1-Click Demo Logins</span>
         </div>
         <div class="demo-chips">
           <button 
             type="button" 
-            class="demo-chip"
+            class="demo-chip admin-chip"
             [class.chip-active]="selectedRole === 'admin' && username === 'superadmin'" 
             (click)="fillAdminDemo()" 
             title="Login as Platform SuperAdmin">
-            <span class="chip-badge admin-badge">Admin</span>
+            <span class="chip-badge admin-badge">Global Admin</span>
             <span class="chip-label">superadmin</span>
           </button>
           <button 
+            *ngFor="let preset of industryPresets" 
             type="button" 
             class="demo-chip"
-            [class.chip-active]="selectedRole === 'organization' && username === 'org1'" 
-            (click)="fillOrgDemo()" 
-            title="Login as Organization Admin (ORG1)">
-            <span class="chip-badge org-badge">Org Admin</span>
-            <span class="chip-label">org1 (ORG1)</span>
-          </button>
-          <button 
-            type="button" 
-            class="demo-chip"
-            [class.chip-active]="selectedRole === 'organization' && username === 'staff1'" 
-            (click)="fillStaffDemo()" 
-            title="Login as Organization Staff (ORG1)">
-            <span class="chip-badge staff-badge">Staff</span>
-            <span class="chip-label">staff1 (ORG1)</span>
+            [class.chip-active]="selectedRole === preset.role && username === preset.user && organization_code === preset.code" 
+            (click)="selectPreset(preset)" 
+            [title]="preset.org">
+            <span class="chip-label">{{ preset.label }}</span>
           </button>
         </div>
       </div>
@@ -205,7 +223,7 @@
         </svg>
         <span>End-to-End Encrypted Session</span>
       </div>
-      <p class="copyright">© {{ currentYear }} AppointoCare. All rights reserved.</p>
+      <p class="copyright">© {{ currentYear }} AppointoCare. Universal Multi-Industry Platform.</p>
     </div>
   </div>
 </div>

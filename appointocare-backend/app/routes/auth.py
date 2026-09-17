@@ -13,12 +13,14 @@ def _build_claims(user, role, organization=None):
     if organization:
         claims.update({
             "organization_name": organization.name,
-            "organization_id": str(organization.id)
+            "organization_id": str(organization.id),
+            "sector": getattr(organization, "sector", "Healthcare")
         })
     elif role == "Organization":
         claims.update({
             "organization_name": user.name,
-            "organization_id": str(user.id)
+            "organization_id": str(user.id),
+            "sector": getattr(user, "sector", "Healthcare")
         })
     return claims
 
@@ -49,11 +51,20 @@ def login():
         return jsonify({"msg": "Invalid password"}), 401
 
     # --- Organization or staff login ---
-    if not code:
-        return jsonify({"msg": "Organization code is required"}), 400
+    org = None
+    if code:
+        org = Organization.query.filter_by(code=code).first()
+    else:
+        # Fallback: check if username belongs to an Organization or single Staff user
+        org = Organization.query.filter_by(username=username).first()
+        if not org:
+            staff_match = User.query.filter_by(username=username).first()
+            if staff_match:
+                org = Organization.query.get(staff_match.organization_id)
 
-    org = Organization.query.filter_by(code=code).first()
     if not org:
+        if not code:
+            return jsonify({"msg": "Organization code is required"}), 400
         return jsonify({"msg": "Invalid organization code"}), 401
 
     # Organization admin login
@@ -67,7 +78,8 @@ def login():
                 "refresh_token": refresh_token,
                 "role": "Organization",
                 "organization_id": str(org.id),
-                "organization_name": org.name
+                "organization_name": org.name,
+                "sector": org.sector
             }), 200
         return jsonify({"msg": "Invalid password"}), 401
 
@@ -83,7 +95,8 @@ def login():
             "role": staff.role,
             "organization_id": str(org.id),
             "organization_name": org.name,
-            "username": staff.username
+            "username": staff.username,
+            "sector": org.sector
         }), 200
 
     return jsonify({"msg": "Invalid credentials"}), 401

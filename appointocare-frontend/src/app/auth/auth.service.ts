@@ -11,6 +11,7 @@ export interface DecodedToken {
   username?: string;
   organization_name?: string;
   organization_id?: string;
+  sector?: string;
   exp?: number;
   [key: string]: any;
 }
@@ -24,6 +25,7 @@ export class AuthService {
   private readonly REFRESH_KEY = 'appointocare_refresh_token';
   private readonly ROLE_KEY = 'appointocare_user_role';
   private readonly ORG_NAME_KEY = 'OrgName';
+  private readonly SECTOR_KEY = 'appointocare_org_sector';
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -46,6 +48,9 @@ export class AuthService {
           if (res.organization_name) {
             storage.setItem(this.ORG_NAME_KEY, res.organization_name);
           }
+          if (res.sector) {
+            storage.setItem(this.SECTOR_KEY, res.sector);
+          }
         }
       })
     );
@@ -57,15 +62,23 @@ export class AuthService {
     storage.setItem(this.ORG_NAME_KEY, name);
   }
 
+  saveSector(sector: string, rememberMe = false): void {
+    if (!sector) return;
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem(this.SECTOR_KEY, sector);
+  }
+
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_KEY);
     localStorage.removeItem(this.ROLE_KEY);
     localStorage.removeItem(this.ORG_NAME_KEY);
+    localStorage.removeItem(this.SECTOR_KEY);
     sessionStorage.removeItem(this.TOKEN_KEY);
     sessionStorage.removeItem(this.REFRESH_KEY);
     sessionStorage.removeItem(this.ROLE_KEY);
     sessionStorage.removeItem(this.ORG_NAME_KEY);
+    sessionStorage.removeItem(this.SECTOR_KEY);
     this.router.navigate(['/login']);
   }
 
@@ -120,6 +133,11 @@ export class AuthService {
   getOrganizationName(): string | null {
     const decoded = this.getDecodedToken();
     return decoded?.organization_name || localStorage.getItem(this.ORG_NAME_KEY) || sessionStorage.getItem(this.ORG_NAME_KEY) || null;
+  }
+
+  getSector(): string {
+    const decoded = this.getDecodedToken();
+    return decoded?.sector || localStorage.getItem(this.SECTOR_KEY) || sessionStorage.getItem(this.SECTOR_KEY) || 'Healthcare';
   }
 
   forgotPassword(payload: { username: string; role: string; code?: string }): Observable<any> {

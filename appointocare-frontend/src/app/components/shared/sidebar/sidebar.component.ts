@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../../auth/auth.service';
+import { IndustryService } from '../../../services/industry.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -22,10 +23,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
   role: string | null = null;
   username: string = '';
   orgName: string = '';
+  sector: string = 'Healthcare';
   private routerSub?: Subscription;
 
   constructor(
     private authService: AuthService,
+    private industry: IndustryService,
     private router: Router
   ) {}
 
@@ -50,49 +53,53 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const decoded = this.authService.getDecodedToken();
     this.username = decoded?.username || '';
     this.orgName = this.authService.getOrganizationName() || localStorage.getItem('OrgName') || '';
+    this.sector = this.authService.getSector();
+    this.industry.setSector(this.sector, false);
 
     this.menuItems = this.getMenuItemsForRole(this.role);
   }
 
   getMenuItemsForRole(role: string | null): NavItem[] {
-    if (role === 'Admin') {
+    const terms = this.industry.getTerms(this.sector);
+
+    if (role === 'Admin' || role === 'SuperAdmin') {
       return [
-        { label: 'Dashboard', route: '/admin-dashboard', icon: 'dashboard', exact: true },
+        { label: 'Platform Overview', route: '/admin-dashboard', icon: 'dashboard', exact: true },
         { label: 'Notifications Center', route: '/admin-dashboard/notifications', icon: 'notifications_active' },
-        { label: 'Appointments', route: '/admin-dashboard/appointments', icon: 'event' },
-        { label: 'Organizations', route: '/admin-dashboard/organizations', icon: 'business' },
-        { label: 'Subscriptions', route: '/admin-dashboard/subscriptions', icon: 'credit_card' },
-        { label: 'Transactions', route: '/admin-dashboard/transactions', icon: 'payments' },
-        { label: 'Platform & Gateway Setup', route: '/admin-dashboard/platform', icon: 'tune' },
-        { label: 'Audit & Security Logs', route: '/admin-dashboard/audit-logs', icon: 'verified_user' },
+        { label: 'Global Appointments', route: '/admin-dashboard/appointments', icon: 'event' },
+        { label: 'Tenants & Organizations', route: '/admin-dashboard/organizations', icon: 'business' },
+        { label: 'Subscriptions & Tiers', route: '/admin-dashboard/subscriptions', icon: 'credit_card' },
+        { label: 'Platform Transactions', route: '/admin-dashboard/transactions', icon: 'payments' },
+        { label: 'Platform Configuration', route: '/admin-dashboard/platform', icon: 'tune' },
+        { label: 'Security & Audit Logs', route: '/admin-dashboard/audit-logs', icon: 'verified_user' },
         { label: 'Analytics & Reports', route: '/admin-dashboard/reports', icon: 'insights' }
       ];
     } else if (role === 'Organization' || role === 'Manager') {
       return [
         { label: 'Overview', route: '/org-dashboard', icon: 'dashboard', exact: true },
         { label: 'Notifications', route: '/org-dashboard/notifications', icon: 'notifications_active' },
-        { label: 'Bookings & Schedule', route: '/org-dashboard/bookings', icon: 'calendar_month' },
-        { label: 'Customer CRM', route: '/org-dashboard/customers', icon: 'people' },
-        { label: 'Services Catalog', route: '/org-dashboard/services', icon: 'medical_services' },
-        { label: 'WhatsApp & Meta Bot', route: '/org-dashboard/whatsapp', icon: 'chat' },
-        { label: 'Team & Staff', route: '/org-dashboard/staff', icon: 'badge' },
+        { label: `${terms.appointmentPluralLabel} & Schedule`, route: '/org-dashboard/bookings', icon: 'calendar_month' },
+        { label: `${terms.customerPluralLabel} CRM`, route: '/org-dashboard/customers', icon: 'people' },
+        { label: `${terms.servicePluralLabel} Catalog`, route: '/org-dashboard/services', icon: 'medical_services' },
+        { label: 'WhatsApp & Reception Bot', route: '/org-dashboard/whatsapp', icon: 'chat' },
+        { label: `${terms.staffPluralLabel}`, route: '/org-dashboard/staff', icon: 'badge' },
         { label: 'Billing & Invoices', route: '/org-dashboard/transactions', icon: 'receipt_long' },
         { label: 'Platform Workspace', route: '/org-dashboard/workspace', icon: 'auto_fix_high' },
-        { label: 'Branches', route: '/org-dashboard/branches', icon: 'store' },
+        { label: `${terms.branchPluralLabel}`, route: '/org-dashboard/branches', icon: 'store' },
         { label: 'Organization Profile', route: '/org-dashboard/profile', icon: 'domain' },
-        { label: 'Plan & Billing', route: '/org-dashboard/subscription', icon: 'workspace_premium' }
-      ];
-    } else if (role === 'Staff') {
-      return [
-        { label: 'Staff Dashboard', route: '/org-dashboard', icon: 'dashboard', exact: true },
-        { label: 'Duty Notifications', route: '/org-dashboard/notifications', icon: 'notifications_active' },
-        { label: 'Schedule & Bookings', route: '/org-dashboard/bookings', icon: 'event_available' },
-        { label: 'Customer Directory', route: '/org-dashboard/customers', icon: 'people' },
-        { label: 'WhatsApp Messenger', route: '/org-dashboard/whatsapp', icon: 'chat' },
-        { label: 'Profile & Settings', route: '/org-dashboard/profile', icon: 'person' }
+        { label: 'Plan & Subscription', route: '/org-dashboard/subscription', icon: 'workspace_premium' }
       ];
     } else {
-      return [];
+      // Specialized Staff, Doctors, Stylists, Advisors, Realtors, Consultants
+      return [
+        { label: 'Overview', route: '/org-dashboard', icon: 'dashboard', exact: true },
+        { label: 'Duty Notifications', route: '/org-dashboard/notifications', icon: 'notifications_active' },
+        { label: `My ${terms.appointmentPluralLabel}`, route: '/org-dashboard/bookings', icon: 'event_available' },
+        { label: `${terms.customerPluralLabel} Directory`, route: '/org-dashboard/customers', icon: 'people' },
+        { label: `${terms.servicePluralLabel}`, route: '/org-dashboard/services', icon: 'medical_services' },
+        { label: 'WhatsApp Messenger', route: '/org-dashboard/whatsapp', icon: 'chat' },
+        { label: 'My Profile & Schedule', route: '/org-dashboard/profile', icon: 'person' }
+      ];
     }
   }
 
@@ -102,9 +109,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   getRoleBadgeLabel(): string {
-    if (this.role === 'Admin') return 'Super Admin';
-    if (this.role === 'Organization') return 'Clinic Admin';
-    if (this.role === 'Staff') return 'Staff Member';
-    return this.role || 'User';
+    if (this.role === 'Admin' || this.role === 'SuperAdmin') return 'Super Admin';
+    if (this.role === 'Organization') {
+      const config = this.industry.getConfig(this.sector);
+      return `${config.sector} Admin`;
+    }
+    return this.role || 'Staff';
   }
 }

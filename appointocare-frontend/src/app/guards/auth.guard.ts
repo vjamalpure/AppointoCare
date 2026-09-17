@@ -20,16 +20,33 @@ export class AuthGuard implements CanActivate {
     }
 
     const userRole = this.authService.getUserRole();
+    const isOrgLevel = ['Organization', 'Manager', 'Staff', 'Doctor', 'Therapist', 'Stylist', 'Advisor', 'Underwriter', 'Broker', 'Consultant', 'Specialist'].includes(userRole);
+    const isAdminLevel = userRole === 'Admin' || userRole === 'SuperAdmin';
+
     if (Array.isArray(expectedRole)) {
       if (expectedRole.includes(userRole)) {
         return true;
       }
-    } else if (expectedRole === userRole) {
-      return true;
+      if (expectedRole.includes('Staff') && isOrgLevel) {
+        return true;
+      }
+      if (expectedRole.includes('Admin') && isAdminLevel) {
+        return true;
+      }
+    } else {
+      if (expectedRole === userRole) {
+        return true;
+      }
+      if (expectedRole === 'Admin' && isAdminLevel) {
+        return true;
+      }
+      if ((expectedRole === 'Staff' || expectedRole === 'Organization') && isOrgLevel) {
+        return true;
+      }
     }
 
     // Role mismatch -> redirect to appropriate home
-    if (userRole === 'Admin') {
+    if (isAdminLevel) {
       this.router.navigate(['/admin-dashboard']);
     } else {
       this.router.navigate(['/org-dashboard']);

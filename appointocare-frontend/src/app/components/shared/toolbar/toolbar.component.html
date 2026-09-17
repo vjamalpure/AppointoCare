@@ -16,6 +16,9 @@
       <mat-icon>business</mat-icon>
       {{ organizationName }}
     </span>
+    <span class="sector-chip" *ngIf="role !== 'Admin' && role !== 'SuperAdmin'">
+      {{ getSectorBadge() }}
+    </span>
   </div>
 
   <div class="toolbar-right">

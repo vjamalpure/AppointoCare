@@ -24,12 +24,15 @@
     </div>
     <div class="banner-action">
       <select [(ngModel)]="selectedTemplateToImport" class="std-select">
-        <option value="Healthcare">Hospital & Dental Clinic</option>
-        <option value="Finance">Financial Advisory & Accounting</option>
-        <option value="Salon">Salon, Spa & Beauty Care</option>
-        <option value="Retail">Retail & Hardware Service</option>
-        <option value="Education">Education, Tutoring & Coaching</option>
-        <option value="Consultancy">Legal & Business Consulting</option>
+        <option value="Healthcare">Hospital & Medical Clinic</option>
+        <option value="Finance">Wealth & Financial Advisory</option>
+        <option value="Salon">Salon & Wellness Spa</option>
+        <option value="Retail">Luxury Retail & Styling</option>
+        <option value="Insurance">Life & General Insurance</option>
+        <option value="Education">Academy & University Counseling</option>
+        <option value="Consultancy">Strategic Management & Legal Advisory</option>
+        <option value="Real Estate">Real Estate & Architecture</option>
+        <option value="Professional Services">Custom Enterprise Solutions</option>
       </select>
       <button mat-flat-button color="accent" [disabled]="importingSector" (click)="importTemplate()">
         <mat-icon>file_download</mat-icon> Import Services
@@ -132,11 +135,14 @@
             <label>Business Sector</label>
             <select [(ngModel)]="currentService.sector" class="std-input">
               <option value="Healthcare">Healthcare & Clinic</option>
-              <option value="Finance">Financial Services</option>
-              <option value="Salon">Salon & Wellness</option>
-              <option value="Retail">Retail & Shop</option>
-              <option value="Consultancy">Consultancy & Legal</option>
-              <option value="Education">Education & Tutoring</option>
+              <option value="Finance">Wealth & Financial Advisory</option>
+              <option value="Salon">Salon & Wellness Spa</option>
+              <option value="Retail">Luxury Retail & Styling</option>
+              <option value="Insurance">Life & General Insurance</option>
+              <option value="Education">Academy & University Counseling</option>
+              <option value="Consultancy">Legal & Management Consulting</option>
+              <option value="Real Estate">Real Estate & Architecture</option>
+              <option value="Professional Services">Custom Enterprise Solutions</option>
             </select>
           </div>
 

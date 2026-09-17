@@ -2,12 +2,12 @@
   <!-- Page Header -->
   <div class="header-section">
     <div class="title-group">
-      <div class="badge-pill">CRM & ENGAGEMENT</div>
-      <h1 class="page-title">Customer & Client Directory</h1>
-      <p class="subtitle">Multi-sector CRM with unified appointment history, payment transactions, and WhatsApp records</p>
+      <div class="badge-pill">MULTI-INDUSTRY CRM • {{ sector | uppercase }}</div>
+      <h1 class="page-title">{{ terms?.customerPluralLabel || 'Customer' }} Directory</h1>
+      <p class="subtitle">{{ terms?.customerLabel || 'Customer' }} 360 profile, unified {{ terms?.appointmentLabel?.toLowerCase() || 'appointment' }} timeline, transactions, and WhatsApp records</p>
     </div>
     <button mat-flat-button color="primary" class="add-btn" (click)="openAddDialog()">
-      <mat-icon>person_add</mat-icon> Add Customer
+      <mat-icon>person_add</mat-icon> Add {{ terms?.customerLabel || 'Customer' }}
     </button>
   </div>
 
@@ -48,11 +48,11 @@
         <table class="cust-table">
           <thead>
             <tr>
-              <th>Customer</th>
+              <th>{{ terms?.customerLabel || 'Customer' }}</th>
               <th>Contact Info</th>
               <th>Gender</th>
               <th>Tag</th>
-              <th>Appointments</th>
+              <th>{{ terms?.appointmentPluralLabel || 'Appointments' }}</th>
               <th>Total Spent</th>
               <th>Actions</th>
             </tr>
@@ -215,7 +215,7 @@
   <div class="modal-backdrop" *ngIf="showAddDialog" (click)="showAddDialog = false">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Create New Customer Profile</h3>
+        <h3>Create New {{ terms?.customerLabel || 'Customer' }} Profile</h3>
         <button mat-icon-button (click)="showAddDialog = false">
           <mat-icon>close</mat-icon>
         </button>
@@ -224,7 +224,7 @@
       <div class="modal-form">
         <div class="form-row">
           <div class="form-group">
-            <label>Full Name *</label>
+            <label>{{ terms?.customerLabel || 'Client' }} Full Name *</label>
             <input type="text" [(ngModel)]="newCustomer.name" placeholder="e.g. Eleanor Vance" class="std-input" />
           </div>
           <div class="form-group">
@@ -253,11 +253,7 @@
           <div class="form-group">
             <label>Tag / Segment</label>
             <select [(ngModel)]="newCustomer.tags" class="std-input">
-              <option value="General">General</option>
-              <option value="VIP">VIP</option>
-              <option value="Dental">Dental</option>
-              <option value="Preventive">Preventive</option>
-              <option value="Corporate">Corporate</option>
+              <option *ngFor="let t of tags" [value]="t" [disabled]="t === 'ALL'">{{ t }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -267,15 +263,15 @@
         </div>
 
         <div class="form-group full">
-          <label>Internal Client Notes</label>
-          <textarea [(ngModel)]="newCustomer.notes" rows="3" placeholder="Preferences, insurance details, allergic history..." class="std-input"></textarea>
+          <label>{{ terms?.customerNotesLabel || 'Internal Client Notes' }}</label>
+          <textarea [(ngModel)]="newCustomer.notes" rows="3" placeholder="Directives, preferences, intake history..." class="std-input"></textarea>
         </div>
       </div>
 
       <div class="modal-footer">
         <button mat-stroked-button (click)="showAddDialog = false">Cancel</button>
         <button mat-flat-button color="primary" (click)="createCustomer()">
-          <mat-icon>check</mat-icon> Save Customer
+          <mat-icon>check</mat-icon> Save {{ terms?.customerLabel || 'Customer' }}
         </button>
       </div>
     </div>

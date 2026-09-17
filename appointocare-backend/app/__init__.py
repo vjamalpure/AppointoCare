@@ -3,7 +3,7 @@ from .models import db
 from .config import Config
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from flask_cors import CORS  # <- Import CORS
+from flask_cors import CORS
 from sqlalchemy import text
 
 
@@ -20,7 +20,7 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "service": "appointocare-api"}, 200
+        return {"status": "ok", "service": "appointocare-api", "app": "AppointoCare"}, 200
 
     @app.get("/ready")
     def ready():
@@ -42,16 +42,35 @@ def create_app():
     from .routes.whatsapp import whatsapp_bp
     from .routes.platform import platform_bp
     from .routes.providers import provider_bp
+    from .routes.payments import payments_bp
+    from .routes.audit_logs import audit_bp
+    from .routes.organization_v1 import org_v1_bp, ai_bp
 
+    # Auth & Admin & Core
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(organization_bp, url_prefix="/organization")
     app.register_blueprint(appointment_bp, url_prefix="/appointments")
     app.register_blueprint(transaction_bp, url_prefix="/transactions")
-    app.register_blueprint(admin_bp, url_prefix="/admin")
-    app.register_blueprint(customer_bp, url_prefix="/customer")
+
+    # Multi-Industry Services Catalog (dual-prefix)
     app.register_blueprint(service_bp, url_prefix="/service")
+    app.register_blueprint(service_bp, url_prefix="/api/v1/services", name="service_api_v1")
+
+    # Customer CRM (dual-prefix)
+    app.register_blueprint(customer_bp, url_prefix="/customer")
+    app.register_blueprint(customer_bp, url_prefix="/api/v1/customers", name="customer_api_v1")
+
+    # WhatsApp Meta Cloud API (dual-prefix)
     app.register_blueprint(whatsapp_bp, url_prefix="/whatsapp")
+    app.register_blueprint(whatsapp_bp, url_prefix="/api/v1/whatsapp", name="whatsapp_api_v1")
+
+    # Platform, Providers, Payments, Audit Logs, Staff & AI
     app.register_blueprint(platform_bp, url_prefix="/api/v1/platform")
     app.register_blueprint(provider_bp, url_prefix="/api/v1/providers")
+    app.register_blueprint(payments_bp, url_prefix="/api/v1/payments")
+    app.register_blueprint(audit_bp, url_prefix="/api/v1/audit-logs")
+    app.register_blueprint(org_v1_bp, url_prefix="/api/v1/organization")
+    app.register_blueprint(ai_bp, url_prefix="/api/v1/ai")
 
     return app
