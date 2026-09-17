@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NotificationService, AppNotification } from '../../../services/notification.service';
 import { IndustryService } from '../../../services/industry.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-toolbar',
@@ -19,6 +20,19 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   notifications: AppNotification[] = [];
   unreadCount: number = 0;
   private subs: Subscription = new Subscription();
+
+  readonly isProduction: boolean = environment.production;
+
+  get showRoleSwitcher(): boolean {
+    if (this.isProduction) {
+      try {
+        return localStorage.getItem('appointocare_dev_mode') === 'true';
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  }
 
   constructor(
     private authService: AuthService,
@@ -119,6 +133,16 @@ export class ToolbarComponent implements OnInit, OnDestroy {
       return `${config.sector} Portal`;
     }
     return `${this.role || 'Staff'} Portal`;
+  }
+
+  getRoleIcon(): string {
+    if (this.role === 'Admin' || this.role === 'SuperAdmin') {
+      return 'admin_panel_settings';
+    }
+    if (this.role === 'Organization') {
+      return this.getSectorIcon() || 'corporate_fare';
+    }
+    return 'badge';
   }
 
   getCategoryIcon(category: string): string {

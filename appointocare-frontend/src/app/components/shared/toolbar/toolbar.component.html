@@ -163,27 +163,41 @@
       </div>
     </mat-menu>
 
-    <!-- Quick Role Switcher for Testing & Demo -->
-    <button mat-stroked-button class="role-switcher-btn" [matMenuTriggerFor]="roleMenu">
-      <mat-icon>swap_horiz</mat-icon>
-      <span>{{ getRoleDisplayName() }}</span>
-      <mat-icon>arrow_drop_down</mat-icon>
-    </button>
-    <mat-menu #roleMenu="matMenu">
-      <div class="menu-header">Quick Role Switcher</div>
-      <button mat-menu-item (click)="switchRole('Admin')">
-        <mat-icon color="warn">admin_panel_settings</mat-icon>
-        <span>Super Admin Portal</span>
+    <!-- Quick Role Switcher (Dev & Testing Purpose Only - Never visible on Production) -->
+    <ng-container *ngIf="showRoleSwitcher; else prodRoleBadge">
+      <button mat-stroked-button class="role-switcher-btn dev-switcher" [matMenuTriggerFor]="roleMenu" matTooltip="Development Role Switcher">
+        <span class="dev-badge">DEV</span>
+        <mat-icon class="switch-icon">swap_horiz</mat-icon>
+        <span class="role-text">{{ getRoleDisplayName() }}</span>
+        <mat-icon class="arrow-icon">arrow_drop_down</mat-icon>
       </button>
-      <button mat-menu-item (click)="switchRole('Organization')">
-        <mat-icon color="primary">corporate_fare</mat-icon>
-        <span>Organization Admin</span>
-      </button>
-      <button mat-menu-item (click)="switchRole('Staff')">
-        <mat-icon color="accent">badge</mat-icon>
-        <span>Staff Member Portal</span>
-      </button>
-    </mat-menu>
+      <mat-menu #roleMenu="matMenu" class="role-switcher-menu">
+        <div class="menu-header">
+          <span>Dev Role Switcher</span>
+          <span class="menu-header-tag">Dev/Test Only</span>
+        </div>
+        <button mat-menu-item (click)="switchRole('Admin')">
+          <mat-icon color="warn">admin_panel_settings</mat-icon>
+          <span>Super Admin Portal</span>
+        </button>
+        <button mat-menu-item (click)="switchRole('Organization')">
+          <mat-icon color="primary">corporate_fare</mat-icon>
+          <span>Organization Admin</span>
+        </button>
+        <button mat-menu-item (click)="switchRole('Staff')">
+          <mat-icon color="accent">badge</mat-icon>
+          <span>Staff Member Portal</span>
+        </button>
+      </mat-menu>
+    </ng-container>
+
+    <!-- Production Role Badge (Read-Only, Clean & Secure Identity) -->
+    <ng-template #prodRoleBadge>
+      <div class="current-role-badge" [attr.data-role]="role">
+        <mat-icon class="role-badge-icon">{{ getRoleIcon() }}</mat-icon>
+        <span class="role-badge-text">{{ getRoleDisplayName() }}</span>
+      </div>
+    </ng-template>
 
     <!-- User Profile & Logout -->
     <div class="user-profile">
