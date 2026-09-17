@@ -88,7 +88,7 @@ SAMPLE_ORGANIZATIONS = [
                     "prescriber": "Dr. Sarah Jenkins, MD (Board Certified)",
                     "rx_number": "RX-2026-HC-00812",
                     "diagnosis": "Acute bacterial maxillary sinusitis with localized dental inflammation.",
-                    "vitals": {"bp": "122/78 mmHg", "pulse": "72 bpm", "temp": "98.6 °F", "spo2": "99%"},
+                    "vitals": {"bp": "122/78 mmHg", "pulse": "72 bpm", "temp": "98.6 Â°F", "spo2": "99%"},
                     "medications": [
                         {"name": "Amoxicillin / Clavulanate 625mg", "dosage": "1 tablet twice daily", "duration": "7 days", "instructions": "Take with meals. Complete entire course."},
                         {"name": "Ibuprofen 400mg", "dosage": "1 tablet as needed", "duration": "5 days", "instructions": "Take with food for pain."}
@@ -106,7 +106,7 @@ SAMPLE_ORGANIZATIONS = [
                     "triage_level": "Tier 3 - Semi-Urgent",
                     "blood_pressure": "135/85 mmHg",
                     "pulse_rate": "84 bpm",
-                    "body_temperature": "99.1 °F",
+                    "body_temperature": "99.1 Â°F",
                     "spo2_oxygen": "97%",
                     "allergies": ["Penicillin", "Latex"],
                     "presenting_complaint": "Persistent severe right-side dental pain radiating to jaw.",
@@ -128,6 +128,68 @@ SAMPLE_ORGANIZATIONS = [
                     "hba1c": "5.4%",
                     "lab_accession_id": "METRO-LAB-2026-9901",
                     "interpretation": "Normal metabolic markers. Optimal glycemic index."
+                }
+            },
+            {
+                "title": "OPD Queue Token #OPD-001 - Michael Harrison",
+                "record_type": "opd_queue",
+                "customer_phone": "+1 555-1101",
+                "status": "Waiting",
+                "data": {
+                    "token_number": "OPD-001",
+                    "queue_status": "Waiting",
+                    "department": "General Medicine",
+                    "priority": "Normal",
+                    "assigned_doctor": "Dr. Sarah Jenkins",
+                    "estimated_wait": "15 minutes",
+                    "check_in_time": "09:30 AM"
+                }
+            },
+            {
+                "title": "OPD Queue Token #OPD-002 - Emma Watson",
+                "record_type": "opd_queue",
+                "customer_phone": "+1 555-1104",
+                "status": "In Consultation",
+                "data": {
+                    "token_number": "OPD-002",
+                    "queue_status": "In Consultation",
+                    "department": "Pediatrics",
+                    "priority": "Normal",
+                    "assigned_doctor": "Dr. Chen Wei",
+                    "estimated_wait": "0 minutes",
+                    "check_in_time": "09:15 AM"
+                }
+            },
+            {
+                "title": "SOAP Clinical Notes - David Miller (Post-Orthopedic Assessment)",
+                "record_type": "soap_note",
+                "customer_phone": "+1 555-1103",
+                "status": "Completed",
+                "data": {
+                    "subjective": "Patient reports persistent right knee pain post-marathon. Pain score 5/10, aggravated by stair climbing.",
+                    "objective": "Range of motion 120Â° flexion. X-ray shows mild patellofemoral joint space narrowing. No effusion.",
+                    "assessment": "Early-stage patellofemoral syndrome. BMI 24.2, cardiovascular fitness excellent.",
+                    "plan": "Physical therapy referral 3x/week for 6 weeks. Naproxen 500mg PRN. Follow-up in 30 days with MRI if unresolved.",
+                    "icd10_codes": ["M22.0", "M25.561"],
+                    "attending_physician": "Dr. Chen Wei, MD (Orthopedics)"
+                }
+            },
+            {
+                "title": "Medical Invoice & Pre-Auth #INV-HC-2026-001 - Sarah Connor",
+                "record_type": "medical_bill",
+                "customer_phone": "+1 555-1102",
+                "status": "Active",
+                "data": {
+                    "invoice_number": "INV-HC-2026-001",
+                    "procedure_codes": ["D0120", "D1110"],
+                    "consultation_fee": 180.0,
+                    "lab_charges": 0.0,
+                    "pharmacy_charges": 45.0,
+                    "total_billed": 225.0,
+                    "insurance_coverage": 180.0,
+                    "patient_copay": 45.0,
+                    "tpa_provider": "Aetna PPO Network",
+                    "pre_auth_status": "Approved"
                 }
             }
         ]
@@ -170,7 +232,7 @@ SAMPLE_ORGANIZATIONS = [
                 "data": {
                     "suite_name": "Suite 2 - Hydrotherapy & Aromatherapy Sanctuary",
                     "lead_aesthetician": "Olivia Vance (Senior Aesthetician)",
-                    "ambient_temperature": "24°C",
+                    "ambient_temperature": "24Â°C",
                     "scent_profile": "Organic Eucalyptus & Lavender Infusion",
                     "suite_amenities": ["Heated ergonomic contour table", "Chromotherapy soft illumination", "Soundproof acoustical enclosure"]
                 }
@@ -204,6 +266,40 @@ SAMPLE_ORGANIZATIONS = [
                     ],
                     "additional_total": 110.0,
                     "guest_experience_rating": "5 / 5 Stars"
+                }
+            },
+            {
+                "title": "10-Session Ritual Pass (Gold Tier) - Jessica Alba",
+                "record_type": "ritual_pass",
+                "customer_phone": "+1 555-2101",
+                "status": "Active",
+                "data": {
+                    "pass_type": "Gold Spa Ritual Pass",
+                    "total_sessions": 10,
+                    "sessions_used": 3,
+                    "sessions_remaining": 7,
+                    "pass_value": 1800.0,
+                    "per_session_value": 180.0,
+                    "valid_services": ["Hydra-Facial", "Dermaplaning", "Deep Tissue Massage", "Aromatherapy"],
+                    "expiry_date": "2027-03-15",
+                    "auto_renew": True
+                }
+            },
+            {
+                "title": "Backbar Consumable Log - Suite 2 (September 2026)",
+                "record_type": "backbar_log",
+                "customer_phone": "+1 555-2101",
+                "status": "Active",
+                "data": {
+                    "suite_name": "Suite 2 - Hydrotherapy Sanctuary",
+                    "period": "September 2026",
+                    "consumables": [
+                        {"item": "Dermalogica Daily Microfoliant (75g)", "qty_used": 4, "unit_cost": 18.50, "total": 74.0},
+                        {"item": "Elemis Pro-Collagen Marine Cream (50ml)", "qty_used": 2, "unit_cost": 42.0, "total": 84.0},
+                        {"item": "Organic Essential Oil Blend (Lavender/Eucalyptus)", "qty_used": 6, "unit_cost": 12.0, "total": 72.0}
+                    ],
+                    "total_consumable_cost": 230.0,
+                    "variance_from_budget": "-$20 (Under budget)"
                 }
             }
         ]
@@ -280,6 +376,25 @@ SAMPLE_ORGANIZATIONS = [
                     "fiduciary_standard": "SEC Section 206 Standard of Utmost Good Faith",
                     "effective_date": "2026-09-10"
                 }
+            },
+            {
+                "title": "Q3 Fiduciary Quarterly Review Scheduler - Marcus Vance",
+                "record_type": "quarterly_review",
+                "customer_phone": "+1 555-3101",
+                "status": "Active",
+                "data": {
+                    "review_quarter": "Q3 2026",
+                    "scheduled_review_date": "2026-10-05",
+                    "agenda_items": [
+                        "Portfolio performance vs S&P 500 benchmark",
+                        "Tax-loss harvesting opportunities before year-end",
+                        "Alternative investment allocation review (Private Credit)",
+                        "Insurance coverage adequacy audit"
+                    ],
+                    "risk_score_current": 6.8,
+                    "risk_score_target": 7.0,
+                    "compliance_status": "All Form ADV disclosures current"
+                }
             }
         ]
     },
@@ -351,6 +466,24 @@ SAMPLE_ORGANIZATIONS = [
                     "deductible_applied": 400.0,
                     "status": "Approved & Disbursed to Healthcare Provider"
                 }
+            },
+            {
+                "title": "Policy Schedule & Nominee Document Vault - Robert Langdon",
+                "record_type": "policy_vault",
+                "customer_phone": "+1 555-4102",
+                "status": "Active",
+                "data": {
+                    "policy_number": "POL-NY-77291-L",
+                    "policy_type": "20-Year Level Premium Term Life",
+                    "sum_assured": "$2,500,000 USD",
+                    "nominees": [
+                        {"name": "Margaret Langdon", "relationship": "Spouse", "share_pct": 60},
+                        {"name": "Philip Langdon", "relationship": "Son", "share_pct": 40}
+                    ],
+                    "endorsement_riders": ["Accidental Death Benefit", "Critical Illness Accelerator"],
+                    "last_premium_paid": "2026-09-01",
+                    "next_premium_due": "2026-10-01"
+                }
             }
         ]
     },
@@ -400,13 +533,13 @@ SAMPLE_ORGANIZATIONS = [
                 }
             },
             {
-                "title": "Chambre Privée Lounge Reservation - Claire Dupont",
+                "title": "Chambre PrivÃ©e Lounge Reservation - Claire Dupont",
                 "record_type": "vip_lounge",
                 "customer_phone": "+1 555-5101",
                 "status": "Active",
                 "data": {
-                    "reserved_suite": "The Platinum Mirror Salon (Chambre Privée 1)",
-                    "beverage_service": "Dom Pérignon 2013 Brut & Sparkling San Pellegrino",
+                    "reserved_suite": "The Platinum Mirror Salon (Chambre PrivÃ©e 1)",
+                    "beverage_service": "Dom PÃ©rignon 2013 Brut & Sparkling San Pellegrino",
                     "curated_soundtrack": "Acoustic Paris Classical Lounge",
                     "accompanying_guests": 1,
                     "personal_concierge": "Jean-Luc (Senior Wardrobe Director)"
@@ -425,6 +558,25 @@ SAMPLE_ORGANIZATIONS = [
                         {"sku": "AURA-A-108", "name": "Hand-Stitched Italian Nappa Gloves", "color": "Bordeaux", "price": 650.0}
                     ],
                     "total_lookbook_value": 8650.0
+                }
+            },
+            {
+                "title": "Bespoke Alteration Pipeline #ALT-2026-019 - Vivienne Westwood VIP",
+                "record_type": "alteration_ticket",
+                "customer_phone": "+1 555-5102",
+                "status": "Active",
+                "data": {
+                    "ticket_id": "ALT-2026-019",
+                    "garment": "Hand-Tailored Silk Lapel Tuxedo Jacket",
+                    "alteration_type": "Sleeve Shortening + Waist Suppression",
+                    "stages": [
+                        {"stage": "Pinned & Marked", "status": "Completed", "date": "2026-09-14"},
+                        {"stage": "In Atelier (Master Tailor)", "status": "In Progress", "date": "2026-09-16"},
+                        {"stage": "Pressed & Quality Check", "status": "Pending", "date": None},
+                        {"stage": "Ready for Client Fitting", "status": "Pending", "date": None}
+                    ],
+                    "estimated_completion": "2026-09-20",
+                    "alteration_fee": 185.0
                 }
             }
         ]
@@ -500,6 +652,22 @@ SAMPLE_ORGANIZATIONS = [
                     },
                     "counselor_editorial_remarks": "Compelling narrative opening on computational biology laboratory trial. Sharpen concluding paragraph to clearly synthesize prospective undergraduate research goals."
                 }
+            },
+            {
+                "title": "Dean's Merit Scholarship Match Analysis - Alexander Young",
+                "record_type": "scholarship_match",
+                "customer_phone": "+1 555-6101",
+                "status": "Active",
+                "data": {
+                    "matched_scholarships": [
+                        {"name": "Stanford Knight-Hennessy Scholars", "amount": "Full Tuition + Stipend", "deadline": "Oct 11, 2026", "fit_score": "92%"},
+                        {"name": "MIT Presidential Fellowship", "amount": "$75,000/year", "deadline": "Dec 01, 2026", "fit_score": "88%"},
+                        {"name": "Georgia Tech Presidential Scholarship", "amount": "$25,000/year", "deadline": "Jan 05, 2027", "fit_score": "95%"}
+                    ],
+                    "total_potential_value": "$350,000+",
+                    "css_profile_status": "Submitted & Verified",
+                    "fafsa_efc": "$18,500"
+                }
             }
         ]
     },
@@ -570,6 +738,24 @@ SAMPLE_ORGANIZATIONS = [
                     "indemnification_cap": "Capped at 10% total transaction purchase price",
                     "escrow_holdback": "$2,400,000 USD held for 18 calendar months",
                     "rep_and_warranty_insurance": "Bound with Lloyd's Syndicate"
+                }
+            },
+            {
+                "title": "Court Filing & Discovery Milestones - Project Apex M&A",
+                "record_type": "matter_milestone",
+                "customer_phone": "+1 555-7101",
+                "status": "Active",
+                "data": {
+                    "matter_code": "MAT-2026-MA-041",
+                    "milestones": [
+                        {"milestone": "Initial Due Diligence Request List", "deadline": "2026-09-20", "status": "Completed"},
+                        {"milestone": "Virtual Data Room Population", "deadline": "2026-09-28", "status": "In Progress"},
+                        {"milestone": "Definitive Agreement Signature", "deadline": "2026-10-15", "status": "Pending"},
+                        {"milestone": "Regulatory Antitrust Filing (HSR)", "deadline": "2026-10-30", "status": "Pending"},
+                        {"milestone": "Closing & Fund Transfer", "deadline": "2026-11-15", "status": "Pending"}
+                    ],
+                    "statute_of_limitations": "N/A (Transactional)",
+                    "managing_attorney": "Eleanor Sterling, Esq."
                 }
             }
         ]
@@ -642,6 +828,28 @@ SAMPLE_ORGANIZATIONS = [
                     "projected_cap_rate": "5.52%",
                     "zoning_classification": "M1-5B (Commercial & Ground-Floor Retail Compliant)"
                 }
+            },
+            {
+                "title": "Escrow & Earnest Deposit Pipeline - Lady Catherine (111 W 57th St)",
+                "record_type": "escrow_pipeline",
+                "customer_phone": "+1 555-8101",
+                "status": "Active",
+                "data": {
+                    "property_address": "111 West 57th Street, Penthouse 64",
+                    "listing_price": 22500000.0,
+                    "offer_price": 21800000.0,
+                    "earnest_money_deposit": 2180000.0,
+                    "escrow_company": "Stewart Title Guaranty Company",
+                    "pipeline_stages": [
+                        {"stage": "Offer Accepted", "status": "Completed", "date": "2026-09-12"},
+                        {"stage": "Earnest Money Deposited", "status": "Completed", "date": "2026-09-14"},
+                        {"stage": "Appraisal & Inspection", "status": "In Progress", "date": "2026-09-18"},
+                        {"stage": "Title Search & Insurance", "status": "Pending", "date": None},
+                        {"stage": "Closing & Key Handover", "status": "Pending", "date": None}
+                    ],
+                    "estimated_closing_date": "2026-10-15",
+                    "mortgage_pre_approval": "Cash Purchase - No Mortgage Required"
+                }
             }
         ]
     },
@@ -712,6 +920,24 @@ SAMPLE_ORGANIZATIONS = [
                     "allocated_capital_budget": "$350,000 Capex allocated for H1 implementation.",
                     "next_audit_date": "2026-10-15"
                 }
+            },
+            {
+                "title": "SLA Incident Log #INC-2026-047 - Global Fintech Conglomerate",
+                "record_type": "sla_incident",
+                "customer_phone": "+1 555-9102",
+                "status": "Active",
+                "data": {
+                    "incident_id": "INC-2026-047",
+                    "severity": "P2 - High",
+                    "sla_target_response": "30 minutes",
+                    "actual_response": "18 minutes",
+                    "sla_met": True,
+                    "description": "Kubernetes pod crash loop detected in us-east-1 production cluster. Auto-scaling triggered failover to eu-west-1.",
+                    "root_cause": "Memory limit exceeded on data ingestion pod due to malformed CSV batch import.",
+                    "resolution": "Memory limits increased to 4Gi. CSV validation pre-processor deployed. Incident resolved in 42 minutes.",
+                    "escalation_tier": "Tier 2 - Senior DevOps Engineer",
+                    "post_mortem_scheduled": "2026-09-19"
+                }
             }
         ]
     }
@@ -776,7 +1002,7 @@ def seed_all_sample_data(reset=False):
         truncate_sql = f"TRUNCATE TABLE {', '.join(table_list)} RESTART IDENTITY CASCADE;"
         db.session.execute(db.text(truncate_sql))
         db.session.commit()
-        print("✓ Previous domain records cleared.")
+        print("âœ“ Previous domain records cleared.")
 
     # 1. SuperAdmin User
     admin_user = os.getenv("ADMIN_USERNAME", "superadmin")
@@ -790,11 +1016,11 @@ def seed_all_sample_data(reset=False):
         )
         db.session.add(admin)
         db.session.commit()
-        print(f"✓ SuperAdmin created: {admin_user}")
+        print(f"âœ“ SuperAdmin created: {admin_user}")
     else:
         admin.password = hash_password(DEFAULT_ADMIN_PASSWORD)
         db.session.commit()
-        print(f"✓ SuperAdmin verified: {admin_user}")
+        print(f"âœ“ SuperAdmin verified: {admin_user}")
 
     # 2. Subscription Plans
     for plan_data in SUBSCRIPTION_PLANS:
@@ -814,7 +1040,7 @@ def seed_all_sample_data(reset=False):
             plan.feature_limits = plan_data["feature_limits"]
             plan.description = plan_data["description"]
     db.session.commit()
-    print("✓ Subscription Plans synchronized.")
+    print("âœ“ Subscription Plans synchronized.")
 
     # 3. Sector Templates
     for template_name, services in SECTOR_TEMPLATES.items():
@@ -830,7 +1056,7 @@ def seed_all_sample_data(reset=False):
         else:
             template.services = services
     db.session.commit()
-    print("✓ Sector Templates synchronized.")
+    print("âœ“ Sector Templates synchronized.")
 
     # 4. Organizations, Branches, Staff, Services, Customers, Appointments, Industry Records
     now = datetime.utcnow()
@@ -1062,7 +1288,7 @@ def seed_all_sample_data(reset=False):
         db.session.commit()
 
     print("=" * 60)
-    print("✓ AppointoCare Sample Data Migration Completed Successfully!")
+    print("âœ“ AppointoCare Sample Data Migration Completed Successfully!")
     print(f"  Organizations : {len(SAMPLE_ORGANIZATIONS)} Multi-Industry Tenants (ORG1 to ORG9)")
     print("  SuperAdmin    : superadmin / Admin@12345")
     print("  Org Admins    : org1..org9 / Org@12345")

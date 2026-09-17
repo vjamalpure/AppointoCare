@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../auth/auth.service';
 import { AppointmentService } from '../../services/appointments.service';
+import { IndustryService } from '../../services/industry.service';
 
 export interface Appointment {
   id: number;
@@ -46,15 +47,39 @@ export class DashboardComponent implements OnInit {
   editAppointment: Appointment | null = null;
   editAppointmentDateTime: string = '';
 
+  // Industry Operational Command Strip
+  sectorStats: any = null;
+  sectorBenchmarks: any = null;
+  sectorIcon = 'domain';
+  sectorLabel = 'Operations';
+
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private appointmentService: AppointmentService
+    private appointmentService: AppointmentService,
+    private industryService: IndustryService
   ) {}
 
   ngOnInit(): void {
     this.role = this.authService.getUserRole();
     this.loadDashboard();
+    this.loadSectorStats();
+  }
+
+  loadSectorStats(): void {
+    const sector = this.industryService.getSector();
+    const config = this.industryService.getConfig(sector);
+    this.sectorIcon = config?.icon || 'domain';
+    this.sectorLabel = sector || 'Operations';
+
+    this.industryService.getSectorStats().subscribe({
+      next: (stats) => { this.sectorStats = stats; },
+      error: () => {}
+    });
+    this.industryService.getBenchmarks().subscribe({
+      next: (b) => { this.sectorBenchmarks = b?.benchmarks || null; },
+      error: () => {}
+    });
   }
 
   loadDashboard() {

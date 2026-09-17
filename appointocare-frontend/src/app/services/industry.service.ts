@@ -141,4 +141,10 @@ export class IndustryService {
     if (sector) params = params.set('sector', sector);
     return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/benchmarks`, { params });
   }
+
+  public getSectorStats(orgId?: number): Observable<any> {
+    let params = new HttpParams();
+    if (orgId) params = params.set('organization_id', String(orgId));
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/stats`, { params });
+  }
 }

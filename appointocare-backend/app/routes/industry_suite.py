@@ -550,6 +550,92 @@ def delete_record(record_id):
     return jsonify({"msg": "Record deleted"})
 
 
+@industry_suite_bp.route("/queue", methods=["GET"])
+@require_roles(*ORG_ROLES)
+def get_queue():
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else int(request.args.get("organization_id") or 1)
+
+    records = IndustryRecord.query.filter_by(
+        organization_id=org_id,
+        record_type="opd_queue"
+    ).order_by(IndustryRecord.created_at.asc()).all()
+
+    return jsonify([
+        {
+            "id": r.id,
+            "title": r.title,
+            "status": r.status,
+            "data": r.data,
+            "created_at": r.created_at.isoformat() if r.created_at else None
+        }
+        for r in records
+    ])
+
+
+@industry_suite_bp.route("/queue/advance", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def advance_queue():
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else int(request.json.get("organization_id") or 1)
+    data = request.json or {}
+    record_id = data.get("record_id")
+    new_status = data.get("status", "In Consultation")
+
+    if not record_id:
+        return jsonify({"msg": "record_id is required"}), 400
+
+    rec = IndustryRecord.query.get_or_404(record_id)
+    if role != "Admin" and rec.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    rec.status = new_status
+    if rec.data and isinstance(rec.data, dict):
+        updated_data = dict(rec.data)
+        updated_data["queue_status"] = new_status
+        updated_data["last_updated"] = datetime.utcnow().isoformat()
+        rec.data = updated_data
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Queue token status updated to '{new_status}'",
+        "id": rec.id,
+        "status": new_status
+    })
+
+
+@industry_suite_bp.route("/stats", methods=["GET"])
+@require_roles(*ORG_ROLES)
+def get_sector_stats():
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else int(request.args.get("organization_id") or 1)
+    org = Organization.query.get(org_id)
+    sector_key = _get_sector_key(org.sector if org else "Healthcare")
+
+    all_records = IndustryRecord.query.filter_by(organization_id=org_id).all()
+    queue_records = [r for r in all_records if r.record_type == "opd_queue"]
+    active_addons = _ORG_ACTIVE_ADDONS.get(org_id)
+    if active_addons is None:
+        active_addons = {a["id"] for a in SECTOR_ADDONS.get(sector_key, []) if a.get("is_default")}
+
+    return jsonify({
+        "organization_id": org_id,
+        "sector": sector_key,
+        "total_records": len(all_records),
+        "queue_count": len(queue_records),
+        "queue_waiting": len([q for q in queue_records if q.status == "Waiting"]),
+        "queue_in_consultation": len([q for q in queue_records if q.status == "In Consultation"]),
+        "active_addons_count": len(active_addons),
+        "records_by_type": {
+            r_type: len([r for r in all_records if r.record_type == r_type])
+            for r_type in set(r.record_type for r in all_records)
+        }
+    })
+
+
 @industry_suite_bp.route("/benchmarks", methods=["GET"])
 @require_roles(*ORG_ROLES)
 def get_benchmarks():

@@ -26,6 +26,56 @@
     </div>
   </div>
 
+  <!-- Industry Operational Command Strip -->
+  <div class="industry-command-strip" *ngIf="sectorStats">
+    <div class="command-strip-header">
+      <div class="strip-title">
+        <mat-icon>{{ sectorIcon }}</mat-icon>
+        <span>{{ sectorLabel }} Operational Pulse</span>
+      </div>
+      <a routerLink="/org-dashboard/workspace" class="strip-link">
+        Open Full Suite <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </div>
+    <div class="command-kpi-grid">
+      <div class="cmd-kpi">
+        <mat-icon class="kpi-icon records">inventory_2</mat-icon>
+        <div class="kpi-data">
+          <span class="kpi-number">{{ sectorStats.total_records || 0 }}</span>
+          <span class="kpi-label">Sector Records</span>
+        </div>
+      </div>
+      <div class="cmd-kpi" *ngIf="sectorStats.queue_count > 0 || sectorStats.sector === 'Healthcare'">
+        <mat-icon class="kpi-icon queue">groups</mat-icon>
+        <div class="kpi-data">
+          <span class="kpi-number">{{ sectorStats.queue_waiting || 0 }}</span>
+          <span class="kpi-label">Queue Waiting</span>
+        </div>
+      </div>
+      <div class="cmd-kpi" *ngIf="sectorStats.queue_count > 0">
+        <mat-icon class="kpi-icon consult">local_hospital</mat-icon>
+        <div class="kpi-data">
+          <span class="kpi-number">{{ sectorStats.queue_in_consultation || 0 }}</span>
+          <span class="kpi-label">In Consultation</span>
+        </div>
+      </div>
+      <div class="cmd-kpi">
+        <mat-icon class="kpi-icon addons">extension</mat-icon>
+        <div class="kpi-data">
+          <span class="kpi-number">{{ sectorStats.active_addons_count || 0 }}</span>
+          <span class="kpi-label">Active Add-ons</span>
+        </div>
+      </div>
+      <div class="cmd-kpi" *ngIf="sectorBenchmarks">
+        <mat-icon class="kpi-icon benchmark">leaderboard</mat-icon>
+        <div class="kpi-data">
+          <span class="kpi-number">{{ sectorBenchmarks.industry_rebooking_rate || 'N/A' }}</span>
+          <span class="kpi-label">Rebooking Rate</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Stat Cards Grid -->
   <div class="stat-card-grid">
     <div class="stat-card">
