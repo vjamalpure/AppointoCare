@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-forgot-password',
@@ -9,29 +8,37 @@ import { Router } from '@angular/router';
 })
 export class ForgotPasswordComponent {
   username = '';
-  role: 'Admin' | 'Organization' = 'Organization';
+  role = 'Organization';
   code = '';
+  loading = false;
   message = '';
   error = '';
-  loading = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService) {}
 
-  submit() {
-    this.error = '';
-    this.message = '';
+  submit(): void {
+    if (!this.username) return;
     this.loading = true;
+    this.message = '';
+    this.error = '';
 
-    this.authService.forgotPassword(this.username, this.role, this.role === 'Organization' ? this.code : undefined)
-      .subscribe({
-        next: (res: any) => {
-          this.message = res?.msg || 'If the account exists, a reset token was generated.';
-          this.loading = false;
-        },
-        error: (err: any) => {
-          this.error = err?.error?.msg || 'Unable to request password reset.';
-          this.loading = false;
-        }
-      });
+    const payload: { username: string; role: string; code?: string } = {
+      username: this.username,
+      role: this.role
+    };
+    if (this.role === 'Organization' && this.code) {
+      payload.code = this.code;
+    }
+
+    this.authService.forgotPassword(payload).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        this.message = res?.msg || 'Recovery instructions have been sent successfully.';
+      },
+      error: (err: any) => {
+        this.loading = false;
+        this.error = err?.error?.msg || 'Failed to send recovery request. Please check credentials.';
+      }
+    });
   }
 }

@@ -1,79 +1,389 @@
-<div class="platform-container">
+<div class="page-container platform-admin-page">
+  <!-- Page Header -->
   <div class="page-header">
-    <div>
-      <h1 class="page-title">Platform Configuration</h1>
-      <p class="page-subtitle">SaaS subscription tiers, billing pricing models, and sector templates.</p>
+    <div class="page-header-text">
+      <h1>Platform Blueprints & Service Catalog</h1>
+      <p>Configure SaaS subscription tiers, billing intervals, and industry-specific clinic templates</p>
     </div>
-    <div>
-      <a mat-stroked-button routerLink="/admin">
-        <mat-icon>arrow_back</mat-icon>
-        <span>Back to Dashboard</span>
-      </a>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="refresh()">
+        <mat-icon>refresh</mat-icon> Refresh Catalog
+      </button>
+      <button mat-stroked-button routerLink="/admin-dashboard">
+        <mat-icon>arrow_back</mat-icon> Back to Dashboard
+      </button>
     </div>
   </div>
 
-  <div class="platform-grid">
-    <!-- Subscription Plans Section -->
-    <div class="platform-col">
-      <div class="col-header">
-        <h2>Subscription Plans ({{ plans.length }})</h2>
-        <span class="subtext">Active monetization models available for tenant subscription</span>
+  <!-- Environment Secrets & Gateway Health Matrix -->
+  <div class="table-surface-card section-card" *ngIf="secretsStatus">
+    <div class="table-header-bar">
+      <div>
+        <h3>External Gateways & Environment Secrets Status</h3>
+        <p class="section-subtitle">Real-time status of production API integrations. Adding keys to your environment unlocks live mode instantly.</p>
+      </div>
+      <span class="status-badge status-active"><mat-icon>verified_user</mat-icon> Production Ready</span>
+    </div>
+
+    <div class="secrets-grid">
+      <!-- Gemini AI -->
+      <div class="secret-card">
+        <div class="secret-icon-row">
+          <div class="secret-icon ai"><mat-icon>auto_awesome</mat-icon></div>
+          <span class="status-badge" [ngClass]="secretsStatus.gemini_ai?.configured ? 'status-active' : 'status-paused'">
+            {{ secretsStatus.gemini_ai?.configured ? 'Live API Active' : 'Sandbox Ready' }}
+          </span>
+        </div>
+        <h4>Google Gemini AI Engine</h4>
+        <p class="secret-desc">Powers AI clinical triage, automated pre-visit patient instructions, and WhatsApp reception bot.</p>
+        <div class="secret-detail">
+          <span class="detail-label">Model:</span>
+          <span class="detail-val"><code>{{ secretsStatus.gemini_ai?.model }}</code></span>
+        </div>
+        <div class="secret-detail">
+          <span class="detail-label">Secret Key:</span>
+          <span class="detail-val"><code>GEMINI_API_KEY</code></span>
+        </div>
       </div>
 
-      <div class="cards-stack">
-        <mat-card class="plan-card" *ngFor="let plan of plans">
-          <div class="plan-header">
-            <div>
-              <h3 class="plan-name">{{ plan.name }}</h3>
-              <span class="plan-cycle">{{ plan.billing_cycle | uppercase }} BILLING</span>
-            </div>
-            <span class="badge" [ngClass]="plan.is_active ? 'badge-success' : 'badge-danger'">
-              {{ plan.is_active ? 'Active' : 'Inactive' }}
+      <!-- WhatsApp Meta Cloud -->
+      <div class="secret-card">
+        <div class="secret-icon-row">
+          <div class="secret-icon whatsapp"><mat-icon>chat</mat-icon></div>
+          <span class="status-badge" [ngClass]="secretsStatus.meta_whatsapp?.configured ? 'status-active' : 'status-paused'">
+            {{ secretsStatus.meta_whatsapp?.configured ? 'Live Meta Cloud' : 'Sandbox Ready' }}
+          </span>
+        </div>
+        <h4>Meta WhatsApp Cloud API</h4>
+        <p class="secret-desc">Official Meta Graph API for automated booking confirmations, patient reminders, and interactive chatbots.</p>
+        <div class="secret-detail">
+          <span class="detail-label">Webhook URL:</span>
+          <span class="detail-val"><code>/api/v1/whatsapp/webhook</code></span>
+        </div>
+        <div class="secret-detail">
+          <span class="detail-label">Secret Keys:</span>
+          <span class="detail-val"><code>WHATSAPP_ACCESS_TOKEN</code></span>
+        </div>
+      </div>
+
+      <!-- Razorpay Gateway -->
+      <div class="secret-card">
+        <div class="secret-icon-row">
+          <div class="secret-icon razorpay"><mat-icon>payments</mat-icon></div>
+          <span class="status-badge" [ngClass]="secretsStatus.razorpay?.configured ? 'status-active' : 'status-paused'">
+            {{ secretsStatus.razorpay?.configured ? 'Live Razorpay API' : 'Sandbox Ready' }}
+          </span>
+        </div>
+        <h4>Razorpay Payment Gateway</h4>
+        <p class="secret-desc">Collect payments via UPI, Credit/Debit cards, and NetBanking with HMAC-SHA256 signature verification.</p>
+        <div class="secret-detail">
+          <span class="detail-label">Webhook URL:</span>
+          <span class="detail-val"><code>/api/v1/payments/webhook</code></span>
+        </div>
+        <div class="secret-detail">
+          <span class="detail-label">Secret Keys:</span>
+          <span class="detail-val"><code>RAZORPAY_KEY_ID</code>, <code>RAZORPAY_KEY_SECRET</code></span>
+        </div>
+      </div>
+
+      <!-- Subscription Key -->
+      <div class="secret-card">
+        <div class="secret-icon-row">
+          <div class="secret-icon license"><mat-icon>verified</mat-icon></div>
+          <span class="status-badge status-active">Enterprise Tier</span>
+        </div>
+        <h4>Multi-Tenant License Provider</h4>
+        <p class="secret-desc">Manages active SaaS quotas, Redis queues, Celery worker nodes, and cross-sector templates.</p>
+        <div class="secret-detail">
+          <span class="detail-label">Active Plan:</span>
+          <span class="detail-val"><strong>{{ secretsStatus.subscription_license?.tier }}</strong></span>
+        </div>
+        <div class="secret-detail">
+          <span class="detail-label">License Key:</span>
+          <span class="detail-val"><code>SUBSCRIPTION_PROVIDER_KEY</code></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plans Section -->
+  <div class="table-surface-card section-card">
+    <div class="table-header-bar">
+      <div>
+        <h3>Subscription Tiers ({{ plans.length || 0 }})</h3>
+        <p class="section-subtitle">Global billing tiers available for onboarding new healthcare clinics</p>
+      </div>
+      <span class="catalog-badge"><mat-icon>workspace_premium</mat-icon> Active Billing Engine</span>
+    </div>
+
+    <div class="plans-grid" *ngIf="plans?.length; else emptyPlans">
+      <div class="plan-pricing-card" *ngFor="let plan of plans" [class.featured-plan]="plan.name === 'Premium'">
+        <div class="plan-header">
+          <div class="plan-name-row">
+            <h4>{{ plan.name }}</h4>
+            <span class="status-badge" [ngClass]="plan.is_active ? 'status-active' : 'status-paused'">
+              {{ plan.is_active ? 'Active' : 'Disabled' }}
             </span>
           </div>
+          <p class="plan-desc">{{ plan.description || 'Turnkey scheduling suite with multi-branch management' }}</p>
+        </div>
 
-          <p class="plan-desc">{{ plan.description || 'Full platform features with automated appointment workflows.' }}</p>
+        <div class="plan-price-block">
+          <span class="currency">₹</span>
+          <span class="amount">{{ plan.price | number }}</span>
+          <span class="cycle">/ {{ plan.billing_cycle || 'month' }}</span>
+        </div>
 
-          <div class="plan-footer">
-            <span class="plan-price">₹{{ plan.price | number }}</span>
-            <span class="plan-period">/ month</span>
+        <div class="plan-features">
+          <div class="feature-item">
+            <mat-icon>check</mat-icon>
+            <span>Multi-doctor calendar sync</span>
           </div>
-        </mat-card>
-
-        <p class="empty-text" *ngIf="!plans.length">No subscription plans found.</p>
+          <div class="feature-item">
+            <mat-icon>check</mat-icon>
+            <span>Automated SMS & email alerts</span>
+          </div>
+          <div class="feature-item">
+            <mat-icon>check</mat-icon>
+            <span>Role-based staff access</span>
+          </div>
+          <div class="feature-item">
+            <mat-icon>check</mat-icon>
+            <span>Integrated billing & receipts</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Sector Templates Section -->
-    <div class="platform-col">
-      <div class="col-header">
-        <h2>Sector Templates ({{ templates.length }})</h2>
-        <span class="subtext">Preconfigured appointment taxonomies and workflows</span>
+    <ng-template #emptyPlans>
+      <div class="empty-state-box">
+        <div class="empty-icon"><mat-icon>credit_card_off</mat-icon></div>
+        <h4>No Subscription Plans Found</h4>
+        <p>No pricing plans configured on the platform yet.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Sector Templates Section -->
+  <div class="table-surface-card section-card">
+    <div class="table-header-bar">
+      <div>
+        <h3>Industry Sector Templates ({{ templates.length || 0 }})</h3>
+        <p class="section-subtitle">Pre-configured clinical service taxonomies auto-applied to new clinics</p>
+      </div>
+    </div>
+
+    <div class="templates-grid" *ngIf="templates?.length; else emptyTemplates">
+      <div class="template-card" *ngFor="let template of templates">
+        <div class="template-header">
+          <div class="template-icon-wrap">
+            <mat-icon>local_hospital</mat-icon>
+          </div>
+          <div class="template-title-group">
+            <h4>{{ template.name }}</h4>
+            <span class="service-count-badge">
+              {{ template.services?.length || template.services_count || 0 }} Services Included
+            </span>
+          </div>
+        </div>
+
+        <p class="template-desc">{{ template.description || 'Standard outpatient service catalog and treatment defaults.' }}</p>
+
+        <div class="template-services-preview" *ngIf="template.services?.length">
+          <span class="service-chip" *ngFor="let s of template.services | slice:0:4">
+            {{ getServiceName(s) }}
+          </span>
+          <span class="more-chip" *ngIf="template.services.length > 4">
+            +{{ template.services.length - 4 }} more
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyTemplates>
+      <div class="empty-state-box">
+        <div class="empty-icon"><mat-icon>category</mat-icon></div>
+        <h4>No Sector Templates</h4>
+        <p>Pre-configured clinic templates will appear here.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- External Subscription & .env Management -->
+  <div class="table-surface-card section-card" *ngIf="envConfig">
+    <div class="table-header-bar">
+      <div>
+        <h3>External Subscription & Environment Configuration</h3>
+        <p class="section-subtitle">Manage SaaS enterprise license keys and environment variable overrides</p>
+      </div>
+      <span class="catalog-badge"><mat-icon>vpn_key</mat-icon> {{ envConfig.subscription_source }}</span>
+    </div>
+
+    <div class="config-grid">
+      <div class="config-field">
+        <label>Subscription Provider License Key (.env)</label>
+        <div class="input-with-action">
+          <input type="text" [(ngModel)]="envConfig.subscription_provider_key" class="std-input" placeholder="e.g. SUB-PROD-ENT-9928-EXT-ACTIVE" />
+          <button mat-flat-button color="primary" [disabled]="savingKey" (click)="saveEnvConfig()">
+            <mat-icon>save</mat-icon> Update License
+          </button>
+        </div>
+        <small class="help-text">Directly linked with <code>SUBSCRIPTION_PROVIDER_KEY</code> in .env to unlock instant external subscription capabilities.</small>
       </div>
 
-      <div class="cards-stack">
-        <mat-card class="template-card" *ngFor="let template of templates">
-          <div class="template-header">
-            <div>
-              <h3 class="template-name">{{ template.name }}</h3>
-              <span class="template-services-count">{{ template.services?.length || 0 }} default services</span>
-            </div>
-            <mat-icon class="template-icon">category</mat-icon>
-          </div>
+      <div class="config-field">
+        <label>Platform Subscription Tier</label>
+        <select [(ngModel)]="envConfig.subscription_tier" class="std-input" (change)="saveEnvConfig()">
+          <option value="Starter">Starter Plan</option>
+          <option value="Professional">Professional Plan</option>
+          <option value="Enterprise">Enterprise Elite</option>
+          <option value="Custom">Custom Tenant SLA</option>
+        </select>
+      </div>
+    </div>
 
-          <p class="template-desc">{{ template.description || 'Configurable multi-practitioner clinic workflow.' }}</p>
+    <div class="features-box mt-3">
+      <h4>Unlocked Enterprise Modules</h4>
+      <div class="feature-tags">
+        <span class="feature-pill" *ngFor="let feat of envConfig.features_unlocked">
+          <mat-icon>verified</mat-icon> {{ feat }}
+        </span>
+      </div>
+    </div>
+  </div>
 
-          <div class="template-chips" *ngIf="template.services?.length">
-            <span class="service-chip" *ngFor="let s of template.services.slice(0, 3)">
-              {{ s.name || s }}
-            </span>
-            <span class="service-chip more-chip" *ngIf="template.services.length > 3">
-              +{{ template.services.length - 3 }} more
-            </span>
-          </div>
-        </mat-card>
+  <!-- WhatsApp Meta Cloud API & Quota Control -->
+  <div class="table-surface-card section-card" *ngIf="whatsappConfig">
+    <div class="table-header-bar">
+      <div>
+        <h3>WhatsApp Meta Cloud API & Usage Control</h3>
+        <p class="section-subtitle">Official Meta Cloud API gateway configuration, broadcast quotas, and bot toggles</p>
+      </div>
+      <span class="status-badge" [ngClass]="whatsappConfig.status === 'Connected' ? 'status-active' : 'status-paused'">
+        <mat-icon>chat</mat-icon> {{ whatsappConfig.status }}
+      </span>
+    </div>
 
-        <p class="empty-text" *ngIf="!templates.length">No sector templates configured.</p>
+    <!-- Usage Meter -->
+    <div class="usage-meter-card">
+      <div class="usage-header">
+        <span>Daily Message Quota Usage</span>
+        <strong>{{ whatsappConfig.used_today }} / {{ whatsappConfig.daily_quota }} Sent</strong>
+      </div>
+      <div class="meter-bar-track">
+        <div class="meter-bar-fill" [style.width.%]="(whatsappConfig.used_today / whatsappConfig.daily_quota) * 100"></div>
+      </div>
+      <small>Resets daily at 00:00 UTC. Meta tier allows scaling up to 100,000 messages/day.</small>
+    </div>
+
+    <div class="config-grid mt-3">
+      <div class="config-field">
+        <label>Phone Number ID (Meta Business Manager)</label>
+        <input type="text" [(ngModel)]="whatsappConfig.phone_number_id" class="std-input" />
+      </div>
+
+      <div class="config-field">
+        <label>WhatsApp Business Account ID (WABA)</label>
+        <input type="text" [(ngModel)]="whatsappConfig.business_account_id" class="std-input" />
+      </div>
+
+      <div class="config-field full-width">
+        <label>Meta Cloud API Permanent Access Token</label>
+        <input type="password" [(ngModel)]="whatsappConfig.access_token" class="std-input" />
+      </div>
+
+      <div class="config-field">
+        <label>Webhook Verification Token</label>
+        <input type="text" [(ngModel)]="whatsappConfig.webhook_verify_token" class="std-input" />
+      </div>
+
+      <div class="config-field">
+        <label>Daily Message Quota Limit</label>
+        <input type="number" [(ngModel)]="whatsappConfig.daily_quota" class="std-input" />
+      </div>
+    </div>
+
+    <div class="action-footer mt-3">
+      <button mat-flat-button color="primary" [disabled]="savingWhatsApp" (click)="saveWhatsApp()">
+        <mat-icon>save</mat-icon> Save WhatsApp Settings
+      </button>
+    </div>
+  </div>
+
+  <!-- Razorpay Payment Gateway Setup -->
+  <div class="table-surface-card section-card" *ngIf="paymentConfig">
+    <div class="table-header-bar">
+      <div>
+        <h3>Razorpay Payment Gateway Setup</h3>
+        <p class="section-subtitle">Real-time online payment collection via UPI, Credit/Debit Cards, and NetBanking</p>
+      </div>
+      <span class="status-badge status-active">
+        <mat-icon>payments</mat-icon> {{ paymentConfig.status }}
+      </span>
+    </div>
+
+    <div class="config-grid">
+      <div class="config-field">
+        <label>Razorpay Key ID</label>
+        <input type="text" [(ngModel)]="paymentConfig.key_id" class="std-input" />
+      </div>
+
+      <div class="config-field">
+        <label>Razorpay Key Secret</label>
+        <input type="password" [(ngModel)]="paymentConfig.key_secret" class="std-input" />
+      </div>
+
+      <div class="config-field">
+        <label>Currency</label>
+        <select [(ngModel)]="paymentConfig.currency" class="std-input">
+          <option value="INR">INR (₹)</option>
+          <option value="USD">USD ($)</option>
+          <option value="EUR">EUR (€)</option>
+          <option value="GBP">GBP (£)</option>
+        </select>
+      </div>
+
+      <div class="config-field">
+        <label>Auto Capture Payments</label>
+        <select [(ngModel)]="paymentConfig.auto_capture" class="std-input">
+          <option [ngValue]="true">Enabled (Instant Capture)</option>
+          <option [ngValue]="false">Manual Authorization</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-footer mt-3">
+      <button mat-flat-button color="primary" [disabled]="savingPayment" (click)="savePayment()">
+        <mat-icon>save</mat-icon> Save Razorpay Configuration
+      </button>
+    </div>
+  </div>
+
+  <!-- Redis & Celery Workers -->
+  <div class="table-surface-card section-card" *ngIf="envConfig">
+    <div class="table-header-bar">
+      <div>
+        <h3>Redis & Celery Background Queue Workers</h3>
+        <p class="section-subtitle">Distributed job runner for appointment WhatsApp reminders, email alerts, and subscription auto-renewals</p>
+      </div>
+      <span class="status-badge status-active"><mat-icon>sync</mat-icon> Operational</span>
+    </div>
+
+    <div class="worker-status-grid">
+      <div class="worker-card">
+        <div class="worker-icon"><mat-icon>storage</mat-icon></div>
+        <div class="worker-info">
+          <span class="worker-title">Redis Message Broker</span>
+          <span class="worker-val">{{ envConfig.redis_status }}</span>
+        </div>
+      </div>
+
+      <div class="worker-card">
+        <div class="worker-icon"><mat-icon>psychology</mat-icon></div>
+        <div class="worker-info">
+          <span class="worker-title">Celery Background Workers</span>
+          <span class="worker-val">{{ envConfig.celery_workers }}</span>
+        </div>
       </div>
     </div>
   </div>

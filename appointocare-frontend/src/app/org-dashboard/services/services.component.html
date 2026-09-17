@@ -1,0 +1,178 @@
+<div class="services-page">
+  <!-- Page Header -->
+  <div class="header-section">
+    <div class="title-group">
+      <div class="badge-pill">MULTI-SECTOR CATALOG</div>
+      <h1 class="page-title">Service & Pricing Catalog</h1>
+      <p class="subtitle">Generic service blueprint tailored for Healthcare, Finance, Salons, Retail, Education, and Consultancies</p>
+    </div>
+    <div class="header-actions">
+      <button mat-flat-button color="primary" class="add-btn" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon> Add Custom Service
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Import Sector Banner -->
+  <div class="import-banner-card">
+    <div class="banner-info">
+      <div class="icon-wrap"><mat-icon>category</mat-icon></div>
+      <div>
+        <h4>Instant Sector Onboarding</h4>
+        <p>Instantly pre-populate your service menu with standardized sector pricing, categories, and durations without manual typing.</p>
+      </div>
+    </div>
+    <div class="banner-action">
+      <select [(ngModel)]="selectedTemplateToImport" class="std-select">
+        <option value="Healthcare">Hospital & Dental Clinic</option>
+        <option value="Finance">Financial Advisory & Accounting</option>
+        <option value="Salon">Salon, Spa & Beauty Care</option>
+        <option value="Retail">Retail & Hardware Service</option>
+        <option value="Education">Education, Tutoring & Coaching</option>
+        <option value="Consultancy">Legal & Business Consulting</option>
+      </select>
+      <button mat-flat-button color="accent" [disabled]="importingSector" (click)="importTemplate()">
+        <mat-icon>file_download</mat-icon> Import Services
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Search Controls -->
+  <div class="controls-card">
+    <div class="sector-pills">
+      <button
+        *ngFor="let s of sectors"
+        class="sector-pill"
+        [class.active]="selectedSector === s.value"
+        (click)="selectedSector = s.value; applyFilter()"
+      >
+        {{ s.label }}
+      </button>
+    </div>
+
+    <div class="search-box">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        placeholder="Filter services by title or category..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilter()"
+      />
+      <button *ngIf="searchTerm" mat-icon-button class="clear-btn" (click)="searchTerm = ''; applyFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="mb-4"></mat-progress-bar>
+
+  <!-- Services Grid Cards -->
+  <div class="services-grid" *ngIf="filteredServices.length; else emptyServices">
+    <div class="service-card" *ngFor="let s of filteredServices" [class.inactive]="!s.active">
+      <div class="card-head">
+        <span class="sector-badge">{{ s.sector || 'General' }}</span>
+        <span class="status-indicator" [class.active]="s.active" (click)="toggleActive(s, $event)" [matTooltip]="'Click to toggle status'">
+          {{ s.active ? 'Active' : 'Disabled' }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <h3 class="service-name">{{ s.name }}</h3>
+        <span class="category-name">{{ s.category }}</span>
+
+        <div class="specs-row">
+          <div class="spec-item">
+            <mat-icon>schedule</mat-icon>
+            <span>{{ s.duration_minutes }} mins</span>
+          </div>
+          <div class="spec-item price">
+            <span class="curr">$</span>
+            <span class="val">{{ s.price }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button mat-stroked-button class="action-btn" (click)="openEditDialog(s, $event)">
+          <mat-icon>edit</mat-icon> Edit
+        </button>
+        <button mat-icon-button color="warn" class="del-btn" (click)="deleteService(s.id, $event)">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyServices>
+    <div class="empty-state-box" *ngIf="!loading">
+      <mat-icon class="empty-icon">inventory_2</mat-icon>
+      <h3>No Services Found</h3>
+      <p>Import a sector template above or click "Add Custom Service" to define your appointment offerings.</p>
+    </div>
+  </ng-template>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-backdrop" *ngIf="showDialog" (click)="showDialog = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isEditMode ? 'Edit Service' : 'Add New Service Offering' }}</h3>
+        <button mat-icon-button (click)="showDialog = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-form">
+        <div class="form-group full">
+          <label>Service Title *</label>
+          <input type="text" [(ngModel)]="currentService.name" placeholder="e.g. Root Canal Treatment" class="std-input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Business Sector</label>
+            <select [(ngModel)]="currentService.sector" class="std-input">
+              <option value="Healthcare">Healthcare & Clinic</option>
+              <option value="Finance">Financial Services</option>
+              <option value="Salon">Salon & Wellness</option>
+              <option value="Retail">Retail & Shop</option>
+              <option value="Consultancy">Consultancy & Legal</option>
+              <option value="Education">Education & Tutoring</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Category Group</label>
+            <input type="text" [(ngModel)]="currentService.category" placeholder="e.g. Endodontics" class="std-input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fee / Price ($) *</label>
+            <input type="number" [(ngModel)]="currentService.price" placeholder="75" class="std-input" />
+          </div>
+
+          <div class="form-group">
+            <label>Duration (Minutes) *</label>
+            <input type="number" [(ngModel)]="currentService.duration_minutes" placeholder="45" class="std-input" />
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Availability Status</label>
+          <select [(ngModel)]="currentService.active" class="std-input">
+            <option [ngValue]="true">Active (Bookable online and via WhatsApp bot)</option>
+            <option [ngValue]="false">Disabled (Hidden from clients)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-stroked-button (click)="showDialog = false">Cancel</button>
+        <button mat-flat-button color="primary" (click)="saveService()">
+          <mat-icon>check</mat-icon> {{ isEditMode ? 'Update Service' : 'Save Service' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,190 @@
+<div class="whatsapp-page">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="title-group">
+      <div class="badge-pill">META CLOUD API SUITE</div>
+      <h1 class="page-title">WhatsApp Bot & Communication Hub</h1>
+      <p class="subtitle">Official Meta WhatsApp Business API integration with automated 24/7 conversational booking and instant payment triggers</p>
+    </div>
+    <div class="header-status" *ngIf="config">
+      <span class="meta-badge"><mat-icon>verified</mat-icon> Meta Cloud API Connected</span>
+    </div>
+  </div>
+
+  <!-- Quota & Gateway Banner -->
+  <div class="gateway-card" *ngIf="config">
+    <div class="gw-meta">
+      <div class="gw-stat">
+        <span class="lbl">Account Status</span>
+        <strong class="val text-success">{{ config.status }} (Live)</strong>
+      </div>
+      <div class="gw-stat">
+        <span class="lbl">Sender Phone ID</span>
+        <strong class="val">{{ config.phone_number_id }}</strong>
+      </div>
+      <div class="gw-stat">
+        <span class="lbl">Daily Quota Usage</span>
+        <strong class="val">{{ config.used_today }} / {{ config.daily_quota }} Messages</strong>
+      </div>
+    </div>
+    <div class="gw-progress">
+      <div class="bar-fill" [style.width.%]="(config.used_today / config.daily_quota) * 100"></div>
+    </div>
+  </div>
+
+  <!-- Dual Column Layout: Operations & Smartphone Simulator -->
+  <div class="hub-grid">
+    <!-- Left Operations Column -->
+    <div class="operations-col">
+      <!-- Direct Dispatch / Campaign Card -->
+      <div class="op-card">
+        <div class="card-head">
+          <h3><mat-icon>send</mat-icon> Dispatch Automated Notification</h3>
+          <span class="sub-badge">Pre-Approved Templates</span>
+        </div>
+
+        <div class="dispatch-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Recipient Name</label>
+              <input type="text" [(ngModel)]="directMessage.recipient_name" placeholder="Eleanor Vance" class="std-input" />
+            </div>
+            <div class="form-group">
+              <label>Recipient WhatsApp Number *</label>
+              <input type="text" [(ngModel)]="directMessage.recipient_phone" placeholder="+1 555-0199" class="std-input" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Meta Message Template</label>
+            <select [(ngModel)]="directMessage.template" (change)="onTemplateChange(directMessage.template)" class="std-input">
+              <option *ngFor="let t of templates" [value]="t.id">{{ t.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Message Content Preview</label>
+            <textarea rows="3" [(ngModel)]="directMessage.custom_text" class="std-input"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button mat-flat-button color="primary" [disabled]="sendingDirect" (click)="sendDirectCampaign()">
+              <mat-icon>send</mat-icon> Send via Meta API
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Stream Logs -->
+      <div class="op-card mt-4">
+        <div class="card-head">
+          <h3><mat-icon>history</mat-icon> WhatsApp Message Logs (Meta Cloud API)</h3>
+          <span class="log-count">{{ logs.length }} Events</span>
+        </div>
+
+        <div class="logs-stream">
+          <div class="log-entry" *ngFor="let log of logs">
+            <div class="log-icon" [class.in]="log.direction === 'Inbound'" [class.out]="log.direction === 'Outbound'">
+              <mat-icon>{{ log.direction === 'Inbound' ? 'call_received' : 'call_made' }}</mat-icon>
+            </div>
+            <div class="log-body">
+              <div class="log-head">
+                <strong class="recipient">{{ log.recipient_name }} ({{ log.recipient_number }})</strong>
+                <span class="time">{{ log.sent_at | date:'shortTime' }}</span>
+              </div>
+              <p class="msg-snippet">{{ log.message }}</p>
+              <div class="log-meta">
+                <span class="type-tag">{{ log.message_type }}</span>
+                <span class="status-tick">
+                  <mat-icon>done_all</mat-icon> {{ log.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Realistic WhatsApp Phone Mockup -->
+    <div class="simulator-col">
+      <div class="phone-frame">
+        <!-- Phone Speaker & Camera Notch -->
+        <div class="phone-notch">
+          <div class="speaker"></div>
+        </div>
+
+        <!-- WhatsApp App Header -->
+        <div class="wa-header">
+          <div class="wa-contact">
+            <button class="back-arrow"><mat-icon>arrow_back</mat-icon></button>
+            <div class="wa-avatar">
+              <mat-icon>local_hospital</mat-icon>
+            </div>
+            <div class="wa-info">
+              <span class="wa-name">City Care Health & Dental</span>
+              <span class="wa-sub">Official Business Account • Online</span>
+            </div>
+          </div>
+          <div class="wa-actions">
+            <mat-icon>videocam</mat-icon>
+            <mat-icon>call</mat-icon>
+            <mat-icon>more_vert</mat-icon>
+          </div>
+        </div>
+
+        <!-- Chat Bubble Container -->
+        <div class="wa-chat-canvas" #chatScroll>
+          <div class="encryption-notice">
+            <mat-icon>lock</mat-icon>
+            <span>Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.</span>
+          </div>
+
+          <div class="bubble-row" *ngFor="let msg of chatHistory" [class.outgoing]="msg.sender === 'user'" [class.incoming]="msg.sender === 'bot'">
+            <div class="wa-bubble">
+              <p class="bubble-text">{{ msg.text }}</p>
+              <div class="bubble-time">
+                <span>{{ msg.time }}</span>
+                <mat-icon *ngIf="msg.sender === 'user'" class="ticks">done_all</mat-icon>
+              </div>
+            </div>
+          </div>
+
+          <div class="typing-indicator" *ngIf="simulating">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+
+        <!-- Interactive Quick Option Chips -->
+        <div class="quick-chips">
+          <button class="chip-btn" (click)="sendSimulatedMessage('1')">1️⃣ Book Slot</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('2')">2️⃣ My Bookings</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('4')">4️⃣ Pay Invoice</button>
+          <button class="chip-btn" (click)="sendSimulatedMessage('MENU')">🔄 Menu</button>
+        </div>
+
+        <!-- WhatsApp Input Box -->
+        <div class="wa-input-row">
+          <div class="wa-input-pill">
+            <mat-icon class="icon-btn">sentiment_satisfied_alt</mat-icon>
+            <input
+              type="text"
+              placeholder="Type a message or option number..."
+              [(ngModel)]="userInput"
+              (keydown.enter)="sendSimulatedMessage()"
+            />
+            <mat-icon class="icon-btn">attach_file</mat-icon>
+            <mat-icon class="icon-btn">photo_camera</mat-icon>
+          </div>
+          <button class="wa-send-btn" (click)="sendSimulatedMessage()">
+            <mat-icon>{{ userInput.trim() ? 'send' : 'mic' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="sim-caption">
+        <mat-icon>info</mat-icon> Live WhatsApp Client Simulation synced with backend state
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
@@ -18,17 +17,13 @@ const routes: Routes = [
     data: { expectedRole: ['Organization', 'Manager', 'Staff'] }
   },
   {
-    path: 'admin',
-    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),
-    canActivate: [AuthGuard],
-    data: { expectedRole: 'Admin' }
-  },
-  {
     path: 'admin-dashboard',
     loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),
     canActivate: [AuthGuard],
     data: { expectedRole: 'Admin' }
   },
+  { path: 'admin', redirectTo: 'admin-dashboard', pathMatch: 'full' },
+  { path: 'admin/:sub', redirectTo: 'admin-dashboard/:sub', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
 ];
 

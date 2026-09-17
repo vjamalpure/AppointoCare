@@ -1,46 +1,87 @@
-.transactions-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.transactions-page {
+  /* Inherited from .page-container */
 }
 
-.page-header {
-  .page-title {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0 0 4px 0;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-  }
-
-  .page-subtitle {
-    font-size: 14px;
-    color: #64748b;
-    margin: 0;
+.status-filter {
+  .compact-select {
+    width: 150px;
+    margin-bottom: -16px;
   }
 }
 
-.table-card {
-  border-radius: 12px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-}
-
-.card-header-clean {
-  padding: 16px 20px;
-  border-bottom: 1px solid #f1f5f9;
-
-  mat-card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-  }
-}
-
-.amount-text {
+.id-cell {
+  font-family: monospace;
   font-weight: 700;
-  color: #047857;
+  color: var(--slate-500);
+}
+
+.org-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .org-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--primary-50);
+    color: var(--primary-700);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .org-text {
+    display: flex;
+    flex-direction: column;
+
+    .org-name {
+      font-weight: 600;
+      color: var(--slate-900);
+    }
+
+    .org-meta {
+      font-size: 11px;
+      color: var(--slate-500);
+    }
+  }
+}
+
+.amount-cell {
+  font-family: var(--font-display);
   font-size: 14px;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.type-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--slate-700);
+  background: var(--slate-100);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--slate-200);
+}
+
+.date-cell {
+  color: var(--slate-600);
+  font-size: 12px;
+
+  .date-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: var(--slate-400);
+    }
+  }
 }

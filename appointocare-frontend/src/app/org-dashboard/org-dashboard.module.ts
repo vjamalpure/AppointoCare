@@ -6,6 +6,7 @@ import { BaseChartDirective } from 'ng2-charts';
 
 // From src/app/components/org-dashboard -> up two levels to src/app/material.module.ts
 import { MaterialModule } from '../material.module';
+import { SharedModule } from '../components/shared/shared.module';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,6 +25,11 @@ import { OrgProfileComponent } from './profile/profile.component';
 import { OrgSubscriptionComponent } from './subscription/subscription.component';
 import { DashboardComponent } from '../components/dashboard/dashboard.component';
 import { PlatformWorkspaceComponent } from '../platform/platform-workspace.component';
+import { OrgBranchesComponent } from './branches/branches.component';
+import { CustomersComponent } from './customers/customers.component';
+import { ServicesComponent } from './services/services.component';
+import { WhatsAppChatComponent } from './whatsapp/whatsapp-chat.component';
+import { StaffComponent } from './staff/staff.component';
 
 @NgModule({
   declarations: [
@@ -32,12 +38,18 @@ import { PlatformWorkspaceComponent } from '../platform/platform-workspace.compo
     OrgBookingsComponent,
     OrgTransactionsComponent,
     OrgProfileComponent,
-    OrgSubscriptionComponent
-    ,PlatformWorkspaceComponent
+    OrgSubscriptionComponent,
+    PlatformWorkspaceComponent,
+    OrgBranchesComponent,
+    CustomersComponent,
+    ServicesComponent,
+    WhatsAppChatComponent,
+    StaffComponent
   ],
   imports: [
     CommonModule,
     MaterialModule,
+    SharedModule,
     OrgDashboardRoutingModule,
     RouterModule,
     FormsModule,

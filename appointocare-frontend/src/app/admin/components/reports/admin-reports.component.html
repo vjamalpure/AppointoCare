@@ -1,0 +1,94 @@
+<div class="page-container reports-page">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Platform Analytics & Financial Reports</h1>
+      <p>Cross-tenant macro metrics, completion rates, gross billing velocity, and monthly volume</p>
+    </div>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadReports()">
+        <mat-icon>refresh</mat-icon> Refresh Data
+      </button>
+      <button mat-stroked-button routerLink="/admin-dashboard">
+        <mat-icon>arrow_back</mat-icon> Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Stat Cards -->
+  <div class="stat-card-grid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Gross Platform Revenue</span>
+        <span class="stat-value">₹{{ summary.total_revenue | number }}</span>
+        <span class="stat-subtext positive">+{{ summary.monthly_growth }}% MoM Growth</span>
+      </div>
+      <div class="stat-icon-wrapper success">
+        <mat-icon>payments</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Active Tenants</span>
+        <span class="stat-value">{{ summary.active_tenants }}</span>
+        <span class="stat-subtext positive">Across Healthcare & Wellness</span>
+      </div>
+      <div class="stat-icon-wrapper primary">
+        <mat-icon>domain</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Monthly Bookings</span>
+        <span class="stat-value">{{ summary.total_appointments_this_month }}</span>
+        <span class="stat-subtext">Consolidated Volume</span>
+      </div>
+      <div class="stat-icon-wrapper info">
+        <mat-icon>calendar_month</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Completion Rate</span>
+        <span class="stat-value">{{ summary.completion_rate }}%</span>
+        <span class="stat-subtext positive">Low Patient No-Show Rate</span>
+      </div>
+      <div class="stat-icon-wrapper success">
+        <mat-icon>verified</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Revenue Chart -->
+  <div class="table-surface-card chart-card">
+    <div class="table-header-bar">
+      <div>
+        <h3>Monthly Revenue Velocity</h3>
+        <p class="section-desc">Consolidated ledger records aggregated by billing calendar</p>
+      </div>
+      <span class="verified-tag"><mat-icon>verified_user</mat-icon> Real-Time Ledger</span>
+    </div>
+
+    <div class="chart-content" *ngIf="monthlyData?.length; else emptyMonthly">
+      <div class="bar-chart-flex">
+        <div class="chart-bar-unit" *ngFor="let item of monthlyData">
+          <div class="unit-val">₹{{ item.total | number }}</div>
+          <div class="unit-track">
+            <div class="unit-bar" [style.height.%]="(item.total / maxMonthlyVal) * 100"></div>
+          </div>
+          <div class="unit-label">{{ getMonthName(item.month) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyMonthly>
+      <div class="empty-state-box">
+        <div class="empty-icon"><mat-icon>bar_chart</mat-icon></div>
+        <h4>No Monthly Trends Available</h4>
+        <p>Monthly financial statistics will appear as clinic bookings are processed.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

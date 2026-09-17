@@ -1,46 +1,136 @@
-<div class="org-profile">
-  <h2>Organization Profile</h2>
-  <mat-card *ngIf="!loading">
-    <form *ngIf="editMode; else viewMode" (ngSubmit)="saveProfile()">
-      <mat-form-field appearance="outline" class="profile-field">
-        <mat-label>Name</mat-label>
-        <input matInput [(ngModel)]="profile.name" name="name" required />
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="profile-field">
-        <mat-label>Subscription Plan</mat-label>
-        <mat-select [(ngModel)]="profile.subscription.plan" name="plan">
-          <mat-option value="Basic">Basic</mat-option>
-          <mat-option value="Premium">Premium</mat-option>
-          <mat-option value="Enterprise">Enterprise</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="profile-field">
-        <mat-label>Status</mat-label>
-        <mat-select [(ngModel)]="profile.subscription.status" name="status">
-          <mat-option value="Active">Active</mat-option>
-          <mat-option value="Paused">Paused</mat-option>
-          <mat-option value="Stopped">Stopped</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <div class="profile-actions">
-        <button mat-raised-button color="primary" type="submit" [disabled]="loading">Save</button>
-        <button mat-button type="button" (click)="cancelEdit()">Cancel</button>
+<div class="page-container org-profile-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Organization Profile & Settings</h1>
+      <p>Configure practice metadata, clinic identifiers, license status, and operating terms</p>
+    </div>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadProfile()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+      <button mat-raised-button color="primary" *ngIf="!editMode" (click)="enableEdit()">
+        <mat-icon>edit</mat-icon> Edit Profile
+      </button>
+    </div>
+  </div>
+
+  <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+
+  <div class="profile-layout-grid" *ngIf="!loading">
+    <!-- Left Hero Identity Card -->
+    <div class="table-surface-card identity-card">
+      <div class="clinic-large-avatar">
+        {{ profile.name ? profile.name.charAt(0) : 'C' }}
       </div>
-    </form>
-    <ng-template #viewMode>
-      <div class="profile-row"><strong>Name:</strong> {{ profile.name }}</div>
-      <div class="profile-row"><strong>Sector:</strong> {{ profile.sector }}</div>
-      <div class="profile-row"><strong>Subscription Plan:</strong> {{ profile.subscription?.plan }}</div>
-      <div class="profile-row"><strong>Status:</strong> {{ profile.subscription?.status }}</div>
-      <div class="profile-row"><strong>Start Date:</strong> {{ profile.subscription?.start_date | date:'mediumDate' }}</div>
-      <div class="profile-row"><strong>End Date:</strong> {{ profile.subscription?.end_date | date:'mediumDate' }}</div>
-      <div class="profile-row"><strong>Next Billing:</strong> {{ profile.subscription?.next_billing_date | date:'mediumDate' }}</div>
-      <div class="profile-actions">
-        <button mat-raised-button color="primary" (click)="enableEdit()">Edit</button>
+      <h3>{{ profile.name || 'Healthcare Practice' }}</h3>
+      <span class="sector-pill">{{ profile.sector || 'General Medicine' }}</span>
+
+      <div class="identity-stats">
+        <div class="id-stat">
+          <span class="stat-lbl">Subscription</span>
+          <span class="stat-val font-semibold">{{ profile.subscription?.plan || 'Standard' }}</span>
+        </div>
+        <div class="id-stat">
+          <span class="stat-lbl">Status</span>
+          <span class="status-badge" [ngClass]="(profile.subscription?.status === 'Active') ? 'status-active' : 'status-paused'">
+            {{ profile.subscription?.status || 'Active' }}
+          </span>
+        </div>
       </div>
-    </ng-template>
-    <mat-divider></mat-divider>
-    <div *ngIf="message" class="profile-message">{{ message }}</div>
-  </mat-card>
-  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    </div>
+
+    <!-- Right Details / Edit Form Card -->
+    <div class="table-surface-card details-card">
+      <!-- Edit Mode -->
+      <form *ngIf="editMode" (ngSubmit)="saveProfile()" class="profile-form">
+        <div class="table-header-bar">
+          <div>
+            <h3>Edit Practice Profile</h3>
+            <p class="section-desc">Update clinic business name and subscription settings</p>
+          </div>
+        </div>
+
+        <div class="form-fields-grid">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Organization / Clinic Legal Name</mat-label>
+            <input matInput [(ngModel)]="profile.name" name="name" required />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Subscription Plan</mat-label>
+            <mat-select [(ngModel)]="profile.subscription.plan" name="plan">
+              <mat-option value="Basic">Basic Tier</mat-option>
+              <mat-option value="Premium">Premium Tier</mat-option>
+              <mat-option value="Enterprise">Enterprise Tier</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Operational Status</mat-label>
+            <mat-select [(ngModel)]="profile.subscription.status" name="status">
+              <mat-option value="Active">Active / Operational</mat-option>
+              <mat-option value="Paused">Paused</mat-option>
+              <mat-option value="Stopped">Deactivated</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions-bar">
+          <button mat-stroked-button type="button" (click)="cancelEdit()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+            <mat-icon>save</mat-icon> Save Changes
+          </button>
+        </div>
+      </form>
+
+      <!-- View Mode -->
+      <div *ngIf="!editMode" class="profile-view-wrap">
+        <div class="table-header-bar">
+          <div>
+            <h3>Account & License Metadata</h3>
+            <p class="section-desc">Verified credentials and active service dates</p>
+          </div>
+        </div>
+
+        <div class="details-list">
+          <div class="detail-row">
+            <span class="detail-label">Legal Name</span>
+            <span class="detail-value">{{ profile.name }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Medical Specialty / Sector</span>
+            <span class="detail-value">{{ profile.sector || 'Multispecialty Outpatient Clinic' }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Active Software Tier</span>
+            <span class="detail-value">
+              <span class="tier-pill">{{ profile.subscription?.plan || 'Premium' }}</span>
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Account Status</span>
+            <span class="detail-value">
+              <span class="status-badge" [ngClass]="(profile.subscription?.status === 'Active') ? 'status-active' : 'status-paused'">
+                {{ profile.subscription?.status || 'Active' }}
+              </span>
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Contract Start Date</span>
+            <span class="detail-value">{{ (profile.subscription?.start_date | date:'mediumDate') || 'Active since Jan 2026' }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Next Renewal Schedule</span>
+            <span class="detail-value">{{ (profile.subscription?.next_billing_date | date:'mediumDate') || '30 Days Auto-Renewal' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

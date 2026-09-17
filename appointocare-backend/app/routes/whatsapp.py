@@ -74,8 +74,8 @@ def whatsapp_history():
             "status": l.status,
             "sent_at": l.sent_at.isoformat() if l.sent_at else None,
             "remarks": l.remarks,
-            "created_at": l.created_at.isoformat(),
-            "updated_at": l.updated_at.isoformat() if l.updated_at else None,
+            "created_at": (l.sent_at.isoformat() if getattr(l, "sent_at", None) else None),
+            "updated_at": (l.sent_at.isoformat() if getattr(l, "sent_at", None) else None),
         }
         for l in logs
     ])

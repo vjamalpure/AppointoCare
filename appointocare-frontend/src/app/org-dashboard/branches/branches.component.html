@@ -1,0 +1,102 @@
+<div class="page-container org-branches-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Clinic Branches & Practice Locations</h1>
+      <p>Manage branch operating centers, satellite clinics, reception desks, and direct contact lines</p>
+    </div>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadBranches()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+      <button mat-raised-button color="primary" (click)="showAddModal = !showAddModal">
+        <mat-icon>{{ showAddModal ? 'close' : 'add_business' }}</mat-icon>
+        {{ showAddModal ? 'Cancel' : 'Add New Location' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Branch Panel -->
+  <div class="table-surface-card add-branch-panel" *ngIf="showAddModal">
+    <div class="table-header-bar">
+      <div>
+        <h3>Register New Operating Location</h3>
+        <p class="panel-desc">Set up a branch office or satellite consultation clinic</p>
+      </div>
+      <button mat-icon-button (click)="showAddModal = false"><mat-icon>close</mat-icon></button>
+    </div>
+
+    <div class="form-content-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Branch / Clinic Name</mat-label>
+        <input matInput [(ngModel)]="newBranch.name" placeholder="e.g. Downtown Care Center" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Reception Contact Phone</mat-label>
+        <input matInput [(ngModel)]="newBranch.phone" placeholder="e.g. +91 9876543210" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-span">
+        <mat-label>Full Physical Street Address</mat-label>
+        <input matInput [(ngModel)]="newBranch.address" placeholder="e.g. 102 Healthcare Avenue, Medical District" />
+      </mat-form-field>
+    </div>
+
+    <div class="panel-actions">
+      <button mat-stroked-button (click)="showAddModal = false">Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="addBranch()"
+        [disabled]="!newBranch.name.trim()"
+      >
+        <mat-icon>save</mat-icon> Register Branch
+      </button>
+    </div>
+  </div>
+
+  <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+
+  <!-- Branches Grid -->
+  <div class="branches-grid" *ngIf="branches.length; else emptyBranches">
+    <div class="branch-card" *ngFor="let b of branches" [class.main-hq]="b.is_main">
+      <div class="card-header">
+        <div class="branch-avatar">
+          <mat-icon>store</mat-icon>
+        </div>
+        <div class="branch-title-group">
+          <h4>{{ b.name }}</h4>
+          <span class="hq-badge" *ngIf="b.is_main">Primary Headquarters</span>
+          <span class="satellite-badge" *ngIf="!b.is_main">Satellite Practice</span>
+        </div>
+      </div>
+
+      <div class="branch-details">
+        <div class="detail-item">
+          <mat-icon>place</mat-icon>
+          <span>{{ b.address || 'Address pending setup' }}</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon>phone</mat-icon>
+          <span>{{ b.phone || 'No phone recorded' }}</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon>schedule</mat-icon>
+          <span>Mon - Sat · 09:00 AM - 08:00 PM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyBranches>
+    <div class="empty-state-box" *ngIf="!loading">
+      <div class="empty-icon"><mat-icon>storefront</mat-icon></div>
+      <h4>No Secondary Branches</h4>
+      <p>Add satellite locations or affiliate clinics to allow patient bookings across locations.</p>
+      <button mat-raised-button color="primary" (click)="showAddModal = true">
+        <mat-icon>add</mat-icon> Register First Location
+      </button>
+    </div>
+  </ng-template>
+</div>

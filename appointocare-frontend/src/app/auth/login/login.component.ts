@@ -12,27 +12,43 @@ export class LoginComponent {
   organization_code = '';
   username = '';
   password = '';
-  rememberMe = false;
+  rememberMe = true;
   loading = false;
   errorMsg = '';
+  showPassword = false;
 
   selectedRole: 'admin' | 'organization' = 'organization';
   currentYear: number = new Date().getFullYear();
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  onSubmit(loginForm: NgForm) {
-    // Prevent submission if form is invalid
+  setRole(role: 'admin' | 'organization'): void {
+    this.selectedRole = role;
+    this.errorMsg = '';
+    if (role === 'admin') {
+      this.organization_code = '';
+    }
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  clearError(): void {
+    this.errorMsg = '';
+  }
+
+  onSubmit(loginForm: NgForm): void {
     if (!loginForm.valid) return;
 
     this.loading = true;
     this.errorMsg = '';
 
-    // For admin, clear org code
-    const orgCode = this.selectedRole === 'organization' ? this.organization_code : '';
+    const orgCode = this.selectedRole === 'organization' ? this.organization_code?.trim() : '';
+    const cleanUsername = this.username?.trim();
+    const cleanPassword = this.password;
 
-    // Call AuthService login
-    this.auth.login(this.username, this.password, orgCode, this.rememberMe)
+    this.auth.login(cleanUsername, cleanPassword, orgCode, this.rememberMe)
       .subscribe({
         next: (res: any) => {
           if (!res?.access_token) {
@@ -43,11 +59,9 @@ export class LoginComponent {
 
           this.auth.saveOrgName(res?.organization_name, this.rememberMe);
 
-          // Decode token to get role
           const role = this.auth.getUserRole();
 
-          // Redirect based on role
-          if (role === 'Admin') {
+          if (role === 'Admin' || role === 'SuperAdmin') {
             this.router.navigate(['/admin']);
           } else if (role === 'Organization' || role === 'Manager' || role === 'Staff') {
             this.router.navigate(['/org-dashboard']);
@@ -56,7 +70,8 @@ export class LoginComponent {
           }
         },
         error: (err) => {
-          this.errorMsg = err?.error?.msg || 'Invalid credentials';
+          this.errorMsg = err?.error?.msg || 'Invalid credentials or login failed';
+          this.loading = false;
         },
         complete: () => {
           this.loading = false;
@@ -65,7 +80,7 @@ export class LoginComponent {
   }
 
   fillAdminDemo(): void {
-    this.selectedRole = 'admin';
+    this.setRole('admin');
     this.username = 'superadmin';
     this.password = 'Admin@12345';
     this.organization_code = '';
@@ -73,7 +88,7 @@ export class LoginComponent {
   }
 
   fillOrgDemo(): void {
-    this.selectedRole = 'organization';
+    this.setRole('organization');
     this.organization_code = 'ORG1';
     this.username = 'org1';
     this.password = 'Org@12345';
@@ -81,7 +96,7 @@ export class LoginComponent {
   }
 
   fillStaffDemo(): void {
-    this.selectedRole = 'organization';
+    this.setRole('organization');
     this.organization_code = 'ORG1';
     this.username = 'staff1';
     this.password = 'Staff@12345';

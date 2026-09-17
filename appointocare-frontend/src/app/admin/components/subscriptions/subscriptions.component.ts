@@ -17,6 +17,36 @@ export class SubscriptionsComponent implements OnInit {
     this.loadSubscriptions();
   }
 
+  searchTerm: string = '';
+  selectedPlan: string = 'ALL';
+
+  get filteredSubscriptions(): any[] {
+    let list = this.subscriptions || [];
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      list = list.filter(s =>
+        s.organization_name?.toLowerCase().includes(term) ||
+        s.plan?.toLowerCase().includes(term)
+      );
+    }
+    if (this.selectedPlan !== 'ALL') {
+      list = list.filter(s => s.plan === this.selectedPlan);
+    }
+    return list;
+  }
+
+  get basicCount(): number {
+    return (this.subscriptions || []).filter(s => s.plan === 'Basic').length;
+  }
+
+  get premiumCount(): number {
+    return (this.subscriptions || []).filter(s => s.plan === 'Premium').length;
+  }
+
+  get activeCount(): number {
+    return (this.subscriptions || []).filter(s => s.status === 'Active').length;
+  }
+
   loadSubscriptions() {
     this.adminService.getSubscriptions().subscribe({
       next: data => this.subscriptions = data,

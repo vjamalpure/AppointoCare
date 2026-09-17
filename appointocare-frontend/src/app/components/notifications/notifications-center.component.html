@@ -1,0 +1,439 @@
+<div class="notifications-page-container">
+  <!-- Page Header -->
+  <div class="page-header mat-elevation-z1">
+    <div class="header-left">
+      <div class="header-icon-box">
+        <mat-icon>notifications_active</mat-icon>
+      </div>
+      <div class="header-titles">
+        <div class="title-row">
+          <h1>{{ getRoleBannerTitle() }}</h1>
+          <span class="role-scope-chip" [ngClass]="'scope-' + (role | lowercase)">
+            {{ role === 'Admin' ? 'Super Admin Tier' : (role === 'Organization' ? 'Org Admin Tier' : 'Staff Tier') }}
+          </span>
+          <span class="unread-pill" *ngIf="unreadCount > 0">
+            {{ unreadCount }} Unread
+          </span>
+        </div>
+        <p class="header-desc">{{ getRoleBannerDescription() }}</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button mat-stroked-button (click)="loadNotifications()" [disabled]="isLoading">
+        <mat-icon [class.spin]="isLoading">refresh</mat-icon>
+        <span>Refresh</span>
+      </button>
+      <button mat-stroked-button color="primary" (click)="markAllRead()" [disabled]="unreadCount === 0">
+        <mat-icon>done_all</mat-icon>
+        <span>Mark All Read</span>
+      </button>
+      <button mat-stroked-button color="warn" (click)="clearAllRead()">
+        <mat-icon>cleaning_services</mat-icon>
+        <span>Clear Read</span>
+      </button>
+      <button *ngIf="role === 'Admin'" mat-raised-button color="accent" (click)="showTicketModal = true">
+        <mat-icon>add_alert</mat-icon>
+        <span>Log Complaint / Inquiry</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Stat Cards -->
+  <div class="stat-grid">
+    <div class="stat-card stat-total">
+      <div class="stat-icon"><mat-icon>inbox</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ notifications.length }}</span>
+        <span class="stat-label">Active Notifications</span>
+      </div>
+    </div>
+    <div class="stat-card stat-unread">
+      <div class="stat-icon"><mat-icon>mark_email_unread</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ unreadCount }}</span>
+        <span class="stat-label">Unread Attention Items</span>
+      </div>
+    </div>
+    <div class="stat-card stat-tier">
+      <div class="stat-icon"><mat-icon>security</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ role === 'Admin' ? 'Platform Wide' : 'Clinic Tenant' }}</span>
+        <span class="stat-label">Role Isolation Level</span>
+      </div>
+    </div>
+    <div class="stat-card stat-priority">
+      <div class="stat-icon"><mat-icon>flag</mat-icon></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.by_category.booking + stats.by_category.payment + stats.by_category.complaint }}</span>
+        <span class="stat-label">Priority Event Triggers</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role-Based Simulation Console -->
+  <div class="simulator-card mat-elevation-z1">
+    <div class="simulator-header">
+      <div class="sim-title-group">
+        <mat-icon class="sim-icon">bolt</mat-icon>
+        <div>
+          <h3>Interactive Notification Event Generator</h3>
+          <p>Instantly trigger and test notification events tailored specifically to your active role.</p>
+        </div>
+      </div>
+      <span class="sim-badge">Live Event Sandbox</span>
+    </div>
+
+    <!-- Staff Simulation Triggers -->
+    <div class="sim-group" *ngIf="role === 'Staff' || role === 'Organization'">
+      <div class="group-title">
+        <mat-icon>person</mat-icon> Staff Duty Events (Bookings & Schedule):
+      </div>
+      <div class="sim-buttons">
+        <button mat-stroked-button class="btn-sim-booking" (click)="simulate('booking_add')">
+          <mat-icon>add_circle_outline</mat-icon> Simulate New Booking
+        </button>
+        <button mat-stroked-button class="btn-sim-booking" (click)="simulate('booking_update')">
+          <mat-icon>update</mat-icon> Simulate Reschedule / Update
+        </button>
+        <button mat-stroked-button class="btn-sim-cancel" (click)="simulate('booking_cancel')">
+          <mat-icon>cancel</mat-icon> Simulate Booking Cancelled
+        </button>
+        <button mat-stroked-button class="btn-sim-triage" (click)="simulate('clinical_triage')">
+          <mat-icon>medical_services</mat-icon> Simulate Urgent AI Triage
+        </button>
+      </div>
+    </div>
+
+    <!-- Org Admin Simulation Triggers -->
+    <div class="sim-group" *ngIf="role === 'Organization' || role === 'Admin'">
+      <div class="group-title">
+        <mat-icon>corporate_fare</mat-icon> Org Admin Events (Payments & Practice Changes):
+      </div>
+      <div class="sim-buttons">
+        <button mat-stroked-button class="btn-sim-pay" (click)="simulate('payment_received')">
+          <mat-icon>payments</mat-icon> Simulate Razorpay Payment ($180)
+        </button>
+        <button mat-stroked-button class="btn-sim-org" (click)="simulate('org_change')">
+          <mat-icon>domain</mat-icon> Simulate Clinic Profile & Schedule Change
+        </button>
+      </div>
+    </div>
+
+    <!-- Super Admin Simulation Triggers -->
+    <div class="sim-group" *ngIf="role === 'Admin'">
+      <div class="group-title">
+        <mat-icon>admin_panel_settings</mat-icon> Super Admin Events (Org Changes, Due Payments, Complaints & Inquiries):
+      </div>
+      <div class="sim-buttons">
+        <button mat-stroked-button class="btn-sim-due" (click)="simulate('due_payment')">
+          <mat-icon>schedule</mat-icon> Simulate Due Subscription Payment ($249)
+        </button>
+        <button mat-stroked-button class="btn-sim-complaint" (click)="simulate('complaint_received')">
+          <mat-icon>report_problem</mat-icon> Simulate Client Complaint Ticket
+        </button>
+        <button mat-stroked-button class="btn-sim-inquiry" (click)="simulate('inquiry_received')">
+          <mat-icon>contact_support</mat-icon> Simulate Enterprise Inquiry
+        </button>
+        <button mat-stroked-button class="btn-sim-org" (click)="simulate('org_change')">
+          <mat-icon>domain</mat-icon> Simulate Cross-Tenant Org Update
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Section -->
+  <div class="filter-bar mat-elevation-z1">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="applyFilter()"
+        placeholder="Search notifications by title, patient name, or keyword..."
+      />
+      <button mat-icon-button *ngIf="searchQuery" (click)="searchQuery = ''; applyFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="category-chips">
+      <button
+        class="chip-btn"
+        [class.active]="selectedCategory === 'all'"
+        (click)="setCategory('all')"
+      >
+        All ({{ notifications.length }})
+      </button>
+
+      <button
+        *ngIf="role === 'Staff' || role === 'Organization'"
+        class="chip-btn"
+        [class.active]="selectedCategory === 'booking'"
+        (click)="setCategory('booking')"
+      >
+        <mat-icon>event</mat-icon> Bookings ({{ stats.by_category.booking }})
+      </button>
+
+      <button
+        *ngIf="role === 'Organization' || role === 'Admin'"
+        class="chip-btn"
+        [class.active]="selectedCategory === 'payment'"
+        (click)="setCategory('payment')"
+      >
+        <mat-icon>payments</mat-icon> Payments ({{ stats.by_category.payment }})
+      </button>
+
+      <button
+        *ngIf="role === 'Organization' || role === 'Admin'"
+        class="chip-btn"
+        [class.active]="selectedCategory === 'organization'"
+        (click)="setCategory('organization')"
+      >
+        <mat-icon>corporate_fare</mat-icon> Org Updates ({{ stats.by_category.organization }})
+      </button>
+
+      <button
+        *ngIf="role === 'Admin'"
+        class="chip-btn"
+        [class.active]="selectedCategory === 'complaint'"
+        (click)="setCategory('complaint')"
+      >
+        <mat-icon>report_problem</mat-icon> Complaints ({{ stats.by_category.complaint }})
+      </button>
+
+      <button
+        *ngIf="role === 'Admin'"
+        class="chip-btn"
+        [class.active]="selectedCategory === 'inquiry'"
+        (click)="setCategory('inquiry')"
+      >
+        <mat-icon>help_outline</mat-icon> Inquiries ({{ stats.by_category.inquiry }})
+      </button>
+
+      <button
+        *ngIf="role === 'Staff'"
+        class="chip-btn"
+        [class.active]="selectedCategory === 'triage'"
+        (click)="setCategory('triage')"
+      >
+        <mat-icon>medical_services</mat-icon> AI Triage ({{ stats.by_category.triage }})
+      </button>
+
+      <button
+        class="chip-btn chip-toggle"
+        [class.active]="unreadOnly"
+        (click)="toggleUnreadOnly()"
+      >
+        <mat-icon>{{ unreadOnly ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+        Unread Only ({{ unreadCount }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Notification Feed -->
+  <div class="notification-feed-card mat-elevation-z1">
+    <div class="feed-header">
+      <div class="feed-title">
+        <h3>Notification Stream</h3>
+        <span class="count-badge">{{ filteredNotifications.length }} items</span>
+      </div>
+      <div class="feed-status" *ngIf="unreadCount === 0">
+        <mat-icon color="primary">check_circle</mat-icon>
+        <span>All caught up for this tier!</span>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredNotifications.length === 0">
+      <mat-icon class="empty-icon">notifications_off</mat-icon>
+      <h4>No notifications found</h4>
+      <p *ngIf="unreadOnly">You have read all notifications for this filter.</p>
+      <p *ngIf="!unreadOnly && searchQuery">No notifications matched your search query "{{ searchQuery }}".</p>
+      <p *ngIf="!unreadOnly && !searchQuery">No notifications have been recorded yet in this category.</p>
+      <button mat-stroked-button color="primary" (click)="selectedCategory = 'all'; unreadOnly = false; searchQuery = ''; applyFilter()">
+        Reset Filters
+      </button>
+    </div>
+
+    <!-- Notification Items List -->
+    <div class="notification-list" *ngIf="filteredNotifications.length > 0">
+      <div
+        class="notification-item"
+        *ngFor="let item of filteredNotifications"
+        [class.unread]="!item.is_read"
+        (click)="navigateToAction(item)"
+      >
+        <div class="item-icon-wrapper" [ngClass]="getSeverityBadgeClass(item.severity)">
+          <mat-icon>{{ getCategoryIcon(item.category) }}</mat-icon>
+        </div>
+
+        <div class="item-content">
+          <div class="item-top-row">
+            <span class="item-title" [class.unread-text]="!item.is_read">{{ item.title }}</span>
+            <div class="item-meta">
+              <span class="badge-tag" [ngClass]="getCategoryBadgeClass(item.category)">
+                {{ item.category | uppercase }}
+              </span>
+              <span class="time-label">{{ formatTime(item.created_at) }}</span>
+            </div>
+          </div>
+
+          <p class="item-message">{{ item.message }}</p>
+
+          <div class="item-footer">
+            <span class="target-scope">
+              <mat-icon>shield</mat-icon>
+              {{ item.target_level === 'superadmin' ? 'Super Admin Scope' : (item.target_level === 'org_admin' ? 'Org Admin Scope' : 'Staff Scope') }}
+            </span>
+            <span class="entity-badge" *ngIf="item.entity_type">
+              {{ item.entity_type }} #{{ item.entity_id || 'Ref' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="item-actions" (click)="$event.stopPropagation()">
+          <button
+            *ngIf="!item.is_read"
+            mat-icon-button
+            matTooltip="Mark as Read"
+            (click)="markRead(item, $event)"
+          >
+            <mat-icon>check_circle_outline</mat-icon>
+          </button>
+          <button
+            *ngIf="item.action_url"
+            mat-icon-button
+            color="primary"
+            matTooltip="Go to Related View"
+            (click)="navigateToAction(item)"
+          >
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            matTooltip="Remove"
+            (click)="deleteNotification(item, $event)"
+          >
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Super Admin Special Panel: Complaints & Inquiries Desk -->
+  <div class="complaints-desk-card mat-elevation-z1" *ngIf="role === 'Admin'">
+    <div class="desk-header">
+      <div class="desk-title-group">
+        <mat-icon>support_agent</mat-icon>
+        <div>
+          <h3>Complaints & Client Inquiries Registry</h3>
+          <p>Direct platform oversight ticketing and organization issue tracking.</p>
+        </div>
+      </div>
+      <button mat-raised-button color="accent" (click)="showTicketModal = true">
+        <mat-icon>add</mat-icon> New Ticket
+      </button>
+    </div>
+
+    <div class="complaints-table-container">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Ticket #</th>
+            <th>Type</th>
+            <th>Organization</th>
+            <th>Subject</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Logged Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of complaints">
+            <td><strong>{{ c.ticket_number }}</strong></td>
+            <td>
+              <span class="ticket-type-pill" [class.type-complaint]="c.type === 'Complaint'" [class.type-inquiry]="c.type === 'Inquiry'">
+                {{ c.type }}
+              </span>
+            </td>
+            <td>{{ c.organization_name }}</td>
+            <td>{{ c.subject }}</td>
+            <td>
+              <span class="priority-pill" [class.p-high]="c.priority === 'High'" [class.p-med]="c.priority === 'Medium'">
+                {{ c.priority }}
+              </span>
+            </td>
+            <td>
+              <span class="status-pill">{{ c.status }}</span>
+            </td>
+            <td>{{ formatTime(c.created_at) }}</td>
+          </tr>
+          <tr *ngIf="complaints.length === 0">
+            <td colspan="7" class="text-center py-4">No complaints or inquiries on file.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal for Logging Complaint / Inquiry (Super Admin) -->
+  <div class="modal-backdrop" *ngIf="showTicketModal" (click)="showTicketModal = false">
+    <div class="modal-card mat-elevation-z4" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Log New Complaint or Client Inquiry</h3>
+        <button mat-icon-button (click)="showTicketModal = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Ticket Type:</label>
+          <div class="radio-row">
+            <label>
+              <input type="radio" name="ticketType" value="Complaint" [(ngModel)]="ticketForm.type" />
+              Customer Complaint (Urgent)
+            </label>
+            <label>
+              <input type="radio" name="ticketType" value="Inquiry" [(ngModel)]="ticketForm.type" />
+              Client / Enterprise Inquiry
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Organization:</label>
+          <input type="text" class="input-text" [(ngModel)]="ticketForm.organization_name" placeholder="Organization name" />
+        </div>
+
+        <div class="form-row">
+          <label>Priority:</label>
+          <select class="input-select" [(ngModel)]="ticketForm.priority">
+            <option value="High">High Priority</option>
+            <option value="Medium">Medium Priority</option>
+            <option value="Low">Low Priority</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>Subject:</label>
+          <input type="text" class="input-text" [(ngModel)]="ticketForm.subject" placeholder="Brief subject line" />
+        </div>
+
+        <div class="form-row">
+          <label>Details / Message:</label>
+          <textarea class="input-textarea" rows="3" [(ngModel)]="ticketForm.details" placeholder="Detailed ticket report..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-button (click)="showTicketModal = false">Cancel</button>
+        <button mat-raised-button color="primary" (click)="submitTicket()">
+          Submit & Notify Super Admin
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

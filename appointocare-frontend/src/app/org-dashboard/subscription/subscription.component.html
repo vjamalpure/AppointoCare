@@ -1,4 +1,119 @@
-<div class="org-subscription">
-  <h2>Subscription</h2>
-  <!-- Subscription details, status, etc. -->
+<div class="page-container org-subscription-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Subscription Plan & Licensing</h1>
+      <p>Manage your clinic's software tier, active quotas, billing renewal, and automated reminder capacity</p>
+    </div>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadSubscriptionData()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </div>
+
+  <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+
+  <!-- Current Subscription Status Card -->
+  <div class="table-surface-card current-plan-card">
+    <div class="plan-hero-row">
+      <div class="plan-badge-icon">
+        <mat-icon>workspace_premium</mat-icon>
+      </div>
+
+      <div class="plan-details-col">
+        <div class="plan-tier-header">
+          <h2>{{ subscription?.plan || 'Premium' }} Tier</h2>
+          <span class="status-badge" [ngClass]="(subscription?.status === 'Active') ? 'status-active' : 'status-paused'">
+            {{ subscription?.status || 'Active' }}
+          </span>
+        </div>
+        <p class="plan-clinic-name">Active for <strong>{{ organization?.name || 'Clinic Account' }}</strong></p>
+      </div>
+
+      <div class="plan-meta-pills">
+        <div class="meta-pill">
+          <span class="pill-label">Billing Cycle</span>
+          <span class="pill-val">Monthly</span>
+        </div>
+        <div class="meta-pill">
+          <span class="pill-label">Next Renewal</span>
+          <span class="pill-val">{{ subscription?.next_billing_date ? (subscription.next_billing_date | date:'mediumDate') : '30 Days' }}</span>
+        </div>
+        <div class="meta-pill">
+          <span class="pill-label">Payment Mode</span>
+          <span class="pill-val">Auto-Debit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Plans Comparison Grid -->
+  <div class="section-title-wrap">
+    <h3>Upgrade or Change Plan Tier</h3>
+    <p>Choose the right operating capacity for your practice size</p>
+  </div>
+
+  <div class="plans-tier-grid">
+    <div
+      class="plan-card"
+      *ngFor="let p of availablePlans"
+      [class.active-plan-border]="subscription?.plan === p.name"
+    >
+      <div class="card-tier-top">
+        <div>
+          <h4>{{ p.name }}</h4>
+          <p class="tier-desc">{{ p.description }}</p>
+        </div>
+        <span class="current-tag" *ngIf="subscription?.plan === p.name">
+          <mat-icon>check_circle</mat-icon> Current Plan
+        </span>
+      </div>
+
+      <div class="price-box">
+        <span class="currency">₹</span>
+        <span class="amount">{{ p.price | number }}</span>
+        <span class="period">/ {{ p.billing_cycle || 'month' }}</span>
+      </div>
+
+      <div class="plan-perks">
+        <div class="perk-row">
+          <mat-icon>check</mat-icon>
+          <span>Unlimited patient appointments</span>
+        </div>
+        <div class="perk-row">
+          <mat-icon>check</mat-icon>
+          <span>{{ p.name === 'Basic' ? '1 Clinic Branch' : (p.name === 'Premium' ? 'Up to 5 Branches' : 'Unlimited Branches') }}</span>
+        </div>
+        <div class="perk-row">
+          <mat-icon>check</mat-icon>
+          <span>{{ p.name === 'Basic' ? 'Standard SMS Alerts' : 'Automated WhatsApp Bot Reminders' }}</span>
+        </div>
+        <div class="perk-row">
+          <mat-icon>check</mat-icon>
+          <span>Real-time Financial Ledger & Reports</span>
+        </div>
+      </div>
+
+      <div class="card-btn-wrap">
+        <button
+          *ngIf="subscription?.plan !== p.name"
+          mat-raised-button
+          color="primary"
+          class="full-btn"
+          (click)="switchPlan(p.name)"
+        >
+          Select {{ p.name }}
+        </button>
+        <button
+          *ngIf="subscription?.plan === p.name"
+          mat-stroked-button
+          class="full-btn active-state-btn"
+          disabled
+        >
+          Currently Active
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

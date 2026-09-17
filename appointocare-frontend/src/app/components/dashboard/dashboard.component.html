@@ -1,183 +1,283 @@
-<div class="org-overview-container">
-  <!-- Organization KPI Tiles -->
-  <div class="tiles-grid">
-    <div class="kpi-card">
-      <div class="kpi-icon total">
-        <mat-icon>calendar_today</mat-icon>
+<div class="page-container clinic-dashboard-page">
+  <!-- Page Header & Clinic Status -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <div class="clinic-title-row">
+        <h1>{{ dashboardData.organization.name || 'Clinic Dashboard' }}</h1>
+        <span class="status-badge status-active" *ngIf="dashboardData.organization.subscription_status">
+          {{ dashboardData.organization.subscription_status }}
+        </span>
       </div>
-      <div class="kpi-info">
-        <span class="kpi-label">Total Appointments</span>
-        <span class="kpi-num">{{ getTotalAppointments() }}</span>
+      <p>
+        {{ dashboardData.organization.sector || 'Healthcare & Specialized Practice' }} ·
+        Real-time clinic flow, patient bookings, and revenue collections
+      </p>
+    </div>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadDashboard()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+      <button mat-stroked-button color="primary" routerLink="/org-dashboard/workspace">
+        <mat-icon>auto_fix_high</mat-icon> Workspace Tools
+      </button>
+      <button mat-raised-button color="primary" routerLink="/org-dashboard/bookings">
+        <mat-icon>add</mat-icon> New Booking
+      </button>
+    </div>
+  </div>
+
+  <!-- Stat Cards Grid -->
+  <div class="stat-card-grid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Total Appointments</span>
+        <span class="stat-value">{{ getTotalAppointments() }}</span>
+        <span class="stat-subtext">Total Lifetime</span>
+      </div>
+      <div class="stat-icon-wrapper primary">
+        <mat-icon>calendar_month</mat-icon>
       </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon booked">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Upcoming / Booked</span>
+        <span class="stat-value">{{ getBookedCount() }}</span>
+        <span class="stat-subtext positive">Scheduled Patients</span>
+      </div>
+      <div class="stat-icon-wrapper info">
         <mat-icon>event_available</mat-icon>
       </div>
-      <div class="kpi-info">
-        <span class="kpi-label">Upcoming / Booked</span>
-        <span class="kpi-num">{{ getBookedCount() }}</span>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Completed Visits</span>
+        <span class="stat-value">{{ getCompletedCount() }}</span>
+        <span class="stat-subtext positive">Consultations Done</span>
+      </div>
+      <div class="stat-icon-wrapper success">
+        <mat-icon>task_alt</mat-icon>
       </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon completed">
-        <mat-icon>check_circle</mat-icon>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Cancelled Visits</span>
+        <span class="stat-value">{{ getCancelledCount() }}</span>
+        <span class="stat-subtext">Rescheduled or Void</span>
       </div>
-      <div class="kpi-info">
-        <span class="kpi-label">Completed Visits</span>
-        <span class="kpi-num">{{ getCompletedCount() }}</span>
-      </div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-icon cancelled">
+      <div class="stat-icon-wrapper danger">
         <mat-icon>cancel</mat-icon>
       </div>
-      <div class="kpi-info">
-        <span class="kpi-label">Cancelled</span>
-        <span class="kpi-num">{{ getCancelledCount() }}</span>
-      </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon paid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Total Paid Volume</span>
+        <span class="stat-value">₹{{ getTotalPaid() | number }}</span>
+        <span class="stat-subtext positive">Collected Revenue</span>
+      </div>
+      <div class="stat-icon-wrapper success">
         <mat-icon>payments</mat-icon>
       </div>
-      <div class="kpi-info">
-        <span class="kpi-label">Paid Visits</span>
-        <span class="kpi-num">{{ getTotalPaid() }}</span>
-      </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon unpaid">
-        <mat-icon>pending</mat-icon>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Unpaid / Pending</span>
+        <span class="stat-value">₹{{ getTotalUnpaid() | number }}</span>
+        <span class="stat-subtext">Awaiting Collection</span>
       </div>
-      <div class="kpi-info">
-        <span class="kpi-label">Pending Payment</span>
-        <span class="kpi-num">{{ getTotalUnpaid() }}</span>
+      <div class="stat-icon-wrapper warning">
+        <mat-icon>pending_actions</mat-icon>
       </div>
     </div>
   </div>
 
-  <!-- Appointments Management Section -->
-  <mat-card class="appointments-card">
-    <mat-card-header class="card-header-clean">
-      <div class="header-split">
-        <div>
-          <mat-card-title>Recent Client Appointments</mat-card-title>
-          <mat-card-subtitle>Live queue of patient and customer bookings</mat-card-subtitle>
-        </div>
-        <a mat-stroked-button color="primary" routerLink="/org-dashboard/bookings">
-          <mat-icon>calendar_view_week</mat-icon>
-          <span>All Bookings</span>
-        </a>
+  <!-- Quick Shortcut Cards Bar -->
+  <div class="clinic-shortcuts-grid">
+    <a routerLink="/org-dashboard/bookings" class="shortcut-box">
+      <div class="s-icon-wrap"><mat-icon>calendar_today</mat-icon></div>
+      <div class="s-text">
+        <strong>Manage Schedule</strong>
+        <span>View calendar slots & book patients</span>
       </div>
-    </mat-card-header>
+    </a>
+    <a routerLink="/org-dashboard/transactions" class="shortcut-box">
+      <div class="s-icon-wrap"><mat-icon>receipt_long</mat-icon></div>
+      <div class="s-text">
+        <strong>Billing & Receipts</strong>
+        <span>Track payments, invoices, and deposits</span>
+      </div>
+    </a>
+    <a routerLink="/org-dashboard/branches" class="shortcut-box">
+      <div class="s-icon-wrap"><mat-icon>store</mat-icon></div>
+      <div class="s-text">
+        <strong>Clinic Branches</strong>
+        <span>Manage clinic addresses and staff</span>
+      </div>
+    </a>
+    <a routerLink="/org-dashboard/subscription" class="shortcut-box">
+      <div class="s-icon-wrap"><mat-icon>workspace_premium</mat-icon></div>
+      <div class="s-text">
+        <strong>Subscription Plan</strong>
+        <span>Review active license tier & renewal</span>
+      </div>
+    </a>
+  </div>
 
-    <mat-card-content class="p-0">
-      <div *ngIf="dashboardData.appointments.length > 0; else noAppointments">
-        <div class="appointments-list">
-          <div class="appointment-row" *ngFor="let appt of dashboardData.appointments">
-            <div class="appt-patient">
-              <div class="patient-avatar">
-                <mat-icon>person</mat-icon>
+  <!-- Recent Clinic Appointments Table -->
+  <div class="table-surface-card">
+    <div class="table-header-bar">
+      <div>
+        <h3>Recent Appointments</h3>
+        <p class="section-desc">Live patient visits and consultation records for this clinic</p>
+      </div>
+      <a routerLink="/org-dashboard/bookings" class="view-all-link">
+        Open Full Schedule <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </div>
+
+    <div class="table-responsive" *ngIf="(dashboardData.appointments?.length || 0) > 0; else noAppointments">
+      <table class="clinic-table">
+        <thead>
+          <tr>
+            <th>Patient Details</th>
+            <th>Scheduled Date</th>
+            <th>Fee / Amount</th>
+            <th>Payment Status</th>
+            <th>Visit Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let appt of dashboardData.appointments">
+            <td>
+              <div class="patient-cell">
+                <div class="patient-avatar">{{ appt.customer_name ? appt.customer_name.charAt(0) : 'P' }}</div>
+                <div class="patient-info">
+                  <span class="name">{{ appt.customer_name }}</span>
+                  <span class="phone">{{ appt.customer_phone || 'No phone' }}</span>
+                </div>
               </div>
-              <div class="patient-meta">
-                <span class="patient-name">{{ appt.customer_name }}</span>
-                <span class="patient-phone">{{ appt.customer_phone || 'No phone recorded' }}</span>
+            </td>
+            <td>
+              <div class="date-cell">
+                <mat-icon>event</mat-icon>
+                <span>{{ formatDate(appt.appointment_date) }}</span>
               </div>
-            </div>
-
-            <div class="appt-time">
-              <mat-icon class="inline-icon">schedule</mat-icon>
-              <span>{{ formatDate(appt.appointment_date) }}</span>
-            </div>
-
-            <div class="appt-financials">
-              <span class="fee-amount" *ngIf="appt.amount">₹{{ appt.amount | number }}</span>
-              <span class="badge" [ngClass]="appt.payment_status === 'Paid' ? 'badge-success' : 'badge-warning'">
-                {{ appt.payment_status || 'Pending' }}
+            </td>
+            <td>
+              <span class="amount-val">
+                {{ appt.amount ? ('₹' + appt.amount) : 'Standard Fee' }}
               </span>
-            </div>
-
-            <div class="appt-status-col">
-              <span class="badge" [ngClass]="'badge-' + (appt.status || '').toLowerCase()">
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="(appt.payment_status === 'Paid') ? 'status-paid' : 'status-pending'">
+                {{ appt.payment_status || 'Unpaid' }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-' + (appt.status | lowercase)">
                 {{ appt.status }}
               </span>
-            </div>
+            </td>
+            <td class="text-right">
+              <div class="row-actions">
+                <button
+                  mat-stroked-button
+                  class="mini-btn edit-btn"
+                  (click)="openEditModal(appt)"
+                  matTooltip="Reschedule / Edit"
+                >
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button
+                  *ngIf="appt.status !== 'Completed'"
+                  mat-stroked-button
+                  class="mini-btn complete-btn"
+                  (click)="updateAppointmentStatus(appt.id, 'Completed')"
+                  matTooltip="Mark Done"
+                >
+                  <mat-icon>check</mat-icon> Done
+                </button>
+                <button
+                  *ngIf="appt.status !== 'Cancelled'"
+                  mat-icon-button
+                  color="warn"
+                  (click)="updateAppointmentStatus(appt.id, 'Cancelled')"
+                  matTooltip="Cancel Appointment"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-            <div class="appt-row-actions">
-              <button mat-icon-button (click)="openEditModal(appt)" title="Edit Details" color="primary">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button *ngIf="appt.status !== 'Completed'" (click)="updateAppointmentStatus(appt.id, 'Completed')" title="Mark Completed" color="accent">
-                <mat-icon>done_all</mat-icon>
-              </button>
-              <button mat-icon-button *ngIf="appt.status !== 'Cancelled'" (click)="updateAppointmentStatus(appt.id, 'Cancelled')" title="Cancel Appointment" color="warn">
-                <mat-icon>close</mat-icon>
-              </button>
-            </div>
-          </div>
-        </div>
+    <ng-template #noAppointments>
+      <div class="empty-state-box">
+        <div class="empty-icon"><mat-icon>calendar_month</mat-icon></div>
+        <h4>No Clinic Appointments Yet</h4>
+        <p>Your scheduled consultations and bookings will appear here.</p>
+        <button mat-raised-button color="primary" routerLink="/org-dashboard/bookings">
+          <mat-icon>add</mat-icon> Schedule First Appointment
+        </button>
       </div>
-
-      <ng-template #noAppointments>
-        <div class="empty-state">
-          <mat-icon class="empty-icon">event_busy</mat-icon>
-          <p>No appointments recorded yet.</p>
-        </div>
-      </ng-template>
-    </mat-card-content>
-  </mat-card>
+    </ng-template>
+  </div>
 </div>
 
-<!-- Refined Edit Modal -->
-<div class="modal-backdrop" *ngIf="showModal && editAppointment">
-  <div class="modal-card">
+<!-- Modern Edit Appointment Modal -->
+<div class="modal-backdrop" *ngIf="showModal && editAppointment" (click)="closeModal()">
+  <div class="modern-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Edit Appointment #{{ editAppointment.id }}</h3>
-      <button mat-icon-button (click)="closeModal()">
-        <mat-icon>close</mat-icon>
-      </button>
+      <div class="modal-title-wrap">
+        <div class="modal-icon"><mat-icon>edit_calendar</mat-icon></div>
+        <div>
+          <h3>Update Appointment #{{ editAppointment.id }}</h3>
+          <span class="modal-subtitle">Patient: {{ editAppointment.customer_name }}</span>
+        </div>
+      </div>
+      <button mat-icon-button (click)="closeModal()"><mat-icon>close</mat-icon></button>
     </div>
 
     <div class="modal-body">
-      <p class="customer-info-line">
-        Customer: <strong>{{ editAppointment.customer_name }}</strong> ({{ editAppointment.customer_phone }})
-      </p>
+      <div class="form-group">
+        <label>Appointment Date & Time</label>
+        <input
+          type="datetime-local"
+          class="custom-input"
+          [(ngModel)]="editAppointmentDateTime"
+        />
+      </div>
 
-      <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Appointment Date & Time</mat-label>
-        <input matInput type="datetime-local" [(ngModel)]="editAppointmentDateTime" />
-      </mat-form-field>
+      <div class="form-group">
+        <label>Payment Status</label>
+        <select class="custom-select" [(ngModel)]="editAppointment.payment_status">
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending / Unpaid</option>
+        </select>
+      </div>
 
-      <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Payment Status</mat-label>
-        <mat-select [(ngModel)]="editAppointment.payment_status">
-          <mat-option value="Paid">Paid</mat-option>
-          <mat-option value="Pending">Pending</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Appointment Status</mat-label>
-        <mat-select [(ngModel)]="editAppointment.status">
-          <mat-option value="Booked">Booked</mat-option>
-          <mat-option value="Completed">Completed</mat-option>
-          <mat-option value="Cancelled">Cancelled</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <div class="form-group">
+        <label>Visit Status</label>
+        <select class="custom-select" [(ngModel)]="editAppointment.status">
+          <option value="Booked">Booked / Confirmed</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
     </div>
 
     <div class="modal-footer">
-      <button mat-flat-button color="primary" (click)="saveEdit()">
-        <mat-icon>save</mat-icon>
-        <span>Save Changes</span>
+      <button mat-stroked-button (click)="closeModal()">Cancel</button>
+      <button mat-raised-button color="primary" (click)="saveEdit()">
+        <mat-icon>save</mat-icon> Save Changes
       </button>
-      <button mat-button (click)="closeModal()">Cancel</button>
     </div>
   </div>
 </div>

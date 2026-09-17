@@ -1,64 +1,50 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
-export interface AppointmentUpdate {
-  status?: string;
-  payment_status?: string;
-  appointment_date?: string;
-}
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AppointmentService {
-  private baseUrl = `${environment.apiUrl}/appointments`;
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('appointocare_token');
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
+  getAppointments(role?: string, filters?: { branch_id?: any, date?: string, status?: string }): Observable<any> {
+    let params: any = {};
+    if (role) params.role = role;
+    if (filters?.branch_id && filters.branch_id !== 'ALL') params.branch_id = filters.branch_id;
+    if (filters?.date && filters.date !== 'ALL') params.date = filters.date;
+    if (filters?.status && filters.status !== 'ALL') params.status = filters.status;
+    return this.http.get<any>(`${this.apiUrl}/appointments`, { params });
   }
 
-  /** ✅ Get all appointments (Organization or Admin based on role) */
-  getAppointments(role: string): Observable<any> {
-    const headers = this.getAuthHeaders();
-    const url =
-      role === 'Admin'
-        ? `${environment.apiUrl}/admin/appointments`
-        : `${environment.apiUrl}/organization/appointments`;
-    return this.http.get<any>(url, { headers });
+  createAppointment(body: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/appointments`, body);
   }
 
-  /** ✅ Update appointment status/date/payment */
-  updateAppointment(id: number, updateData: AppointmentUpdate): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.patch(`${this.baseUrl}/${id}`, updateData, { headers });
+  updateAppointment(id: number, body: any): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/appointments/${id}`, body);
   }
 
-  /** ✅ Delete appointment (if allowed for Admin) */
   deleteAppointment(id: number): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.delete(`${this.baseUrl}/${id}`, { headers });
+    return this.http.delete<any>(`${this.apiUrl}/appointments/${id}`);
   }
 
-  /** ✅ Create a new appointment */
-  createAppointment(data: any): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${this.baseUrl}`, data, { headers });
+  replyAppointment(id: number, payload: { message: string, sender?: string, sender_role?: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/appointments/${id}/reply`, payload);
   }
 
-  /** ✅ Get single appointment details */
-  getAppointmentById(id: number): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.get(`${this.baseUrl}/${id}`, { headers });
+  bulkMessageToday(payload: { organization_id: number, message_template?: string, branch_id?: number }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/appointments/bulk-message-today`, payload);
   }
 
-  sendMessage(payload: { recipient_number: string; message_content: string; message_type?: string; related_appointment_id?: number; remarks?: string; }): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/organization/message/send`, payload, { headers });
+  sendMessage(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/organization/message/send`, payload);
+  }
+
+  getCustomerHistory(query: { phone?: string, name?: string }): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/api/v1/customers/history`, { params: query });
   }
 }

@@ -2,7 +2,6 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../auth/auth.service';
 import { AppointmentService } from '../../services/appointments.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface Appointment {
   id: number;
@@ -50,8 +49,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private appointmentService: AppointmentService,
-    private snackBar: MatSnackBar
+    private appointmentService: AppointmentService
   ) {}
 
   ngOnInit(): void {
@@ -61,19 +59,38 @@ export class DashboardComponent implements OnInit {
 
   loadDashboard() {
     this.loading = true;
-    this.dashboardService.getDashboard(this.role || 'Organization').subscribe({
-      next: (data: DashboardData) => {
-        this.dashboardData = data;
-        this.dashboardData.appointments = data.appointments || [];
-        this.dashboardData.appointments_count = data.appointments_count || 0;
+    const effectiveRole = this.role || 'Organization';
+    this.dashboardService.getDashboard(effectiveRole).subscribe({
+      next: (data: any) => {
+        let appts: Appointment[] = [];
+        let count = 0;
+        if (Array.isArray(data?.appointments)) {
+          appts = data.appointments;
+          count = data.appointments_count || appts.length;
+        } else if (data?.appointments && typeof data.appointments === 'object') {
+          count = data.appointments.total || 0;
+        }
 
-        const orgName = data?.organization?.name?.trim();
+        this.dashboardData = {
+          organization: data?.organization || { name: '', sector: '', subscription_status: '' },
+          appointments: appts,
+          appointments_count: count,
+          transactions: Array.isArray(data?.transactions) ? data.transactions : []
+        };
+
+        const orgName = this.dashboardData.organization?.name?.trim();
         if (orgName) this.organizationNameChange.emit(orgName);
 
         this.loading = false;
       },
       error: (err) => {
         console.error('Error fetching dashboard:', err);
+        this.dashboardData = {
+          organization: { name: '', sector: '', subscription_status: '' },
+          appointments: [],
+          appointments_count: 0,
+          transactions: []
+        };
         this.loading = false;
       }
     });
@@ -114,47 +131,56 @@ export class DashboardComponent implements OnInit {
       status: this.editAppointment.status
     }).subscribe({
       next: () => {
-        this.snackBar.open('Appointment updated successfully', 'Close', { duration: 3000 });
         this.closeModal();
         this.loadDashboard();
       },
-      error: () => this.snackBar.open('Failed to update appointment', 'Close', { duration: 3000 })
+      error: (err) => console.error('Update failed:', err)
     });
   }
 
   updateAppointment(apptId: number, status?: string, paymentStatus?: string, appointmentDate?: string) {
-    if (!apptId) return;
+  if (!apptId) return;
 
-    const updateData: any = {};
-    if (status) updateData.status = status;
-    if (paymentStatus) updateData.payment_status = paymentStatus;
-    if (appointmentDate) updateData.appointment_date = appointmentDate;
+  const updateData: any = {};
+  if (status) updateData.status = status;
+  if (paymentStatus) updateData.payment_status = paymentStatus;
+  if (appointmentDate) updateData.appointment_date = appointmentDate;
 
-    this.appointmentService.updateAppointment(apptId, updateData).subscribe({
-      next: () => {
-        this.snackBar.open('Appointment updated successfully', 'Close', { duration: 3000 });
-        this.loadDashboard();
-      },
-      error: () => this.snackBar.open('Failed to update appointment', 'Close', { duration: 3000 })
-    });
-  }
+  this.appointmentService.updateAppointment(apptId, updateData).subscribe({
+    next: () => {
+      alert('Appointment updated successfully!');
+      this.loadDashboard(); // Refresh dashboard to reflect changes
+    },
+    error: (err) => {
+      console.error('Failed to update appointment:', err);
+      alert('Failed to update appointment. Please try again.');
+    }
+  });
+}
+
 
   updateAppointmentStatus(apptId: number, status: string) {
     if (!status) return;
     this.appointmentService.updateAppointment(apptId, { status }).subscribe({
-      next: () => {
-        this.snackBar.open(`Appointment marked as ${status}`, 'Close', { duration: 2500 });
-        this.loadDashboard();
-      },
-      error: () => this.snackBar.open('Status update failed', 'Close', { duration: 3000 })
+      next: () => this.loadDashboard(),
+      error: (err) => console.error('Status update failed:', err)
     });
   }
 
   // Stats getters
-  getTotalAppointments(): number { return this.dashboardData.appointments_count || 0; }
-  getBookedCount(): number { return this.dashboardData.appointments.filter(a => a.status === 'Booked').length; }
-  getCompletedCount(): number { return this.dashboardData.appointments.filter(a => a.status === 'Completed').length; }
-  getCancelledCount(): number { return this.dashboardData.appointments.filter(a => a.status === 'Cancelled').length; }
-  getTotalPaid(): number { return this.dashboardData.appointments.filter(a => a.payment_status === 'Paid').length; }
-  getTotalUnpaid(): number { return this.dashboardData.appointments.filter(a => a.payment_status === 'Pending').length; }
+  getTotalAppointments(): number { return this.dashboardData?.appointments_count || 0; }
+  getBookedCount(): number { return (this.dashboardData?.appointments || []).filter(a => a?.status === 'Booked').length; }
+  getCompletedCount(): number { return (this.dashboardData?.appointments || []).filter(a => a?.status === 'Completed').length; }
+  getCancelledCount(): number { return (this.dashboardData?.appointments || []).filter(a => a?.status === 'Cancelled').length; }
+  getTotalPaid(): number { return (this.dashboardData?.appointments || []).filter(a => a?.payment_status === 'Paid').length; }
+  getTotalUnpaid(): number { return (this.dashboardData?.appointments || []).filter(a => a?.payment_status === 'Pending' || a?.payment_status === 'Unpaid').length; }
+
+  getApptStatusColor(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'booked': return '#f9d77f';
+      case 'completed': return '#68d391';
+      case 'cancelled': return '#fc8181';
+      default: return '#e0e6ed';
+    }
+  }
 }

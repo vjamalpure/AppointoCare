@@ -1,0 +1,283 @@
+<div class="customers-page">
+  <!-- Page Header -->
+  <div class="header-section">
+    <div class="title-group">
+      <div class="badge-pill">CRM & ENGAGEMENT</div>
+      <h1 class="page-title">Customer & Client Directory</h1>
+      <p class="subtitle">Multi-sector CRM with unified appointment history, payment transactions, and WhatsApp records</p>
+    </div>
+    <button mat-flat-button color="primary" class="add-btn" (click)="openAddDialog()">
+      <mat-icon>person_add</mat-icon> Add Customer
+    </button>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="controls-card">
+    <div class="filter-pills">
+      <button
+        *ngFor="let t of tags"
+        class="filter-pill"
+        [class.active]="selectedTag === t"
+        (click)="selectedTag = t; applyFilter()"
+      >
+        {{ t }}
+      </button>
+    </div>
+
+    <div class="search-box">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        placeholder="Search by name, phone or email..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilter()"
+      />
+      <button *ngIf="searchTerm" mat-icon-button class="clear-btn" (click)="searchTerm = ''; applyFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="mb-4"></mat-progress-bar>
+
+  <!-- Layout with Table and Drawer -->
+  <div class="main-layout" [class.has-drawer]="selectedCustomer">
+    <!-- Customer Table -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="cust-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Contact Info</th>
+              <th>Gender</th>
+              <th>Tag</th>
+              <th>Appointments</th>
+              <th>Total Spent</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let c of filteredCustomers"
+              class="cust-row"
+              [class.selected]="selectedCustomer?.id === c.id"
+              (click)="viewCustomer(c)"
+            >
+              <td>
+                <div class="cust-meta">
+                  <div class="avatar">{{ c.name.charAt(0) }}</div>
+                  <div>
+                    <strong class="cust-name">{{ c.name }}</strong>
+                    <span class="cust-since">Joined {{ c.created_at | date:'mediumDate' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="contact-info">
+                  <span class="phone"><mat-icon>phone</mat-icon> {{ c.phone }}</span>
+                  <span class="email" *ngIf="c.email"><mat-icon>email</mat-icon> {{ c.email }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="gender-tag">{{ c.gender || 'Not specified' }}</span>
+              </td>
+              <td>
+                <span class="tag-pill" [class.vip]="c.tags === 'VIP'">{{ c.tags || 'General' }}</span>
+              </td>
+              <td>
+                <span class="appt-count">{{ c.appointments_count || 0 }} visits</span>
+              </td>
+              <td>
+                <strong class="spent-val">${{ c.total_spent || 0 }}</strong>
+              </td>
+              <td (click)="$event.stopPropagation()">
+                <button mat-icon-button color="primary" [matTooltip]="'View 360 Profile'" (click)="viewCustomer(c)">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" [matTooltip]="'Delete Profile'" (click)="deleteCustomer(c.id, $event)">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="filteredCustomers.length === 0 && !loading">
+              <td colspan="7" class="empty-state">
+                <mat-icon class="empty-icon">person_search</mat-icon>
+                <p>No customers matching this filter.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Customer 360 Timeline Drawer -->
+    <div class="timeline-drawer" *ngIf="selectedCustomer">
+      <div class="drawer-header">
+        <div class="drawer-user">
+          <div class="avatar lg">{{ selectedCustomer.name.charAt(0) }}</div>
+          <div>
+            <h3>{{ selectedCustomer.name }}</h3>
+            <span class="drawer-subtitle">{{ selectedCustomer.phone }} • {{ selectedCustomer.email }}</span>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeTimeline()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Notes & Address -->
+        <div class="drawer-section">
+          <h4>Profile Information</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-lbl">Address</span>
+              <span class="info-val">{{ selectedCustomer.address || 'No address provided' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-lbl">Client Segment</span>
+              <span class="info-val">{{ selectedCustomer.tags || 'General' }}</span>
+            </div>
+          </div>
+          <div class="notes-box" *ngIf="selectedCustomer.notes">
+            <strong>Internal Notes:</strong> {{ selectedCustomer.notes }}
+          </div>
+        </div>
+
+        <mat-progress-bar *ngIf="loadingTimeline" mode="indeterminate"></mat-progress-bar>
+
+        <!-- Appointments Tab / Section -->
+        <div class="drawer-section" *ngIf="customerTimeline">
+          <h4>Recent Bookings ({{ customerTimeline.appointments?.length || 0 }})</h4>
+          <div class="timeline-list" *ngIf="customerTimeline.appointments?.length; else noAppts">
+            <div class="timeline-item" *ngFor="let a of customerTimeline.appointments">
+              <div class="item-icon appt"><mat-icon>calendar_today</mat-icon></div>
+              <div class="item-content">
+                <div class="item-head">
+                  <strong>{{ a.service_name || 'Appointment' }}</strong>
+                  <span class="item-badge" [class.success]="a.payment_status === 'Paid'">{{ a.payment_status }}</span>
+                </div>
+                <span class="item-sub">{{ a.appointment_date | date:'medium' }} • Status: {{ a.status }}</span>
+              </div>
+            </div>
+          </div>
+          <ng-template #noAppts>
+            <p class="empty-sub">No bookings found for this customer.</p>
+          </ng-template>
+        </div>
+
+        <!-- Payments Tab / Section -->
+        <div class="drawer-section" *ngIf="customerTimeline">
+          <h4>Payment Records ({{ customerTimeline.transactions?.length || 0 }})</h4>
+          <div class="timeline-list" *ngIf="customerTimeline.transactions?.length; else noTxns">
+            <div class="timeline-item" *ngFor="let t of customerTimeline.transactions">
+              <div class="item-icon payment"><mat-icon>payments</mat-icon></div>
+              <div class="item-content">
+                <div class="item-head">
+                  <strong>${{ t.amount }} ({{ t.status }})</strong>
+                  <span class="item-date">{{ t.created_at | date:'shortDate' }}</span>
+                </div>
+                <span class="item-sub">{{ t.transaction_type }}</span>
+              </div>
+            </div>
+          </div>
+          <ng-template #noTxns>
+            <p class="empty-sub">No billing records found.</p>
+          </ng-template>
+        </div>
+
+        <!-- WhatsApp History -->
+        <div class="drawer-section" *ngIf="customerTimeline">
+          <h4>WhatsApp Communications ({{ customerTimeline.messages?.length || 0 }})</h4>
+          <div class="timeline-list" *ngIf="customerTimeline.messages?.length; else noMsgs">
+            <div class="timeline-item" *ngFor="let m of customerTimeline.messages">
+              <div class="item-icon chat"><mat-icon>chat</mat-icon></div>
+              <div class="item-content">
+                <div class="item-head">
+                  <span class="dir-badge" [class.inbound]="m.direction === 'Inbound'">{{ m.direction }}</span>
+                  <span class="item-date">{{ m.sent_at | date:'shortTime' }}</span>
+                </div>
+                <p class="item-msg">{{ m.message }}</p>
+              </div>
+            </div>
+          </div>
+          <ng-template #noMsgs>
+            <p class="empty-sub">No recorded WhatsApp messages for this number.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Customer Modal -->
+  <div class="modal-backdrop" *ngIf="showAddDialog" (click)="showAddDialog = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Create New Customer Profile</h3>
+        <button mat-icon-button (click)="showAddDialog = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" [(ngModel)]="newCustomer.name" placeholder="e.g. Eleanor Vance" class="std-input" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="text" [(ngModel)]="newCustomer.phone" placeholder="+1 555-0199" class="std-input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" [(ngModel)]="newCustomer.email" placeholder="eleanor@example.com" class="std-input" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select [(ngModel)]="newCustomer.gender" class="std-input">
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Other">Other</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tag / Segment</label>
+            <select [(ngModel)]="newCustomer.tags" class="std-input">
+              <option value="General">General</option>
+              <option value="VIP">VIP</option>
+              <option value="Dental">Dental</option>
+              <option value="Preventive">Preventive</option>
+              <option value="Corporate">Corporate</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Physical Address</label>
+            <input type="text" [(ngModel)]="newCustomer.address" placeholder="123 Oak St, Suite 400" class="std-input" />
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Internal Client Notes</label>
+          <textarea [(ngModel)]="newCustomer.notes" rows="3" placeholder="Preferences, insurance details, allergic history..." class="std-input"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-stroked-button (click)="showAddDialog = false">Cancel</button>
+        <button mat-flat-button color="primary" (click)="createCustomer()">
+          <mat-icon>check</mat-icon> Save Customer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

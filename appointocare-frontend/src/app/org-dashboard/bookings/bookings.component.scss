@@ -1,3 +1,159 @@
-.org-bookings {
-  padding: 1rem;
+.org-bookings-page {
+  /* Inherits from .page-container */
+}
+
+.filter-controls {
+  .compact-select {
+    width: 150px;
+    margin-bottom: -16px;
+  }
+}
+
+.booking-panel {
+  margin-bottom: 24px;
+  animation: slideDown 0.2s ease-out;
+
+  .panel-subtitle {
+    font-size: 13px;
+    color: var(--slate-500);
+    margin-top: 2px;
+  }
+
+  .booking-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .booking-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--slate-50);
+    border-top: 1px solid var(--slate-200);
+  }
+}
+
+.id-cell {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--slate-500);
+}
+
+.patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .patient-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-100);
+    color: var(--primary-700);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .patient-info {
+    display: flex;
+    flex-direction: column;
+
+    .patient-name {
+      font-weight: 600;
+      color: var(--slate-900);
+    }
+
+    .patient-phone {
+      font-size: 11.5px;
+      color: var(--slate-500);
+    }
+  }
+}
+
+.date-cell {
+  color: var(--slate-700);
+  font-size: 12.5px;
+
+  .date-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: var(--slate-400);
+    }
+  }
+}
+
+.actions-header {
+  text-align: right !important;
+}
+
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+
+  .reminder-btn {
+    height: 32px;
+    line-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    margin-right: 6px;
+    border-radius: 6px;
+    color: #15803d;
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      margin-right: 4px;
+      color: #16a34a;
+    }
+
+    &:hover {
+      background: #dcfce7;
+    }
+  }
+
+  .state-btn {
+    height: 32px;
+    line-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    margin-right: 4px;
+
+    &.done-btn {
+      color: var(--primary-700);
+      background: var(--primary-50);
+      border-color: var(--primary-200);
+
+      &:hover {
+        background: var(--primary-100);
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -22,13 +22,26 @@ export class OrganizationsComponent implements OnInit {
   };
   newUser: any = { username: '', password: '', role: 'Staff' };
   userEdit: any = null;
-  showCreateForm = false;
   displayedColumns: string[] = ['id', 'name', 'code', 'plan', 'status', 'users', 'actions'];
 
   constructor(private adminService: AdminService, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.loadOrganizations();
+  }
+
+  searchTerm: string = '';
+  showAddOrgModal: boolean = false;
+  activeTab: 'details' | 'users' = 'details';
+
+  get filteredOrganizations(): any[] {
+    if (!this.searchTerm) return this.organizations;
+    const term = this.searchTerm.toLowerCase();
+    return this.organizations.filter(o =>
+      o.name?.toLowerCase().includes(term) ||
+      o.code?.toLowerCase().includes(term) ||
+      o.subscription_plan?.toLowerCase().includes(term)
+    );
   }
 
   loadOrganizations() {
@@ -38,12 +51,8 @@ export class OrganizationsComponent implements OnInit {
     });
   }
 
-  toggleCreateForm() {
-    this.showCreateForm = !this.showCreateForm;
-  }
-
   selectOrganization(org: any) {
-    this.selectedOrg = { ...org };
+    this.selectedOrg = org;
     this.loadOrganizationUsers(org.id);
   }
 
@@ -55,21 +64,13 @@ export class OrganizationsComponent implements OnInit {
   }
 
   createOrganization() {
-    if (!this.newOrg.name || !this.newOrg.code || !this.newOrg.username || !this.newOrg.password) {
-      this.snackBar.open('Please fill all required fields', 'Close', { duration: 3000 });
-      return;
-    }
     this.adminService.createOrganization(this.newOrg).subscribe({
       next: () => {
-        this.snackBar.open('Organization created successfully', 'Close', { duration: 3000 });
-        this.newOrg = { name: '', code: '', sector: 'Hospitality', username: '', password: '', subscription_plan: 'Basic', subscription_status: 'Active' };
-        this.showCreateForm = false;
+        this.snackBar.open('Organization created', 'Close', { duration: 3000 });
+        this.newOrg = { name: '', code: '', sector: '', username: '', password: '', subscription_plan: 'Basic', subscription_status: 'Active' };
         this.loadOrganizations();
       },
-      error: (err) => {
-        const msg = err?.error?.msg || 'Error creating organization';
-        this.snackBar.open(msg, 'Close', { duration: 3000 });
-      }
+      error: () => this.snackBar.open('Error creating organization', 'Close', { duration: 3000 })
     });
   }
 

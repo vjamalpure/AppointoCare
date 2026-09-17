@@ -34,23 +34,36 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadSummary() {
-    this.adminService.getDashboardSummary().subscribe({
-      next: (data: any) => this.summary = data,
-      error: (err) => console.error('Error loading dashboard summary', err)
+    const token = localStorage.getItem('appointocare_token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http.get(`${environment.apiUrl}/admin/dashboard`, { headers }).subscribe((data: any) => {
+      this.summary = data;
     });
   }
 
   loadAppointments() {
-    this.adminService.getAppointments().subscribe({
-      next: (data) => this.appointments = (data || []).slice(0, 5),
-      error: (err) => console.error('Error loading appointments', err)
+    const token = localStorage.getItem('appointocare_token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http.get<any[]>(`${environment.apiUrl}/admin/appointments`, { headers }).subscribe({
+      next: (data) => {
+        this.appointments = Array.isArray(data) ? data.slice(0, 5) : [];
+      },
+      error: () => {
+        this.appointments = [];
+      }
     });
   }
 
   loadTransactions() {
-    this.adminService.getTransactions().subscribe({
-      next: (data) => this.transactions = (data || []).slice(0, 5),
-      error: (err) => console.error('Error loading transactions', err)
+    const token = localStorage.getItem('appointocare_token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http.get<any[]>(`${environment.apiUrl}/admin/transactions`, { headers }).subscribe({
+      next: (data) => {
+        this.transactions = Array.isArray(data) ? data.slice(0, 5) : [];
+      },
+      error: () => {
+        this.transactions = [];
+      }
     });
   }
 

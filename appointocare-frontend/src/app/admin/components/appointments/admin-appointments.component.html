@@ -1,0 +1,229 @@
+<div class="page-container admin-appointments-page">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Cross-Tenant Appointments Management</h1>
+      <p>Audit, track, and manage all patient bookings, slots, and payment statuses</p>
+    </div>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadAppointments()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Metric Chips -->
+  <div class="stat-card-grid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Total Bookings</span>
+        <span class="stat-value">{{ totalCount }}</span>
+        <span class="stat-subtext">All Lifetime Records</span>
+      </div>
+      <div class="stat-icon-wrapper primary">
+        <mat-icon>calendar_month</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Confirmed / Booked</span>
+        <span class="stat-value">{{ bookedCount }}</span>
+        <span class="stat-subtext positive">Upcoming Slots</span>
+      </div>
+      <div class="stat-icon-wrapper info">
+        <mat-icon>event_available</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Completed</span>
+        <span class="stat-value">{{ completedCount }}</span>
+        <span class="stat-subtext positive">Consulted & Closed</span>
+      </div>
+      <div class="stat-icon-wrapper success">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Cancelled</span>
+        <span class="stat-value">{{ cancelledCount }}</span>
+        <span class="stat-subtext">Revoked / No Show</span>
+      </div>
+      <div class="stat-icon-wrapper danger">
+        <mat-icon>cancel</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Table Container -->
+  <div class="table-surface-card">
+    <div class="table-header-bar">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input
+          type="text"
+          placeholder="Search patient, phone, service, clinic..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+        />
+        <button mat-icon-button *ngIf="searchTerm" (click)="searchTerm = ''; onSearchChange()">
+          <mat-icon>clear</mat-icon>
+        </button>
+      </div>
+
+      <div class="filter-controls">
+        <mat-form-field appearance="outline" class="compact-select">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onFilterChange()">
+            <mat-option value="ALL">All Statuses</mat-option>
+            <mat-option value="Booked">Booked</mat-option>
+            <mat-option value="Completed">Completed</mat-option>
+            <mat-option value="Cancelled">Cancelled</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="compact-select">
+          <mat-label>Payment</mat-label>
+          <mat-select [(ngModel)]="selectedPaymentStatus" (selectionChange)="onFilterChange()">
+            <mat-option value="ALL">All Payments</mat-option>
+            <mat-option value="Paid">Paid</mat-option>
+            <mat-option value="Unpaid">Unpaid</mat-option>
+            <mat-option value="Refunded">Refunded</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+
+    <div class="table-responsive" *ngIf="filteredAppointments?.length; else emptyState">
+      <table mat-table [dataSource]="filteredAppointments">
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>#ID</th>
+          <td mat-cell *matCellDef="let a" class="id-cell">#{{ a.id }}</td>
+        </ng-container>
+
+        <!-- Customer Column -->
+        <ng-container matColumnDef="customer">
+          <th mat-header-cell *matHeaderCellDef>Patient</th>
+          <td mat-cell *matCellDef="let a">
+            <div class="patient-cell">
+              <div class="patient-avatar">{{ a.customer_name ? a.customer_name.charAt(0) : 'P' }}</div>
+              <div class="patient-info">
+                <span class="patient-name">{{ a.customer_name || 'Anonymous' }}</span>
+                <span class="patient-phone">{{ a.customer_phone || '-' }}</span>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Organization Column -->
+        <ng-container matColumnDef="organization">
+          <th mat-header-cell *matHeaderCellDef>Clinic / Tenant</th>
+          <td mat-cell *matCellDef="let a">
+            <span class="org-pill">
+              <mat-icon>business</mat-icon>
+              {{ a.organization_name || 'Healthcare Clinic' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Service Column -->
+        <ng-container matColumnDef="service">
+          <th mat-header-cell *matHeaderCellDef>Service</th>
+          <td mat-cell *matCellDef="let a">
+            <div class="service-name">{{ a.service_name || 'Consultation' }}</div>
+            <span class="service-notes" *ngIf="a.notes">{{ a.notes }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Date Column -->
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Scheduled Time</th>
+          <td mat-cell *matCellDef="let a" class="date-cell">
+            <div class="date-wrapper">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ a.appointment_date | date:'medium' }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let a">
+            <span class="status-badge" [ngClass]="'status-' + (a.status | lowercase)">
+              {{ a.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Payment Status Column -->
+        <ng-container matColumnDef="payment_status">
+          <th mat-header-cell *matHeaderCellDef>Billing</th>
+          <td mat-cell *matCellDef="let a">
+            <span class="status-badge" [ngClass]="(a.payment_status === 'Paid') ? 'status-paid' : 'status-pending'">
+              {{ a.payment_status || 'Unpaid' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
+          <td mat-cell *matCellDef="let a" class="actions-cell">
+            <button mat-icon-button [matMenuTriggerFor]="actionMenu" matTooltip="Update Appointment">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #actionMenu="matMenu">
+              <button mat-menu-item (click)="updateStatus(a, 'Booked')">
+                <mat-icon>event_available</mat-icon>
+                <span>Mark as Booked</span>
+              </button>
+              <button mat-menu-item (click)="updateStatus(a, 'Completed')">
+                <mat-icon>check_circle</mat-icon>
+                <span>Mark as Completed</span>
+              </button>
+              <button mat-menu-item (click)="updateStatus(a, 'Cancelled')">
+                <mat-icon>cancel</mat-icon>
+                <span>Cancel Booking</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="updatePaymentStatus(a, 'Paid')">
+                <mat-icon>paid</mat-icon>
+                <span>Set Paid</span>
+              </button>
+              <button mat-menu-item (click)="updatePaymentStatus(a, 'Unpaid')">
+                <mat-icon>money_off</mat-icon>
+                <span>Set Unpaid</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="deleteAppointment(a.id)">
+                <mat-icon color="warn">delete</mat-icon>
+                <span style="color: #dc2626;">Delete Booking</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state-box">
+        <div class="empty-icon"><mat-icon>event_busy</mat-icon></div>
+        <h4>No Appointments Found</h4>
+        <p>No records matched your search or filters.</p>
+        <button mat-stroked-button color="primary" (click)="searchTerm = ''; selectedStatus = 'ALL'; selectedPaymentStatus = 'ALL'; applyFilters()">
+          Clear All Filters
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>

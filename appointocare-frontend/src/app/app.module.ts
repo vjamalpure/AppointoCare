@@ -1,19 +1,18 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
-import { MaterialModule } from './material.module'; 
+import { AppComponent } from './app.component';
+import { MaterialModule } from './material.module';
 import { SharedModule } from './components/shared/shared.module';
 
-import { AppComponent } from './app.component';
 import { LoginComponent } from './auth/login/login.component';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
-import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { AuthInterceptor } from './auth/auth-interceptor.service';
 
 @NgModule({
   declarations: [
@@ -25,16 +24,20 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    FormsModule,
     HttpClientModule,
-    AppRoutingModule,
+    FormsModule,
+    ReactiveFormsModule,
     MaterialModule,
-    SharedModule
+    SharedModule,
+    AppRoutingModule
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    provideCharts(withDefaultRegisterables())
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,0 +1,295 @@
+.audit-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+
+    .badge-pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary-600, #2563eb);
+      background: #eff6ff;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 4px 0;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+  }
+
+  .controls-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .filter-pill {
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #475569;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: #f1f5f9;
+        }
+
+        &.active {
+          background: #0f172a;
+          color: #ffffff;
+          border-color: #0f172a;
+        }
+      }
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 12px;
+      min-width: 320px;
+
+      .search-icon {
+        color: #94a3b8;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
+
+      input {
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 14px;
+        color: #1e293b;
+        width: 100%;
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+      }
+
+      .clear-btn {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+
+        mat-icon {
+          font-size: 16px;
+          color: #94a3b8;
+        }
+      }
+    }
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .stat-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+
+      .stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .stat-val {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+
+        &.text-success { color: #10b981; }
+        &.text-primary { color: #2563eb; }
+      }
+    }
+  }
+
+  .table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+
+      th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 18px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+        color: #1e293b;
+      }
+
+      .log-row:hover {
+        background: #f8fafc;
+      }
+
+      .time-col {
+        white-space: nowrap;
+        color: #64748b;
+        font-size: 13px;
+      }
+
+      .user-meta {
+        display: flex;
+        flex-direction: column;
+
+        .user-name {
+          font-weight: 600;
+          color: #0f172a;
+        }
+
+        .user-role {
+          font-size: 12px;
+          color: #64748b;
+        }
+      }
+
+      .action-tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.03em;
+
+        &.badge-auth { background: #e0e7ff; color: #3730a3; }
+        &.badge-booking { background: #dbeafe; color: #1e40af; }
+        &.badge-payment { background: #dcfce7; color: #166534; }
+        &.badge-whatsapp { background: #fef3c7; color: #92400e; }
+        &.badge-system { background: #f1f5f9; color: #475569; }
+      }
+
+      .entity-text {
+        font-size: 13px;
+        color: #334155;
+      }
+
+      .ip-code {
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-family: monospace;
+        color: #475569;
+      }
+
+      .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+
+        &.success {
+          color: #16a34a;
+          &::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #16a34a;
+            border-radius: 50%;
+            margin-right: 6px;
+          }
+        }
+      }
+
+      .details-col {
+        max-width: 320px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+        color: #64748b;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 48px;
+        color: #94a3b8;
+
+        .empty-icon {
+          font-size: 40px;
+          width: 40px;
+          height: 40px;
+          margin-bottom: 8px;
+        }
+      }
+    }
+  }
+}

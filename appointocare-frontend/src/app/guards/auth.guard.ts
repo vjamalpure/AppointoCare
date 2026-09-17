@@ -6,26 +6,34 @@ import { AuthService } from '../auth/auth.service';
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
-
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    // Check if user is logged in
     if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
       return false;
     }
 
-    // Role-based access
     const expectedRole = route.data['expectedRole'];
-    const userRole = this.authService.getUserRole();
-
-    const allowedRoles = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
-    if (expectedRole && !allowedRoles.includes(userRole)) {
-      this.router.navigate(['/login']);
-      return false;
+    if (!expectedRole) {
+      return true;
     }
 
-    return true;
+    const userRole = this.authService.getUserRole();
+    if (Array.isArray(expectedRole)) {
+      if (expectedRole.includes(userRole)) {
+        return true;
+      }
+    } else if (expectedRole === userRole) {
+      return true;
+    }
+
+    // Role mismatch -> redirect to appropriate home
+    if (userRole === 'Admin') {
+      this.router.navigate(['/admin-dashboard']);
+    } else {
+      this.router.navigate(['/org-dashboard']);
+    }
+    return false;
   }
 }

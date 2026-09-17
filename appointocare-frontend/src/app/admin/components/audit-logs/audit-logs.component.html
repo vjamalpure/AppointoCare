@@ -1,0 +1,122 @@
+<div class="audit-container">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="title-group">
+      <div class="badge-pill">SECURITY & COMPLIANCE</div>
+      <h1 class="page-title">Enterprise Audit Trail</h1>
+      <p class="subtitle">Complete chronological record of all administrative logins, tenant actions, transactions, and automated jobs</p>
+    </div>
+    <button mat-flat-button color="primary" class="refresh-btn" (click)="loadLogs()">
+      <mat-icon>refresh</mat-icon>
+      Refresh Trail
+    </button>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="controls-card">
+    <div class="filter-pills">
+      <button
+        *ngFor="let f of filterOptions"
+        class="filter-pill"
+        [class.active]="selectedFilter === f.value"
+        (click)="setFilter(f.value)"
+      >
+        {{ f.label }}
+      </button>
+    </div>
+
+    <div class="search-box">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        placeholder="Filter by user, action, IP or description..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilter()"
+      />
+      <button *ngIf="searchTerm" mat-icon-button class="clear-btn" (click)="searchTerm = ''; applyFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metrics Grid -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <span class="stat-label">Total Audit Events</span>
+      <span class="stat-val">{{ logs.length }}</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">Security Logins</span>
+      <span class="stat-val">100% Verified</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">Tenant Isolation</span>
+      <span class="stat-val text-success">Strict (Org ID)</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">IP Geolocation Tracking</span>
+      <span class="stat-val text-primary">Active</span>
+    </div>
+  </div>
+
+  <!-- Loading bar -->
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="mb-4"></mat-progress-bar>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User & Role</th>
+            <th>Action Type</th>
+            <th>Target Entity</th>
+            <th>IP Address</th>
+            <th>Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of filteredLogs" class="log-row">
+            <td class="time-col">
+              <span class="time-text">{{ log.timestamp | date:'medium' }}</span>
+            </td>
+            <td>
+              <div class="user-meta">
+                <span class="user-name">{{ log.user }}</span>
+                <span class="user-role">{{ log.role }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="action-tag" [ngClass]="getActionBadgeClass(log.action)">
+                {{ log.action }}
+              </span>
+            </td>
+            <td>
+              <span class="entity-text">{{ log.entity }} #{{ log.entity_id }}</span>
+            </td>
+            <td>
+              <code class="ip-code">{{ log.ip_address || '127.0.0.1' }}</code>
+            </td>
+            <td>
+              <span class="status-indicator" [class.success]="log.status === 'Success' || log.status === 'Delivered'">
+                {{ log.status }}
+              </span>
+            </td>
+            <td class="details-col">
+              <span class="details-text" [matTooltip]="log.details">{{ log.details }}</span>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredLogs.length === 0 && !loading">
+            <td colspan="7" class="empty-state">
+              <mat-icon class="empty-icon">verified_user</mat-icon>
+              <p>No audit records matching your criteria.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

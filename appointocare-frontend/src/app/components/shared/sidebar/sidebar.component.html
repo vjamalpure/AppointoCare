@@ -1,19 +1,26 @@
 <aside class="sidebar" [class.collapsed]="isCollapsed">
-  <div class="sidebar-top">
-    <div class="role-indicator" *ngIf="!isCollapsed">
-      <span class="role-badge-pill">{{ role === 'Admin' ? 'Super Admin' : (role || 'User') }}</span>
-      <span class="org-subtext" *ngIf="orgName">{{ orgName }}</span>
+  <!-- Sidebar Header -->
+  <div class="sidebar-header">
+    <div class="sidebar-brand" *ngIf="!isCollapsed">
+      <span class="brand-portal">PORTAL NAVIGATION</span>
     </div>
+    <button mat-icon-button class="toggle-btn" (click)="toggleSidebar()" [matTooltip]="isCollapsed ? 'Expand Menu' : 'Collapse Menu'">
+      <mat-icon>{{ isCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
   </div>
 
+  <!-- Navigation Items -->
   <nav class="sidebar-nav">
     <ul class="nav-list">
       <li *ngFor="let item of menuItems" class="nav-item">
-        <a [routerLink]="item.route"
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{ exact: item.exact || false }"
-           class="nav-link"
-           [title]="item.label">
+        <a
+          [routerLink]="item.route"
+          [routerLinkActive]="'active'"
+          [routerLinkActiveOptions]="{ exact: !!item.exact }"
+          class="nav-link"
+          [matTooltip]="isCollapsed ? item.label : ''"
+          matTooltipPosition="right"
+        >
           <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
           <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
         </a>
@@ -21,10 +28,16 @@
     </ul>
   </nav>
 
-  <div class="sidebar-bottom">
-    <button type="button" class="sidebar-footer-toggle" (click)="toggleSidebar()" [title]="isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'">
-      <mat-icon>{{ isCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
-      <span *ngIf="!isCollapsed" class="toggle-text">Collapse Menu</span>
-    </button>
+  <!-- Sidebar Footer / Role Card -->
+  <div class="sidebar-footer" *ngIf="!isCollapsed && role">
+    <div class="user-chip">
+      <div class="user-avatar">{{ username ? username.charAt(0).toUpperCase() : 'U' }}</div>
+      <div class="user-details">
+        <div class="user-name">{{ username || 'User' }}</div>
+        <span class="role-badge" [ngClass]="'role-' + (role | lowercase)">
+          {{ getRoleBadgeLabel() }}
+        </span>
+      </div>
+    </div>
   </div>
 </aside>

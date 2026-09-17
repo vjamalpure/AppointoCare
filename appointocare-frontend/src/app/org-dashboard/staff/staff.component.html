@@ -1,0 +1,155 @@
+<div class="staff-page">
+  <!-- Page Header -->
+  <div class="header-section">
+    <div class="title-group">
+      <div class="badge-pill">SECURITY & RBAC</div>
+      <h1 class="page-title">Team & Staff Access Control</h1>
+      <p class="subtitle">Multi-role authorization matrix (Admin, Manager, Staff, Consultant) with granular permissions</p>
+    </div>
+    <button mat-flat-button color="primary" class="add-btn" (click)="openCreateDialog()">
+      <mat-icon>person_add</mat-icon> Add Team Member
+    </button>
+  </div>
+
+  <!-- RBAC Role Matrix Summary -->
+  <div class="rbac-matrix-card">
+    <div class="matrix-item">
+      <div class="role-badge role-admin">Organization Admin</div>
+      <p class="role-desc">Full governance: Billings, subscriptions, branches, staff credentials, API keys</p>
+    </div>
+    <div class="matrix-item">
+      <div class="role-badge role-manager">Organization Manager</div>
+      <p class="role-desc">Operations: Calendar schedule, service catalog, campaigns, customer CRM, reports</p>
+    </div>
+    <div class="matrix-item">
+      <div class="role-badge role-staff">Staff / Front Desk</div>
+      <p class="role-desc">Reception: Daily appointment intake, check-in, attendance marking, WhatsApp replies</p>
+    </div>
+    <div class="matrix-item">
+      <div class="role-badge role-specialist">Specialist / Consultant</div>
+      <p class="role-desc">Clinical: Patient charts, case notes, slot availability, personal schedule</p>
+    </div>
+  </div>
+
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="mb-4"></mat-progress-bar>
+
+  <!-- Staff Table -->
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="staff-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role & Access Level</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of staffList">
+            <td>
+              <div class="user-meta">
+                <div class="avatar">{{ s.name.charAt(0) }}</div>
+                <div>
+                  <strong class="user-name">{{ s.name }}</strong>
+                  <span class="user-handle">&#64;{{ s.username }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="role-tag" [ngClass]="getRoleBadgeClass(s.role)">
+                {{ s.role }}
+              </span>
+            </td>
+            <td>
+              <div class="contact-details">
+                <span class="email"><mat-icon>email</mat-icon> {{ s.email }}</span>
+                <span class="phone"><mat-icon>phone</mat-icon> {{ s.phone }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-chip" [class.active]="s.is_active" (click)="toggleActive(s)" [matTooltip]="'Click to toggle status'">
+                {{ s.is_active ? 'Active' : 'Suspended' }}
+              </span>
+            </td>
+            <td>
+              <span class="date-text">{{ s.created_at | date:'mediumDate' }}</span>
+            </td>
+            <td>
+              <button mat-icon-button color="primary" [matTooltip]="'Edit User'" (click)="openEditDialog(s)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" [matTooltip]="'Remove User'" (click)="deleteStaff(s.id)">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-backdrop" *ngIf="showDialog" (click)="showDialog = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isEditMode ? 'Edit Staff Member' : 'Add Team Member to Organization' }}</h3>
+        <button mat-icon-button (click)="showDialog = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" [(ngModel)]="currentStaff.name" placeholder="Dr. Sarah Jenkins" class="std-input" />
+          </div>
+
+          <div class="form-group">
+            <label>Username (Login Handle)</label>
+            <input type="text" [(ngModel)]="currentStaff.username" placeholder="sarah_jenkins" class="std-input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Work Email Address *</label>
+            <input type="email" [(ngModel)]="currentStaff.email" placeholder="sarah@citycare.org" class="std-input" />
+          </div>
+
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" [(ngModel)]="currentStaff.phone" placeholder="+1 555-0144" class="std-input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>RBAC Security Role</label>
+            <select [(ngModel)]="currentStaff.role" class="std-input">
+              <option *ngFor="let r of roles" [value]="r.val">{{ r.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Account Status</label>
+            <select [(ngModel)]="currentStaff.is_active" class="std-input">
+              <option [ngValue]="true">Active (Access Granted)</option>
+              <option [ngValue]="false">Suspended (Access Blocked)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-stroked-button (click)="showDialog = false">Cancel</button>
+        <button mat-flat-button color="primary" (click)="saveStaff()">
+          <mat-icon>check</mat-icon> {{ isEditMode ? 'Update Member' : 'Provision User' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

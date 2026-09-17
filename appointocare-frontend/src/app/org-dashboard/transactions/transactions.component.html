@@ -1,47 +1,213 @@
-<div class="transactions-container" style="padding: 16px;">
-  <h2>Transactions</h2>
-
-  <div *ngIf="transactions.length === 0" class="empty-state" style="text-align:center; padding: 16px;">
-    <mat-icon>receipt_long</mat-icon>
-    <p>No transactions found.</p>
+<div class="page-container org-transactions-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Invoices & Billing Transactions</h1>
+      <p>Track consultation fee collections, patient receipts, payment gateways, and settlement history</p>
+    </div>
+    <div class="page-actions">
+      <button mat-flat-button color="primary" class="mr-2" (click)="openCollectPayment()">
+        <mat-icon>payment</mat-icon> Collect Online Payment (Razorpay)
+      </button>
+      <button mat-stroked-button (click)="loadTransactions()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="transactions.length > 0">
-    <div class="chart-section" style="height: 320px; margin-bottom: 16px;">
+  <!-- Stat Cards -->
+  <div class="stat-card-grid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Total Revenue Collected</span>
+        <span class="stat-value">₹{{ totalRevenue | number }}</span>
+        <span class="stat-subtext positive">Net Cleared Funds</span>
+      </div>
+      <div class="stat-icon-wrapper success">
+        <mat-icon>payments</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Completed Transactions</span>
+        <span class="stat-value">{{ successCount }}</span>
+        <span class="stat-subtext positive">Invoices Settled</span>
+      </div>
+      <div class="stat-icon-wrapper primary">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Pending Settlements</span>
+        <span class="stat-value">{{ pendingCount }}</span>
+        <span class="stat-subtext">Awaiting Gateway Confirmation</span>
+      </div>
+      <div class="stat-icon-wrapper warning">
+        <mat-icon>hourglass_empty</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Total Invoices</span>
+        <span class="stat-value">{{ transactions.length }}</span>
+        <span class="stat-subtext">Lifetime Statements</span>
+      </div>
+      <div class="stat-icon-wrapper info">
+        <mat-icon>receipt</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Trend Chart -->
+  <div class="table-surface-card chart-card" *ngIf="transactionChartLabels.length > 0">
+    <div class="table-header-bar">
+      <div>
+        <h3>Monthly Revenue Velocity</h3>
+        <p class="section-desc">Consultation receipts grouped by calendar month</p>
+      </div>
+      <span class="ledger-pill"><mat-icon>trending_up</mat-icon> Real-time Flow</span>
+    </div>
+    <div class="chart-canvas-wrap">
       <canvas baseChart
         [datasets]="transactionChartData"
         [labels]="transactionChartLabels"
         [options]="transactionChartOptions"
-        [legend]="true"
+        [legend]="false"
         [type]="chartType">
       </canvas>
     </div>
+  </div>
 
-    <mat-table [dataSource]="transactions" class="mat-elevation-z2">
-      <ng-container matColumnDef="date">
-        <mat-header-cell *matHeaderCellDef>Date</mat-header-cell>
-        <mat-cell *matCellDef="let t">{{ t.created_at | date:'mediumDate' }}</mat-cell>
-      </ng-container>
+  <!-- Transactions Table -->
+  <div class="table-surface-card">
+    <div class="table-header-bar">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input
+          type="text"
+          placeholder="Search by amount, type, or ID..."
+          [(ngModel)]="searchTerm"
+        />
+        <button mat-icon-button *ngIf="searchTerm" (click)="searchTerm = ''">
+          <mat-icon>clear</mat-icon>
+        </button>
+      </div>
 
-      <ng-container matColumnDef="amount">
-        <mat-header-cell *matHeaderCellDef>Amount</mat-header-cell>
-        <mat-cell *matCellDef="let t">₹{{ t.amount }}</mat-cell>
-      </ng-container>
+      <div class="status-filter">
+        <mat-form-field appearance="outline" class="compact-select">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="selectedStatus">
+            <mat-option value="ALL">All Statuses</mat-option>
+            <mat-option value="Success">Success / Paid</mat-option>
+            <mat-option value="Pending">Pending</mat-option>
+            <mat-option value="Failed">Failed</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
 
-      <ng-container matColumnDef="status">
-        <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
-        <mat-cell *matCellDef="let t">
-          <span [ngClass]="{'success': t.status === 'success', 'failed': t.status === 'failed'}">{{ t.status | titlecase }}</span>
-        </mat-cell>
-      </ng-container>
+    <div class="table-responsive" *ngIf="filteredTransactions.length; else noTxns">
+      <table mat-table [dataSource]="filteredTransactions">
+        <!-- Date -->
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Payment Date</th>
+          <td mat-cell *matCellDef="let t" class="date-cell">
+            <div class="date-wrapper">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ t.created_at | date:'mediumDate' }}</span>
+            </div>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="type">
-        <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
-        <mat-cell *matCellDef="let t">{{ t.transaction_type | titlecase }}</mat-cell>
-      </ng-container>
+        <!-- Amount -->
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Amount Paid</th>
+          <td mat-cell *matCellDef="let t" class="amount-cell">
+            ₹{{ t.amount | number }}
+          </td>
+        </ng-container>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-    </mat-table>
+        <!-- Type -->
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type / Category</th>
+          <td mat-cell *matCellDef="let t">
+            <span class="type-badge">{{ t.transaction_type || 'Consultation' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let t">
+            <span class="status-badge" [ngClass]="((t.status | lowercase) === 'success' || (t.status | lowercase) === 'paid') ? 'status-paid' : 'status-pending'">
+              {{ t.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <ng-template #noTxns>
+      <div class="empty-state-box">
+        <div class="empty-icon"><mat-icon>receipt_long</mat-icon></div>
+        <h4>No Transactions Found</h4>
+        <p>Your clinic receipts and transactions will appear here once booked.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Razorpay Payment Dialog -->
+  <div class="modal-backdrop" *ngIf="showRazorpayModal" (click)="showRazorpayModal = false">
+    <div class="modal-card rzp-card" (click)="$event.stopPropagation()">
+      <div class="rzp-header">
+        <div class="rzp-brand">
+          <mat-icon class="shield-icon">security</mat-icon>
+          <div>
+            <h3>Razorpay Live Gateway</h3>
+            <span>Secured 256-Bit SSL Instant Payment</span>
+          </div>
+        </div>
+        <button mat-icon-button (click)="showRazorpayModal = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="rzp-body">
+        <div class="form-group">
+          <label>Customer / Patient Name</label>
+          <input type="text" [(ngModel)]="paymentForm.customer_name" class="std-input" />
+        </div>
+
+        <div class="form-group">
+          <label>Service Description</label>
+          <input type="text" [(ngModel)]="paymentForm.service_name" class="std-input" />
+        </div>
+
+        <div class="form-group">
+          <label>Payable Amount ($)</label>
+          <input type="number" [(ngModel)]="paymentForm.amount" class="std-input" />
+        </div>
+
+        <div class="rzp-methods">
+          <div class="method-tag active"><mat-icon>credit_card</mat-icon> Card</div>
+          <div class="method-tag active"><mat-icon>account_balance</mat-icon> NetBanking</div>
+          <div class="method-tag active"><mat-icon>qr_code_2</mat-icon> UPI / QR</div>
+        </div>
+      </div>
+
+      <div class="rzp-footer">
+        <button mat-stroked-button (click)="showRazorpayModal = false">Cancel</button>
+        <button mat-flat-button color="primary" [disabled]="processingPayment" (click)="processRazorpayPayment()">
+          <mat-icon>lock</mat-icon> {{ processingPayment ? 'Processing with Razorpay...' : 'Pay $' + paymentForm.amount + ' via Razorpay' }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>

@@ -1,3 +1,241 @@
-.org-subscription {
-  padding: 1rem;
+.org-subscription-page {
+  /* Inherits from .page-container */
+}
+
+.current-plan-card {
+  padding: 24px 28px;
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--primary-200);
+
+  .plan-hero-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+
+    .plan-badge-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-lg);
+      background: var(--primary-100);
+      color: var(--primary-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .plan-details-col {
+      flex: 1;
+      min-width: 200px;
+
+      .plan-tier-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
+
+        h2 {
+          font-size: 22px;
+          font-weight: 800;
+          color: var(--slate-900);
+        }
+      }
+
+      .plan-clinic-name {
+        font-size: 13.5px;
+        color: var(--slate-600);
+      }
+    }
+
+    .plan-meta-pills {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+
+      .meta-pill {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        border: 1px solid var(--slate-200);
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+
+        .pill-label {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--slate-500);
+          font-weight: 600;
+        }
+
+        .pill-val {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: var(--slate-900);
+          margin-top: 2px;
+        }
+      }
+    }
+  }
+}
+
+.section-title-wrap {
+  margin-bottom: 16px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--slate-900);
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--slate-500);
+    margin-top: 2px;
+  }
+}
+
+.plans-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.plan-card {
+  background: #ffffff;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  &.active-plan-border {
+    border: 2px solid var(--primary-600);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+  }
+
+  .card-tier-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+
+    h4 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+    .tier-desc {
+      font-size: 12.5px;
+      color: var(--slate-500);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .current-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary-700);
+      background: var(--primary-50);
+      border: 1px solid var(--primary-200);
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+
+  .price-box {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 12px 0;
+    border-top: 1px solid var(--slate-100);
+    border-bottom: 1px solid var(--slate-100);
+
+    .currency {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+    .amount {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--slate-900);
+      font-family: var(--font-display);
+    }
+
+    .period {
+      font-size: 13px;
+      color: var(--slate-500);
+      font-weight: 500;
+    }
+  }
+
+  .plan-perks {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+
+    .perk-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--slate-700);
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--primary-600);
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .card-btn-wrap {
+    .full-btn {
+      width: 100%;
+      height: 42px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 13.5px;
+    }
+
+    .active-state-btn {
+      color: var(--primary-700);
+      background: var(--primary-50);
+      border-color: var(--primary-200);
+    }
+  }
 }

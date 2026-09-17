@@ -1,82 +1,205 @@
-<div class="subscriptions-container">
+<div class="page-container subscriptions-page">
+  <!-- Page Header -->
   <div class="page-header">
-    <div>
-      <h1 class="page-title">Tenant Subscriptions</h1>
-      <p class="page-subtitle">Track recurring SaaS plans, billing cycles, renewals, and pause or activate access.</p>
+    <div class="page-header-text">
+      <h1>Tenant Subscriptions & Licenses</h1>
+      <p>Manage clinic tier allocations, recurring billing cycles, renewals, and license states</p>
+    </div>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadSubscriptions()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+      <button mat-raised-button color="primary" routerLink="/admin-dashboard/platform">
+        <mat-icon>tune</mat-icon> Configure Pricing Plans
+      </button>
     </div>
   </div>
 
-  <mat-card class="table-card">
-    <mat-card-header class="card-header-clean">
-      <mat-card-title>All Subscriptions ({{ subscriptions.length }})</mat-card-title>
-    </mat-card-header>
+  <!-- Subscription Tier Summary Cards -->
+  <div class="stat-card-grid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Total Subscriptions</span>
+        <span class="stat-value">{{ subscriptions.length || 0 }}</span>
+        <span class="stat-subtext">{{ activeCount }} Currently Active</span>
+      </div>
+      <div class="stat-icon-wrapper primary">
+        <mat-icon>credit_card</mat-icon>
+      </div>
+    </div>
 
-    <mat-card-content class="p-0">
-      <table mat-table [dataSource]="subscriptions" class="w-full">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Basic Plan</span>
+        <span class="stat-value">{{ basicCount }}</span>
+        <span class="stat-subtext">₹1,999 / month</span>
+      </div>
+      <div class="stat-icon-wrapper info">
+        <mat-icon>badge</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Premium Plan</span>
+        <span class="stat-value">{{ premiumCount }}</span>
+        <span class="stat-subtext positive">₹4,999 / month</span>
+      </div>
+      <div class="stat-icon-wrapper success">
+        <mat-icon>workspace_premium</mat-icon>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Active Licenses</span>
+        <span class="stat-value">{{ activeCount }}</span>
+        <span class="stat-subtext positive">100% In Good Standing</span>
+      </div>
+      <div class="stat-icon-wrapper success">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-surface-card">
+    <div class="table-header-bar">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input
+          type="text"
+          placeholder="Search by clinic name or tier..."
+          [(ngModel)]="searchTerm"
+        />
+        <button mat-icon-button *ngIf="searchTerm" (click)="searchTerm = ''">
+          <mat-icon>clear</mat-icon>
+        </button>
+      </div>
+
+      <div class="tier-filter">
+        <mat-form-field appearance="outline" class="compact-select">
+          <mat-label>Filter Plan</mat-label>
+          <mat-select [(ngModel)]="selectedPlan">
+            <mat-option value="ALL">All Plans</mat-option>
+            <mat-option value="Basic">Basic Plan</mat-option>
+            <mat-option value="Premium">Premium Plan</mat-option>
+            <mat-option value="Enterprise">Enterprise</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="table-responsive" *ngIf="filteredSubscriptions?.length; else emptySubs">
+      <table mat-table [dataSource]="filteredSubscriptions">
+        <!-- ID -->
         <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>#</th>
-          <td mat-cell *matCellDef="let s">#{{ s.id }}</td>
+          <th mat-header-cell *matHeaderCellDef>#ID</th>
+          <td mat-cell *matCellDef="let s" class="id-cell">#{{ s.id }}</td>
         </ng-container>
 
+        <!-- Organization -->
         <ng-container matColumnDef="organization">
-          <th mat-header-cell *matHeaderCellDef>Organization</th>
+          <th mat-header-cell *matHeaderCellDef>Clinic / Tenant</th>
           <td mat-cell *matCellDef="let s">
-            <strong>{{ s.organization_name }}</strong>
+            <div class="org-cell">
+              <div class="org-avatar">{{ s.organization_name ? s.organization_name.charAt(0) : 'O' }}</div>
+              <div class="org-info">
+                <span class="org-name">{{ s.organization_name }}</span>
+                <span class="org-meta">Tenant ID #{{ s.organization_id }}</span>
+              </div>
+            </div>
           </td>
         </ng-container>
 
+        <!-- Plan -->
         <ng-container matColumnDef="plan">
           <th mat-header-cell *matHeaderCellDef>Tier</th>
           <td mat-cell *matCellDef="let s">
-            <span class="badge badge-info">{{ s.plan }}</span>
+            <span class="tier-badge" [ngClass]="'tier-' + (s.plan | lowercase)">
+              {{ s.plan }}
+            </span>
           </td>
         </ng-container>
 
+        <!-- Start Date -->
         <ng-container matColumnDef="startDate">
-          <th mat-header-cell *matHeaderCellDef>Start Date</th>
-          <td mat-cell *matCellDef="let s">{{ s.start_date | date:'mediumDate' }}</td>
+          <th mat-header-cell *matHeaderCellDef>Started</th>
+          <td mat-cell *matCellDef="let s" class="date-cell">
+            {{ s.start_date | date:'mediumDate' }}
+          </td>
         </ng-container>
 
+        <!-- End Date -->
         <ng-container matColumnDef="endDate">
-          <th mat-header-cell *matHeaderCellDef>End Date</th>
-          <td mat-cell *matCellDef="let s">{{ s.end_date | date:'mediumDate' }}</td>
+          <th mat-header-cell *matHeaderCellDef>Valid Until</th>
+          <td mat-cell *matCellDef="let s" class="date-cell">
+            {{ s.end_date | date:'mediumDate' }}
+          </td>
         </ng-container>
 
+        <!-- Next Billing -->
         <ng-container matColumnDef="nextBilling">
-          <th mat-header-cell *matHeaderCellDef>Next Billing</th>
-          <td mat-cell *matCellDef="let s">{{ s.next_billing_date | date:'mediumDate' }}</td>
+          <th mat-header-cell *matHeaderCellDef>Next Renewal</th>
+          <td mat-cell *matCellDef="let s" class="date-cell">
+            {{ s.next_billing_date | date:'mediumDate' }}
+          </td>
         </ng-container>
 
+        <!-- Status -->
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef>Status</th>
           <td mat-cell *matCellDef="let s">
-            <span class="badge" [ngClass]="'badge-' + (s.status || '').toLowerCase()">{{ s.status }}</span>
+            <span class="status-badge" [ngClass]="'status-' + (s.status | lowercase)">
+              {{ s.status }}
+            </span>
           </td>
         </ng-container>
 
+        <!-- Actions -->
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="text-right">Manage</th>
-          <td mat-cell *matCellDef="let s" class="text-right">
-            <div class="action-buttons">
-              <button mat-stroked-button color="primary" *ngIf="s.status !== 'Active'" (click)="updateSubscriptionStatus(s, 'Active')">
-                <mat-icon>play_arrow</mat-icon>
-                <span>Activate</span>
-              </button>
-              <button mat-stroked-button color="warn" *ngIf="s.status === 'Active'" (click)="updateSubscriptionStatus(s, 'Paused')">
-                <mat-icon>pause</mat-icon>
-                <span>Pause</span>
-              </button>
-              <button mat-flat-button color="accent" (click)="renewSubscription(s)">
-                <mat-icon>autorenew</mat-icon>
-                <span>+30 Days</span>
-              </button>
-            </div>
+          <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
+          <td mat-cell *matCellDef="let s" class="actions-cell">
+            <button
+              mat-stroked-button
+              class="renew-btn"
+              (click)="renewSubscription(s)"
+              matTooltip="Extend license 30 days"
+            >
+              <mat-icon>autorenew</mat-icon> Renew (+30d)
+            </button>
+            <button
+              *ngIf="s.status !== 'Active'"
+              mat-stroked-button
+              color="primary"
+              class="state-btn"
+              (click)="updateSubscriptionStatus(s, 'Active')"
+            >
+              Activate
+            </button>
+            <button
+              *ngIf="s.status === 'Active'"
+              mat-stroked-button
+              color="warn"
+              class="state-btn"
+              (click)="updateSubscriptionStatus(s, 'Paused')"
+            >
+              Pause
+            </button>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
-    </mat-card-content>
-  </mat-card>
+    </div>
+
+    <ng-template #emptySubs>
+      <div class="empty-state-box">
+        <div class="empty-icon"><mat-icon>credit_card_off</mat-icon></div>
+        <h4>No Subscriptions Found</h4>
+        <p>No tenant subscriptions match the current filters.</p>
+      </div>
+    </ng-template>
+  </div>
 </div>

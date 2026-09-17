@@ -1,33 +1,187 @@
-<header class="toolbar">
+<header class="toolbar mat-elevation-z1">
   <div class="toolbar-left">
-    <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar.emit()" title="Toggle Sidebar">
+    <button mat-icon-button class="menu-toggle-btn" (click)="onToggle()" matTooltip="Toggle Navigation Panel">
       <mat-icon>menu</mat-icon>
     </button>
     <div class="brand-group">
-      <div class="brand-icon">
-        <mat-icon>medical_services</mat-icon>
+      <div class="brand-logo">
+        <mat-icon>healing</mat-icon>
       </div>
-      <span class="app-title">AppointoCare</span>
+      <div class="brand-text">
+        <span class="app-title">AppointoCare</span>
+        <span class="app-portal">{{ getRoleDisplayName() }}</span>
+      </div>
     </div>
-    <div class="org-pill" *ngIf="organizationName">
-      <mat-icon class="org-icon">domain</mat-icon>
-      <span class="org-text">{{ organizationName }}</span>
-    </div>
+    <span class="org-badge" *ngIf="organizationName">
+      <mat-icon>business</mat-icon>
+      {{ organizationName }}
+    </span>
   </div>
 
   <div class="toolbar-right">
+    <!-- Notification Bell with Role-Based Badge & Menu -->
+    <button
+      mat-icon-button
+      class="notif-bell-btn"
+      [matMenuTriggerFor]="notificationMenu"
+      [matTooltip]="'Notifications (' + unreadCount + ' unread)'"
+    >
+      <mat-icon
+        [matBadge]="unreadCount > 99 ? '99+' : unreadCount"
+        [matBadgeHidden]="unreadCount === 0"
+        matBadgeColor="warn"
+        matBadgeSize="small"
+      >
+        notifications
+      </mat-icon>
+    </button>
+
+    <mat-menu #notificationMenu="matMenu" class="notification-dropdown-menu" xPosition="before">
+      <div class="notif-popover-card" (click)="$event.stopPropagation()">
+        <!-- Popover Header -->
+        <div class="notif-popover-header">
+          <div class="header-text-block">
+            <div class="tier-label-row">
+              <span class="bell-tier-badge" [ngClass]="'tier-' + (role | lowercase)">
+                {{ role === 'Admin' ? 'Super Admin' : (role === 'Organization' ? 'Org Admin' : 'Staff') }}
+              </span>
+              <span class="notif-count-text" *ngIf="unreadCount > 0">{{ unreadCount }} unread</span>
+            </div>
+            <span class="tier-subtext">{{ getRoleScopeNotice() }}</span>
+          </div>
+          <button
+            mat-button
+            class="btn-mark-all"
+            (click)="markAllAsRead($event)"
+            [disabled]="unreadCount === 0"
+          >
+            Mark all read
+          </button>
+        </div>
+
+        <!-- Popover List -->
+        <div class="notif-popover-list">
+          <div
+            class="popover-item"
+            *ngFor="let item of notifications.slice(0, 6)"
+            [class.unread]="!item.is_read"
+            (click)="navigateToNotification(item)"
+          >
+            <div class="popover-item-icon" [ngClass]="'cat-' + item.category">
+              <mat-icon>{{ getCategoryIcon(item.category) }}</mat-icon>
+            </div>
+            <div class="popover-item-body">
+              <div class="popover-title-row">
+                <span class="item-title-text" [class.bold]="!item.is_read">{{ item.title }}</span>
+                <span class="item-time-text">{{ formatTime(item.created_at) }}</span>
+              </div>
+              <p class="popover-msg">{{ item.message }}</p>
+            </div>
+            <div class="popover-item-actions">
+              <button
+                *ngIf="!item.is_read"
+                mat-icon-button
+                class="btn-tiny-check"
+                (click)="markAsRead(item, $event)"
+                matTooltip="Mark as Read"
+              >
+                <mat-icon>done</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="popover-empty" *ngIf="notifications.length === 0">
+            <mat-icon>notifications_none</mat-icon>
+            <span>No notifications yet for this tier</span>
+          </div>
+        </div>
+
+        <!-- Quick Simulator Bar in Popover -->
+        <div class="notif-quick-sim">
+          <span class="sim-label">Quick Simulate:</span>
+          <div class="sim-chips">
+            <button
+              *ngIf="role === 'Staff' || role === 'Organization'"
+              class="sim-chip"
+              (click)="simulateEvent('booking_add', $event)"
+            >
+              + Booking
+            </button>
+            <button
+              *ngIf="role === 'Staff'"
+              class="sim-chip"
+              (click)="simulateEvent('booking_cancel', $event)"
+            >
+              ✕ Cancel
+            </button>
+            <button
+              *ngIf="role === 'Organization' || role === 'Admin'"
+              class="sim-chip"
+              (click)="simulateEvent('payment_received', $event)"
+            >
+              $ Payment
+            </button>
+            <button
+              *ngIf="role === 'Admin'"
+              class="sim-chip"
+              (click)="simulateEvent('complaint_received', $event)"
+            >
+              ⚠ Complaint
+            </button>
+            <button
+              *ngIf="role === 'Admin'"
+              class="sim-chip"
+              (click)="simulateEvent('due_payment', $event)"
+            >
+              💳 Due Pay
+            </button>
+          </div>
+        </div>
+
+        <!-- Popover Footer -->
+        <div class="notif-popover-footer">
+          <button mat-flat-button color="primary" class="btn-full-center" (click)="goToNotificationCenter()">
+            <mat-icon>open_in_new</mat-icon>
+            <span>Open Notification Center</span>
+          </button>
+        </div>
+      </div>
+    </mat-menu>
+
+    <!-- Quick Role Switcher for Testing & Demo -->
+    <button mat-stroked-button class="role-switcher-btn" [matMenuTriggerFor]="roleMenu">
+      <mat-icon>swap_horiz</mat-icon>
+      <span>Switch View: {{ getRoleDisplayName() }}</span>
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+    <mat-menu #roleMenu="matMenu">
+      <div class="menu-header">Quick Role Preview</div>
+      <button mat-menu-item (click)="switchRole('Admin')">
+        <mat-icon color="warn">admin_panel_settings</mat-icon>
+        <span>Super Admin Portal</span>
+      </button>
+      <button mat-menu-item (click)="switchRole('Organization')">
+        <mat-icon color="primary">corporate_fare</mat-icon>
+        <span>Organization Admin</span>
+      </button>
+      <button mat-menu-item (click)="switchRole('Staff')">
+        <mat-icon color="accent">badge</mat-icon>
+        <span>Staff Member Portal</span>
+      </button>
+    </mat-menu>
+
+    <!-- User Profile & Logout -->
     <div class="user-profile">
-      <div class="user-avatar">
-        {{ (username || 'U')[0].toUpperCase() }}
+      <div class="avatar-circle">
+        {{ username ? username.charAt(0).toUpperCase() : 'U' }}
       </div>
-      <div class="user-meta">
-        <span class="user-name">{{ username }}</span>
-        <span class="role-badge" *ngIf="userRole">{{ userRole }}</span>
-      </div>
+      <span class="user-greeting">{{ username }}</span>
     </div>
-    <button type="button" class="logout-action-btn" (click)="logout()" title="Sign Out">
+
+    <button mat-button class="logout-btn" (click)="logout()" matTooltip="Sign Out">
       <mat-icon>logout</mat-icon>
-      <span class="logout-label">Logout</span>
+      <span>Logout</span>
     </button>
   </div>
 </header>

@@ -1,243 +1,246 @@
-.admin-dashboard-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.admin-dashboard-page {
+  /* Layout constraints handled by .page-container */
 }
 
-.dashboard-header {
+.shortcuts-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-xs);
   flex-wrap: wrap;
-  gap: 16px;
 
-  .page-title {
-    font-size: 24px;
+  .shortcuts-title {
+    font-size: 12px;
     font-weight: 700;
-    margin: 0 0 4px 0;
-    color: var(--text-main, #0f172a);
-    letter-spacing: -0.02em;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
-  .page-subtitle {
-    font-size: 14px;
-    color: var(--text-muted, #64748b);
-    margin: 0;
-  }
-
-  .quick-actions {
+  .shortcuts-list {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+  }
 
-    a {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 8px;
+  .shortcut-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slate-700);
+    background: var(--slate-100);
+    border: 1px solid var(--slate-200);
+    transition: all 0.15s ease;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: var(--slate-500);
+    }
+
+    &:hover {
+      background: var(--primary-50);
+      color: var(--primary-700);
+      border-color: var(--primary-200);
 
       mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        color: var(--primary-600);
       }
     }
   }
 }
 
-/* Metrics Grid */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
+.section-desc {
+  font-size: 13px;
+  color: var(--slate-500);
+  margin-top: 2px;
 }
 
-.metric-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 18px 20px;
-  display: flex;
+.audit-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  gap: 6px;
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.chart-wrapper {
+  padding: 24px;
+}
+
+.modern-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 200px;
+  gap: 16px;
+  padding-top: 20px;
+  border-bottom: 1px solid var(--slate-200);
+
+  .bar-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 68px;
+    height: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+
+    .bar-amount {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--slate-700);
+    }
+
+    .bar-rail {
+      width: 100%;
+      height: 130px;
+      background: var(--slate-100);
+      border-radius: 6px 6px 0 0;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+
+      .bar-fill-inner {
+        width: 100%;
+        background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+        border-radius: 6px 6px 0 0;
+        transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    }
+
+    .bar-month-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate-500);
+      text-transform: capitalize;
+    }
+
+    &:hover {
+      .bar-fill-inner {
+        background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+        filter: brightness(1.1);
+      }
+      .bar-amount {
+        color: var(--primary-600);
+      }
+    }
+  }
+}
+
+.dashboard-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-600);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    transition: transform 0.15s ease;
   }
 
-  .metric-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+  &:hover {
+    color: var(--primary-700);
+    mat-icon {
+      transform: translateX(2px);
+    }
+  }
+}
+
+.id-cell {
+  font-weight: 700;
+  color: var(--slate-500);
+  font-family: monospace;
+}
+
+.customer-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .customer-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-50);
+    color: var(--primary-700);
+    font-weight: 700;
+    font-size: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-
-    mat-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-
-    &.primary {
-      background: #eff6ff;
-      color: #1d4ed8;
-    }
-
-    &.success {
-      background: #dcfce7;
-      color: #15803d;
-    }
-
-    &.warning {
-      background: #fef3c7;
-      color: #b45309;
-    }
-
-    &.revenue {
-      background: #ecfdf5;
-      color: #047857;
-    }
   }
 
-  .metric-content {
+  .customer-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-  }
 
-  .metric-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
+    .name {
+      font-weight: 600;
+      color: var(--slate-900);
+    }
 
-  .metric-value {
-    font-size: 22px;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.2;
-  }
-}
-
-/* Monthly Revenue Chart */
-.chart-card {
-  border-radius: 12px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  padding: 20px;
-
-  mat-card-header {
-    padding: 0 0 16px 0;
-  }
-
-  mat-card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #0f172a;
-  }
-}
-
-.chart-container {
-  width: 100%;
-  padding-top: 10px;
-}
-
-.chart-bars-wrapper {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  height: 160px;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 8px;
-}
-
-.chart-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  justify-content: flex-end;
-  position: relative;
-
-  .bar-tooltip {
-    font-size: 10px;
-    font-weight: 600;
-    color: #64748b;
-    margin-bottom: 4px;
-    white-space: nowrap;
-  }
-
-  .bar-track {
-    width: 100%;
-    max-width: 32px;
-    height: 120px;
-    background: #f1f5f9;
-    border-radius: 6px 6px 0 0;
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-  }
-
-  .bar-fill {
-    width: 100%;
-    background: linear-gradient(180deg, #3b82f6, #1d4ed8);
-    border-radius: 6px 6px 0 0;
-    transition: height 0.4s ease;
-  }
-
-  .bar-month {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    margin-top: 8px;
-  }
-}
-
-/* Tables 2-column grid */
-.tables-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  gap: 20px;
-}
-
-.table-card {
-  border-radius: 12px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-
-  .table-card-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid #f1f5f9;
-
-    mat-card-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #0f172a;
+    .service {
+      font-size: 11.5px;
+      color: var(--slate-500);
     }
   }
 }
 
-.empty-state {
-  padding: 32px 20px;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
+.amount-cell {
+  font-weight: 700;
+  color: var(--slate-900);
+  font-family: var(--font-display);
 }
 
-.empty-state-text {
-  color: #94a3b8;
-  font-size: 14px;
-  padding: 20px 0;
+.type-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--slate-600);
+  background: var(--slate-100);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.date-cell {
+  color: var(--slate-500);
+  font-size: 12px;
 }

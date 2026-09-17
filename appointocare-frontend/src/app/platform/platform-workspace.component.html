@@ -1,40 +1,267 @@
-<section class="workspace">
-  <header class="workspace-header">
-    <div>
-      <p class="eyebrow">Operations workspace</p>
-      <h1>Engage, schedule, grow</h1>
+<div class="page-container workspace-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Operations & Growth Workspace</h1>
+      <p>Automate patient recall campaigns, audit alert notifications, and multi-location management</p>
     </div>
-    <button mat-stroked-button routerLink="/org-dashboard"><mat-icon>arrow_back</mat-icon> Dashboard</button>
-  </header>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="loadOrganizationData()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+      <button mat-stroked-button routerLink="/org-dashboard">
+        <mat-icon>arrow_back</mat-icon> Dashboard
+      </button>
+    </div>
+  </div>
 
-  <nav mat-tab-nav-bar [tabPanel]="panel">
-    <a mat-tab-link [active]="activeTab === 'reports'" (click)="activeTab = 'reports'">Overview</a>
-    <a mat-tab-link [active]="activeTab === 'campaigns'" (click)="activeTab = 'campaigns'">Campaigns</a>
-    <a mat-tab-link [active]="activeTab === 'notifications'" (click)="activeTab = 'notifications'">Notifications</a>
-    <a mat-tab-link [active]="activeTab === 'branches'" (click)="activeTab = 'branches'">Branches</a>
-  </nav>
-  <mat-tab-nav-panel #panel>
-    <div class="metrics" *ngIf="activeTab === 'reports'">
-      <mat-card><mat-icon>event</mat-icon><span>Appointments</span><strong>{{ report.appointments || 0 }}</strong></mat-card>
-      <mat-card><mat-icon>people</mat-icon><span>Customers</span><strong>{{ report.customers || 0 }}</strong></mat-card>
-      <mat-card><mat-icon>payments</mat-icon><span>Revenue</span><strong>₹{{ report.revenue || 0 }}</strong></mat-card>
+  <!-- Modern Navigation Pills -->
+  <div class="workspace-tabs-bar">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'reports'"
+      (click)="activeTab = 'reports'"
+    >
+      <mat-icon>insights</mat-icon> Overview & Stats
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'campaigns'"
+      (click)="activeTab = 'campaigns'"
+    >
+      <mat-icon>campaign</mat-icon> Patient Campaigns ({{ campaigns.length }})
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'notifications'"
+      (click)="activeTab = 'notifications'"
+    >
+      <mat-icon>notifications</mat-icon> System Alerts ({{ notifications.length }})
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'branches'"
+      (click)="activeTab = 'branches'"
+    >
+      <mat-icon>store</mat-icon> Clinic Locations ({{ branches.length }})
+    </button>
+  </div>
+
+  <!-- TAB 1: OVERVIEW & STATS -->
+  <div class="tab-content" *ngIf="activeTab === 'reports'">
+    <div class="stat-card-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Total Appointments</span>
+          <span class="stat-value">{{ report.appointments || 0 }}</span>
+          <span class="stat-subtext positive">Recorded In Database</span>
+        </div>
+        <div class="stat-icon-wrapper primary">
+          <mat-icon>event</mat-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Registered Patients</span>
+          <span class="stat-value">{{ report.customers || 0 }}</span>
+          <span class="stat-subtext positive">Active Client Accounts</span>
+        </div>
+        <div class="stat-icon-wrapper info">
+          <mat-icon>people</mat-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Total Revenue</span>
+          <span class="stat-value">₹{{ (report.revenue || 0) | number }}</span>
+          <span class="stat-subtext positive">Verified Ledger</span>
+        </div>
+        <div class="stat-icon-wrapper success">
+          <mat-icon>payments</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: CAMPAIGNS -->
+  <div class="tab-content split-layout" *ngIf="activeTab === 'campaigns'">
+    <!-- Left: Create Campaign Form -->
+    <div class="table-surface-card form-panel">
+      <div class="table-header-bar">
+        <div>
+          <h3>Create Outreach Campaign</h3>
+          <p class="section-desc">Broadcast patient recalls, checkup reminders, or wellness tips</p>
+        </div>
+      </div>
+
+      <div class="form-body">
+        <mat-form-field appearance="outline">
+          <mat-label>Campaign Title</mat-label>
+          <input matInput [(ngModel)]="campaign.name" placeholder="e.g. Seasonal Dental Recall" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Communication Channel</mat-label>
+          <mat-select [(ngModel)]="campaign.channel">
+            <mat-option value="WhatsApp">WhatsApp (Recommended)</mat-option>
+            <mat-option value="SMS">Direct SMS Gateway</mat-option>
+            <mat-option value="Email">Email Digest</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Message Template</mat-label>
+          <textarea
+            matInput
+            rows="5"
+            [(ngModel)]="campaign.message"
+            placeholder="Dear patient, it's time for your routine preventive checkup. Reply to book your consultation slot."
+          ></textarea>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" class="submit-btn" (click)="createCampaign()">
+          <mat-icon>send</mat-icon> Launch Campaign
+        </button>
+      </div>
     </div>
 
-    <div class="split" *ngIf="activeTab === 'campaigns'">
-      <mat-card class="form-card"><h2>New campaign</h2>
-        <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="campaign.name"></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Channel</mat-label><mat-select [(ngModel)]="campaign.channel"><mat-option value="WhatsApp">WhatsApp</mat-option><mat-option value="Email">Email</mat-option><mat-option value="SMS">SMS</mat-option></mat-select></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Message</mat-label><textarea matInput rows="4" [(ngModel)]="campaign.message"></textarea></mat-form-field>
-        <button mat-flat-button color="primary" (click)="createCampaign()">Create campaign</button>
-      </mat-card>
-      <div class="list"><h2>Campaign history</h2><mat-card *ngFor="let item of campaigns"><b>{{ item.name }}</b><span>{{ item.channel }} · {{ item.status }}</span></mat-card></div>
+    <!-- Right: Campaign History -->
+    <div class="table-surface-card history-panel">
+      <div class="table-header-bar">
+        <div>
+          <h3>Broadcast History</h3>
+          <p class="section-desc">Recent outgoing communication blasts</p>
+        </div>
+      </div>
+
+      <div class="campaign-list" *ngIf="campaigns.length; else emptyCampaigns">
+        <div class="campaign-item" *ngFor="let item of campaigns">
+          <div class="c-icon-wrap" [ngClass]="item.channel?.toLowerCase()">
+            <mat-icon>{{ item.channel === 'WhatsApp' ? 'chat' : (item.channel === 'Email' ? 'email' : 'sms') }}</mat-icon>
+          </div>
+          <div class="c-info">
+            <h4>{{ item.name }}</h4>
+            <div class="c-meta">
+              <span class="channel-chip">{{ item.channel }}</span>
+              <span class="status-chip">{{ item.status || 'Delivered' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyCampaigns>
+        <div class="empty-state-box">
+          <div class="empty-icon"><mat-icon>campaign</mat-icon></div>
+          <h4>No Campaigns Created</h4>
+          <p>Launch your first patient messaging blast using the form on the left.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- TAB 3: NOTIFICATIONS -->
+  <div class="tab-content" *ngIf="activeTab === 'notifications'">
+    <div class="table-surface-card">
+      <div class="table-header-bar">
+        <div>
+          <h3>System Alerts & Activity Log</h3>
+          <p class="section-desc">Important updates regarding billing, bookings, and sync events</p>
+        </div>
+      </div>
+
+      <div class="notif-list" *ngIf="notifications.length; else emptyNotifs">
+        <div
+          class="notif-item"
+          *ngFor="let item of notifications"
+          [class.unread]="item.status !== 'read'"
+        >
+          <div class="notif-icon">
+            <mat-icon>notifications_active</mat-icon>
+          </div>
+          <div class="notif-content">
+            <h4>{{ item.title }}</h4>
+            <p>{{ item.message }}</p>
+          </div>
+          <div class="notif-action" *ngIf="item.status !== 'read'">
+            <button mat-stroked-button class="mark-read-btn" (click)="markRead(item.id)">
+              Mark Read
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyNotifs>
+        <div class="empty-state-box">
+          <div class="empty-icon"><mat-icon>notifications_none</mat-icon></div>
+          <h4>All Caught Up</h4>
+          <p>No new system alerts or unread notifications at this time.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- TAB 4: BRANCHES -->
+  <div class="tab-content split-layout" *ngIf="activeTab === 'branches'">
+    <!-- Left: Add Branch Form -->
+    <div class="table-surface-card form-panel">
+      <div class="table-header-bar">
+        <div>
+          <h3>Add Clinic Branch</h3>
+          <p class="section-desc">Register secondary care location</p>
+        </div>
+      </div>
+
+      <div class="form-body">
+        <mat-form-field appearance="outline">
+          <mat-label>Branch Name</mat-label>
+          <input matInput [(ngModel)]="branch.name" placeholder="e.g. Northside Satellite Clinic" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Phone Contact</mat-label>
+          <input matInput [(ngModel)]="branch.phone" placeholder="e.g. +91 9876543210" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Physical Address</mat-label>
+          <input matInput [(ngModel)]="branch.address" placeholder="e.g. 55 Healthcare Boulevard" />
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" class="submit-btn" (click)="createBranch()">
+          <mat-icon>add_business</mat-icon> Register Branch
+        </button>
+      </div>
     </div>
 
-    <div class="list" *ngIf="activeTab === 'notifications'"><h2>Notifications</h2><mat-card *ngFor="let item of notifications"><b>{{ item.title }}</b><span>{{ item.message }}</span><button mat-button *ngIf="item.status !== 'read'" (click)="markRead(item.id)">Mark read</button></mat-card><p *ngIf="!notifications.length">No notifications yet.</p></div>
+    <!-- Right: Your Branches List -->
+    <div class="table-surface-card history-panel">
+      <div class="table-header-bar">
+        <div>
+          <h3>Active Locations</h3>
+          <p class="section-desc">Configured clinic premises</p>
+        </div>
+      </div>
 
-    <div class="split" *ngIf="activeTab === 'branches'">
-      <mat-card class="form-card"><h2>Add branch</h2><mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="branch.name"></mat-form-field><mat-form-field appearance="outline"><mat-label>Address</mat-label><input matInput [(ngModel)]="branch.address"></mat-form-field><mat-form-field appearance="outline"><mat-label>Phone</mat-label><input matInput [(ngModel)]="branch.phone"></mat-form-field><button mat-flat-button color="primary" (click)="createBranch()">Add branch</button></mat-card>
-      <div class="list"><h2>Your branches</h2><mat-card *ngFor="let item of branches"><b>{{ item.name }}</b><span>{{ item.address || 'Address not set' }}</span></mat-card></div>
+      <div class="branches-simple-list" *ngIf="branches.length; else emptyBranches">
+        <div class="branch-simple-item" *ngFor="let item of branches">
+          <div class="b-icon-wrap"><mat-icon>store</mat-icon></div>
+          <div class="b-info">
+            <h4>{{ item.name }}</h4>
+            <span class="b-address">{{ item.address || 'Address pending' }}</span>
+            <span class="b-phone" *ngIf="item.phone">{{ item.phone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyBranches>
+        <div class="empty-state-box">
+          <div class="empty-icon"><mat-icon>storefront</mat-icon></div>
+          <h4>No Locations Configured</h4>
+          <p>Register your first clinic branch using the form on the left.</p>
+        </div>
+      </ng-template>
     </div>
-  </mat-tab-nav-panel>
-</section>
+  </div>
+</div>

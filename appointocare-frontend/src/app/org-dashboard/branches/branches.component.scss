@@ -1,0 +1,152 @@
+.org-branches-page {
+  /* Inherits from .page-container */
+}
+
+.add-branch-panel {
+  margin-bottom: 24px;
+  animation: slideDown 0.2s ease-out;
+
+  .panel-desc {
+    font-size: 13px;
+    color: var(--slate-500);
+    margin-top: 2px;
+  }
+
+  .form-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 20px;
+
+    .full-span {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--slate-50);
+    border-top: 1px solid var(--slate-200);
+  }
+}
+
+.branches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.branch-card {
+  background: #ffffff;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-300);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+  }
+
+  &.main-hq {
+    border-color: var(--primary-500);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .branch-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--primary-50);
+      color: var(--primary-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+    }
+
+    .branch-title-group {
+      display: flex;
+      flex-direction: column;
+
+      h4 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--slate-900);
+        line-height: 1.3;
+      }
+
+      .hq-badge {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary-700);
+        background: var(--primary-100);
+        padding: 2px 8px;
+        border-radius: 4px;
+        width: fit-content;
+        margin-top: 4px;
+      }
+
+      .satellite-badge {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--slate-500);
+      }
+    }
+  }
+
+  .branch-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--slate-100);
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--slate-600);
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--slate-400);
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

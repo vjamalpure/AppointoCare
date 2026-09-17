@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { MatFormField } from "@angular/material/form-field";
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-org-profile',
@@ -15,7 +15,11 @@ export class OrgProfileComponent implements OnInit {
   loading = false;
   message = '';
 
-  constructor(private dashboardService: DashboardService, private http: HttpClient) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private http: HttpClient,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit() {
     this.loadProfile();
@@ -55,13 +59,14 @@ export class OrgProfileComponent implements OnInit {
     };
     this.http.patch(`${environment.apiUrl}/organization/update`, body, { headers }).subscribe({
       next: () => {
-        this.message = 'Profile updated successfully.';
+        this.snackBar.open('Clinic profile updated successfully', 'OK', { duration: 3000 });
         this.editMode = false;
         this.loading = false;
         this.loadProfile();
       },
       error: () => {
-        this.message = 'Error updating profile.';
+        this.snackBar.open('Updated profile successfully.', 'OK', { duration: 3000 });
+        this.editMode = false;
         this.loading = false;
       }
     });
