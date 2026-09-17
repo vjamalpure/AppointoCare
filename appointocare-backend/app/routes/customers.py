@@ -13,7 +13,7 @@ def get_customers():
     role = claims.get("role")
     org_id = request.args.get("organization_id")
 
-    if role == "Admin":
+    if role in ["Admin", "SuperAdmin"]:
         if org_id and org_id != "ALL":
             customers = Customer.query.filter_by(organization_id=int(org_id)).order_by(Customer.created_at.desc()).all()
         else:
@@ -50,10 +50,8 @@ def create_customer():
     role = claims.get("role")
     data = request.json or {}
 
-    if role == "Admin":
-        organization_id = data.get("organization_id")
-        if not organization_id:
-            return jsonify({"msg": "organization_id is required for admin-created customers"}), 400
+    if role in ["Admin", "SuperAdmin"]:
+        organization_id = data.get("organization_id") or claims.get("organization_id") or 1
     else:
         organization_id = int(claims.get("organization_id") or 0)
 

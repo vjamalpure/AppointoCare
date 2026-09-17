@@ -90,8 +90,20 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>{{ terms?.appointmentLabel || 'Appointment' }} Date & Time</mat-label>
-        <input matInput type="datetime-local" [(ngModel)]="newBooking.appointment_date" required />
+        <mat-label>{{ terms?.appointmentLabel || 'Appointment' }} Date</mat-label>
+        <input matInput [matDatepicker]="bookingDatePicker" [(ngModel)]="bookingDate" required placeholder="Select Date" />
+        <mat-datepicker-toggle matIconSuffix [for]="bookingDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #bookingDatePicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Schedule Time (Clock)</mat-label>
+        <mat-icon matPrefix style="margin-right: 8px; color: #6366f1; font-size: 20px; width: 20px; height: 20px;">schedule</mat-icon>
+        <mat-select [(ngModel)]="bookingTime" required>
+          <mat-option *ngFor="let slot of timeSlots" [value]="slot">
+            {{ slot }}
+          </mat-option>
+        </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -136,7 +148,7 @@
         mat-raised-button
         color="primary"
         (click)="createBooking()"
-        [disabled]="!newBooking.customer_name || !newBooking.customer_phone || !newBooking.appointment_date"
+        [disabled]="!newBooking.customer_name || !newBooking.customer_phone || !bookingDate || !bookingTime"
       >
         <mat-icon>event</mat-icon> Confirm & Reserve Slot
       </button>

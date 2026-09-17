@@ -25,6 +25,15 @@ export class OrgBookingsComponent implements OnInit {
   customData: Record<string, any> = {};
 
   showBookingModal = false;
+  bookingDate: Date = new Date();
+  bookingTime: string = '10:00 AM';
+  timeSlots: string[] = [
+    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
+    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+    '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
+    '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM'
+  ];
+
   newBooking: any = {
     customer_name: '',
     customer_phone: '',
@@ -115,11 +124,30 @@ export class OrgBookingsComponent implements OnInit {
     return this.bookings.filter(b => b.status === 'Cancelled').length;
   }
 
+  formatSelectedDateTime(): string {
+    const d = this.bookingDate ? new Date(this.bookingDate) : new Date();
+    const timeMatch = (this.bookingTime || '10:00 AM').match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    let hours = 10;
+    let minutes = 0;
+    if (timeMatch) {
+      hours = parseInt(timeMatch[1], 10);
+      minutes = parseInt(timeMatch[2], 10);
+      const ampm = timeMatch[3].toUpperCase();
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+    }
+    d.setHours(hours, minutes, 0, 0);
+    return d.toISOString();
+  }
+
   createBooking() {
-    if (!this.newBooking.customer_name || !this.newBooking.customer_phone || !this.newBooking.appointment_date) {
+    if (!this.newBooking.customer_name || !this.newBooking.customer_phone || !this.bookingDate || !this.bookingTime) {
       this.snackBar.open(`Please fill all required ${this.terms.customerLabel} details`, 'Close', { duration: 3000 });
       return;
     }
+
+    // Combine interactive calendar date and clock time slot
+    const appointmentDateIso = this.formatSelectedDateTime();
 
     // Format custom fields summary into notes
     const customSummary = Object.entries(this.customData)
@@ -130,16 +158,23 @@ export class OrgBookingsComponent implements OnInit {
       })
       .join(' | ');
 
-    const payload = {
+    const orgId = this.authService.getOrganizationId();
+    const payload: any = {
       ...this.newBooking,
+      appointment_date: appointmentDateIso,
       notes: customSummary ? `${this.newBooking.notes ? this.newBooking.notes + ' [' + customSummary + ']' : customSummary}` : this.newBooking.notes
     };
+    if (orgId) {
+      payload.organization_id = parseInt(orgId, 10);
+    }
 
     this.appointmentService.createAppointment(payload).subscribe({
       next: () => {
         this.snackBar.open(`${this.terms.appointmentLabel} booked successfully`, 'OK', { duration: 3000 });
         this.showBookingModal = false;
         this.customData = {};
+        this.bookingDate = new Date();
+        this.bookingTime = '10:00 AM';
         this.newBooking = {
           customer_name: '',
           customer_phone: '',
@@ -152,8 +187,9 @@ export class OrgBookingsComponent implements OnInit {
         };
         this.loadBookings();
       },
-      error: () => {
-        this.snackBar.open(`Failed to book ${this.terms.appointmentLabel.toLowerCase()}`, 'Close', { duration: 3000 });
+      error: (err) => {
+        const msg = err?.error?.msg || `Failed to book ${this.terms.appointmentLabel.toLowerCase()}`;
+        this.snackBar.open(msg, 'Close', { duration: 3000 });
       }
     });
   }

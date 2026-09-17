@@ -10,8 +10,9 @@ ORGANIZATION_MANAGER = "Manager"
 ORGANIZATION_STAFF = "Staff"
 CUSTOMER = "Customer"
 SPECIALIST_ROLES = {
-    "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",
-    "Broker", "Consultant", "Specialist"
+    "Doctor", "Therapist", "Stylist", "Advisor", "Analyst", "Underwriter",
+    "Broker", "Consultant", "Specialist", "Counselor", "Partner",
+    "Receptionist", "Agent", "Lawyer", "Nurse", "Accountant", "Assistant"
 }
 ORGANIZATION_ROLES = {
     ORGANIZATION_ADMIN,
@@ -26,9 +27,23 @@ def require_roles(*allowed_roles):
         @wraps(view)
         @jwt_required()
         def wrapped(*args, **kwargs):
-            if get_jwt().get("role") not in allowed_roles:
-                return jsonify({"msg": "Unauthorized"}), 403
-            return view(*args, **kwargs)
+            claims = get_jwt()
+            role = claims.get("role")
+            
+            # Allow SuperAdmin whenever Admin is permitted
+            if role in ["SuperAdmin", "Admin"] and ("Admin" in allowed_roles or "SuperAdmin" in allowed_roles):
+                return view(*args, **kwargs)
+
+            # Direct match
+            if role in allowed_roles:
+                return view(*args, **kwargs)
+
+            # If Staff or general organization role is allowed, allow any specialist role or org member
+            if "Staff" in allowed_roles or any(r in ORGANIZATION_ROLES for r in allowed_roles):
+                if role in SPECIALIST_ROLES or (claims.get("organization_id") and role != "Customer"):
+                    return view(*args, **kwargs)
+
+            return jsonify({"msg": "Unauthorized"}), 403
 
         return wrapped
 

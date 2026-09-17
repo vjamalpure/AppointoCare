@@ -500,8 +500,7 @@ a {
   }
 }
 
-.modal-backdrop,
-.cdk-overlay-backdrop {
+.modal-backdrop {
   position: fixed !important;
   top: 0;
   left: 0;
@@ -515,6 +514,47 @@ a {
   justify-content: center;
   padding: 20px;
   box-sizing: border-box;
+}
+
+/* Angular Material CDK Overlay Fixes */
+.cdk-overlay-container {
+  z-index: 11000 !important;
+  pointer-events: none;
+}
+
+.cdk-overlay-backdrop {
+  pointer-events: auto;
+}
+
+.cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.cdk-overlay-pane {
+  pointer-events: auto !important;
+}
+
+.mat-mdc-select-panel {
+  pointer-events: auto !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 6px !important;
+}
+
+.mat-mdc-option {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  border-radius: 8px !important;
+  transition: background-color 0.15s ease !important;
+
+  &:hover,
+  &.mdc-list-item--activated,
+  &.mat-mdc-option-active {
+    background-color: #f1f5f9 !important;
+  }
 }
 
 .modern-modal,

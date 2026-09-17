@@ -7,9 +7,18 @@ appointment_bp = Blueprint("appointment_bp", __name__)
 
 ALLOWED_ROLES = [
     "Admin", "SuperAdmin", "Organization", "Manager", "Staff",
-    "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",
-    "Broker", "Consultant", "Specialist"
+    "Doctor", "Therapist", "Stylist", "Advisor", "Analyst", "Underwriter",
+    "Broker", "Consultant", "Specialist", "Counselor", "Partner",
+    "Receptionist", "Agent", "Lawyer", "Nurse", "Accountant", "Assistant"
 ]
+
+
+def _is_authorized(role, claims):
+    return (
+        role in ALLOWED_ROLES or
+        role in ["Admin", "SuperAdmin"] or
+        bool(claims.get("organization_id"))
+    )
 
 
 # -------------------------------
@@ -21,15 +30,21 @@ ALLOWED_ROLES = [
 def create_appointment():
     claims = get_jwt()
     role = claims.get("role")
-    if role not in ALLOWED_ROLES:
+    if not _is_authorized(role, claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     data = request.json or {}
     if role in ["Admin", "SuperAdmin"]:
-        org_id = int(data.get("organization_id") or 1)
+        target_org = data.get("organization_id")
+        if target_org:
+            org_id = int(target_org)
+        elif claims.get("organization_id"):
+            org_id = int(claims.get("organization_id"))
+        else:
+            org_id = 1
         user_id = int(get_jwt_identity())
     else:
-        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        org_id = int(claims.get("organization_id") or data.get("organization_id") or get_jwt_identity())
         user_id = int(get_jwt_identity())
 
     required_fields = ["customer_name", "customer_phone", "appointment_date"]
@@ -51,7 +66,10 @@ def create_appointment():
         appointment_date=appointment_date,
         status=data.get("status", "Booked"),
         payment_status=data.get("payment_status", "Pending"),
-        organization_id=org_id
+        organization_id=org_id,
+        service_name=data.get("service_name"),
+        staff_name=data.get("staff_name"),
+        notes=data.get("notes")
     )
     db.session.add(appointment)
     db.session.flush()
@@ -75,9 +93,13 @@ def create_appointment():
         "transaction_id": transaction.id,
         "id": appointment.id,
         "customer_name": appointment.customer_name,
+        "service_name": appointment.service_name,
+        "staff_name": appointment.staff_name,
+        "notes": appointment.notes,
         "appointment_date": appointment.appointment_date.isoformat(),
         "status": appointment.status,
-        "payment_status": appointment.payment_status
+        "payment_status": appointment.payment_status,
+        "organization_id": appointment.organization_id
     }), 201
 
 
@@ -89,7 +111,7 @@ def create_appointment():
 def update_appointment(appointment_id):
     claims = get_jwt()
     role = claims.get("role")
-    if role not in ALLOWED_ROLES:
+    if not _is_authorized(role, claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     appointment = Appointment.query.get_or_404(appointment_id)
@@ -112,6 +134,12 @@ def update_appointment(appointment_id):
     if "payment_status" in data:
         appointment.payment_status = data["payment_status"]
 
+    if "service_name" in data:
+        appointment.service_name = data["service_name"]
+
+    if "notes" in data:
+        appointment.notes = data["notes"]
+
     db.session.commit()
 
     return jsonify({
@@ -119,9 +147,13 @@ def update_appointment(appointment_id):
         "appointment": {
             "id": appointment.id,
             "customer_name": appointment.customer_name,
+            "service_name": appointment.service_name,
+            "staff_name": appointment.staff_name,
+            "notes": appointment.notes,
             "appointment_date": appointment.appointment_date.isoformat(),
             "status": appointment.status,
-            "payment_status": appointment.payment_status
+            "payment_status": appointment.payment_status,
+            "organization_id": appointment.organization_id
         }
     })
 
@@ -134,7 +166,7 @@ def update_appointment(appointment_id):
 def delete_appointment(appointment_id):
     claims = get_jwt()
     role = claims.get("role")
-    if role not in ALLOWED_ROLES:
+    if not _is_authorized(role, claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     appointment = Appointment.query.get_or_404(appointment_id)
@@ -157,7 +189,7 @@ def delete_appointment(appointment_id):
 def get_appointments():
     claims = get_jwt()
     role = claims.get("role")
-    if role not in ALLOWED_ROLES:
+    if not _is_authorized(role, claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     query = Appointment.query
@@ -187,6 +219,9 @@ def get_appointments():
             "organization_id": a.organization_id,
             "customer_name": a.customer_name,
             "customer_phone": a.customer_phone,
+            "service_name": a.service_name,
+            "staff_name": a.staff_name,
+            "notes": a.notes,
             "appointment_date": a.appointment_date.isoformat(),
             "status": a.status,
             "payment_status": a.payment_status,

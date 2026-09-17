@@ -133,25 +133,56 @@ export class DashboardComponent implements OnInit {
     return d.toLocaleString();
   }
 
+  editDate: Date = new Date();
+  editTime: string = '10:00 AM';
+  timeSlots: string[] = [
+    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
+    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+    '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
+    '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM'
+  ];
+
   openEditModal(appt: Appointment) {
     this.editAppointment = { ...appt };
     this.editAppointment.payment_status = this.editAppointment.payment_status || 'Pending';
-    this.editAppointmentDateTime = this.formatForInput(appt.appointment_date);
+    if (appt.appointment_date) {
+      const d = new Date(appt.appointment_date);
+      this.editDate = d;
+      let h = d.getHours();
+      const m = d.getMinutes() >= 30 ? '30' : '00';
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      if (h > 12) h -= 12;
+      if (h === 0) h = 12;
+      const hStr = h.toString().padStart(2, '0');
+      this.editTime = `${hStr}:${m} ${ampm}`;
+    } else {
+      this.editDate = new Date();
+      this.editTime = '10:00 AM';
+    }
     this.showModal = true;
   }
 
-  formatForInput(dateStr: string): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  formatEditDateTime(): string {
+    const d = this.editDate ? new Date(this.editDate) : new Date();
+    const timeMatch = (this.editTime || '10:00 AM').match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    let hours = 10;
+    let minutes = 0;
+    if (timeMatch) {
+      hours = parseInt(timeMatch[1], 10);
+      minutes = parseInt(timeMatch[2], 10);
+      const ampm = timeMatch[3].toUpperCase();
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+    }
+    d.setHours(hours, minutes, 0, 0);
+    return d.toISOString();
   }
 
   saveEdit() {
     if (!this.editAppointment) return;
 
     this.appointmentService.updateAppointment(this.editAppointment.id, {
-      appointment_date: this.editAppointmentDateTime,
+      appointment_date: this.formatEditDateTime(),
       payment_status: this.editAppointment.payment_status,
       status: this.editAppointment.status
     }).subscribe({

@@ -7,9 +7,18 @@ notifications_bp = Blueprint("notifications_bp", __name__)
 
 ALLOWED_ROLES = [
     "Admin", "SuperAdmin", "Organization", "Manager", "Staff",
-    "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",
-    "Broker", "Consultant", "Specialist"
+    "Doctor", "Therapist", "Stylist", "Advisor", "Analyst", "Underwriter",
+    "Broker", "Consultant", "Specialist", "Counselor", "Partner",
+    "Receptionist", "Agent", "Lawyer", "Nurse", "Accountant", "Assistant"
 ]
+
+
+def _is_authorized(role, claims):
+    return (
+        role in ALLOWED_ROLES or
+        role in ["Admin", "SuperAdmin"] or
+        bool(claims.get("organization_id"))
+    )
 
 
 @notifications_bp.route("", methods=["GET"])
@@ -17,7 +26,7 @@ ALLOWED_ROLES = [
 def get_notifications():
     claims = get_jwt()
     role = claims.get("role")
-    if role not in ALLOWED_ROLES:
+    if not _is_authorized(role, claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     query = Notification.query
@@ -97,7 +106,7 @@ def get_notifications():
 @jwt_required()
 def mark_read(notif_id):
     claims = get_jwt()
-    if claims.get("role") not in ALLOWED_ROLES:
+    if not _is_authorized(claims.get("role"), claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     n = Notification.query.get_or_404(notif_id)
@@ -112,7 +121,7 @@ def mark_read(notif_id):
 def mark_all_read():
     claims = get_jwt()
     role = claims.get("role")
-    if role not in ALLOWED_ROLES:
+    if not _is_authorized(role, claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     query = Notification.query.filter_by(status="unread")
@@ -131,7 +140,7 @@ def mark_all_read():
 @jwt_required()
 def delete_notification(notif_id):
     claims = get_jwt()
-    if claims.get("role") not in ALLOWED_ROLES:
+    if not _is_authorized(claims.get("role"), claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     n = Notification.query.get_or_404(notif_id)
@@ -145,7 +154,7 @@ def delete_notification(notif_id):
 def clear_all():
     claims = get_jwt()
     role = claims.get("role")
-    if role not in ALLOWED_ROLES:
+    if not _is_authorized(role, claims):
         return jsonify({"msg": "Unauthorized"}), 403
 
     query = Notification.query.filter_by(status="read")
