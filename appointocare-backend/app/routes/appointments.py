@@ -175,6 +175,8 @@ def delete_appointment(appointment_id):
         if int(appointment.organization_id) != org_id:
             return jsonify({"msg": "Unauthorized"}), 403
 
+    # Delete associated transactions first (FK constraint)
+    AppointmentTransaction.query.filter_by(appointment_id=appointment_id).delete()
     db.session.delete(appointment)
     db.session.commit()
     return jsonify({"msg": "Appointment deleted successfully"})
