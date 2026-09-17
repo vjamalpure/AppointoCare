@@ -520,3 +520,119 @@ def analytics_reports():
         "organizations": [{"id": o.id, "name": o.name, "sector": o.sector, "status": o.subscription_status} for o in orgs]
     })
 
+
+# -----------------------------------------------------------------------------
+# Superadmin Service Controls: Independent Feature Flag Toggles (WhatsApp & Razorpay)
+# -----------------------------------------------------------------------------
+@admin_bp.route("/tenants/<int:tenant_id>/toggle-service", methods=["PATCH"])
+@admin_bp.route("/organizations/<int:tenant_id>/toggle-service", methods=["PATCH"])
+@jwt_required()
+def toggle_tenant_service(tenant_id):
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Unauthorized. SuperAdmin privilege required."}), 403
+
+    from app.models import WhatsAppConfig, PaymentConfig, ServiceStatus, AuditLog
+    data = request.json or {}
+    service_type = (data.get("service") or "").lower()
+    new_status = (data.get("status") or "").upper()
+    reason = data.get("reason") or "Superadmin administrative toggle"
+
+    if service_type not in ["whatsapp", "razorpay"]:
+        return jsonify({"msg": "Invalid service. Must be 'whatsapp' or 'razorpay'"}), 400
+
+    if new_status not in ServiceStatus.CHOICES:
+        return jsonify({"msg": f"Invalid status. Must be one of {ServiceStatus.CHOICES}"}), 400
+
+    org = Organization.query.get_or_404(tenant_id)
+
+    if service_type == "whatsapp":
+        cfg = WhatsAppConfig.query.filter_by(tenant_id=tenant_id).first()
+        if not cfg:
+            cfg = WhatsAppConfig(tenant_id=tenant_id, waba_id=f"waba_{tenant_id}")
+            db.session.add(cfg)
+        cfg.service_status = new_status
+        cfg.suspension_reason = reason if new_status != ServiceStatus.ACTIVE else None
+        db.session.commit()
+        response_payload = {
+            "tenant_id": tenant_id,
+            "tenant_name": org.name,
+            "service": "whatsapp",
+            "status": cfg.service_status,
+            "waba_id": cfg.waba_id,
+            "phone_number_id": cfg.phone_number_id,
+            "suspension_reason": cfg.suspension_reason,
+            "updated_at": cfg.updated_at.isoformat() if cfg.updated_at else None
+        }
+    else:
+        cfg = PaymentConfig.query.filter_by(tenant_id=tenant_id).first()
+        if not cfg:
+            cfg = PaymentConfig(tenant_id=tenant_id, razorpay_account_id=f"acc_{tenant_id}")
+            db.session.add(cfg)
+        cfg.service_status = new_status
+        cfg.suspension_reason = reason if new_status != ServiceStatus.ACTIVE else None
+        db.session.commit()
+        response_payload = {
+            "tenant_id": tenant_id,
+            "tenant_name": org.name,
+            "service": "razorpay",
+            "status": cfg.service_status,
+            "razorpay_account_id": cfg.razorpay_account_id,
+            "platform_commission_rate": cfg.platform_commission_rate,
+            "suspension_reason": cfg.suspension_reason,
+            "updated_at": cfg.updated_at.isoformat() if cfg.updated_at else None
+        }
+
+    # Audit Trail
+    audit = AuditLog(
+        organization_id=tenant_id,
+        user_role=claims.get("role"),
+        action="SERVICE_STATUS_CHANGED",
+        entity=f"{service_type.upper()}_CONFIG",
+        entity_id=cfg.id,
+        details=f"Service {service_type} set to {new_status}. Reason: {reason}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Service '{service_type}' successfully updated to {new_status}",
+        "config": response_payload
+    }), 200
+
+
+@admin_bp.route("/tenants/<int:tenant_id>/services-status", methods=["GET"])
+@admin_bp.route("/organizations/<int:tenant_id>/services-status", methods=["GET"])
+@jwt_required()
+def get_tenant_services_status(tenant_id):
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    from app.models import WhatsAppConfig, PaymentConfig
+    org = Organization.query.get_or_404(tenant_id)
+    w_cfg = WhatsAppConfig.query.filter_by(tenant_id=tenant_id).first()
+    p_cfg = PaymentConfig.query.filter_by(tenant_id=tenant_id).first()
+
+    return jsonify({
+        "tenant_id": tenant_id,
+        "tenant_name": org.name,
+        "services": {
+            "whatsapp": {
+                "status": w_cfg.service_status if w_cfg else "INACTIVE",
+                "waba_id": w_cfg.waba_id if w_cfg else None,
+                "phone_number_id": w_cfg.phone_number_id if w_cfg else None,
+                "credit_line": w_cfg.meta_credit_line_status if w_cfg else "SHARED_MASTER",
+                "suspension_reason": w_cfg.suspension_reason if w_cfg else None
+            },
+            "razorpay": {
+                "status": p_cfg.service_status if p_cfg else "INACTIVE",
+                "razorpay_account_id": p_cfg.razorpay_account_id if p_cfg else None,
+                "commission_rate": p_cfg.platform_commission_rate if p_cfg else 0.05,
+                "suspension_reason": p_cfg.suspension_reason if p_cfg else None
+            }
+        }
+    })
+
+

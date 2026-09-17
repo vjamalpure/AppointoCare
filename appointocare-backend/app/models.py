@@ -42,6 +42,8 @@ class Organization(db.Model):
     # Relationships
     appointments = db.relationship("Appointment", backref="organization", lazy=True)
     org_transactions = db.relationship("OrganizationTransaction", backref="organization", lazy=True)
+    whatsapp_config = db.relationship("WhatsAppConfig", backref="organization", uselist=False, lazy=True, cascade="all, delete-orphan")
+    payment_config = db.relationship("PaymentConfig", backref="organization", uselist=False, lazy=True, cascade="all, delete-orphan")
 
 
 class Appointment(db.Model):
@@ -385,5 +387,77 @@ class GlobalSetting(db.Model):
     value = db.Column(db.Text, nullable=False)
     description = db.Column(db.String(255), nullable=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# -----------------------------------------------------------------------------
+# Multi-Tenant Service Integrations: Meta WhatsApp & Razorpay Route
+# -----------------------------------------------------------------------------
+class ServiceStatus:
+    ACTIVE = "ACTIVE"
+    SUSPENDED = "SUSPENDED"
+    INACTIVE = "INACTIVE"
+    CHOICES = [ACTIVE, SUSPENDED, INACTIVE]
+
+
+class WhatsAppConfig(db.Model):
+    __tablename__ = "whatsapp_configs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+
+    # Meta WABA & Phone Credentials (Onboarded via Embedded Signup)
+    waba_id = db.Column(db.String(100), nullable=True, index=True)
+    phone_number_id = db.Column(db.String(100), nullable=True, index=True)
+    business_account_id = db.Column(db.String(100), nullable=True)
+    display_phone_number = db.Column(db.String(50), nullable=True)
+    verified_name = db.Column(db.String(200), nullable=True)
+    quality_rating = db.Column(db.String(50), default="GREEN")
+
+    # Tokens & Secrets (Stored Encrypted)
+    access_token_encrypted = db.Column(db.Text, nullable=True)
+    token_expires_at = db.Column(db.DateTime, nullable=True)
+    webhook_verify_token = db.Column(db.String(255), nullable=True)
+
+    # Service Controls & Billing Line
+    service_status = db.Column(db.String(20), nullable=False, default=ServiceStatus.INACTIVE, index=True)  # ACTIVE, SUSPENDED, INACTIVE
+    suspension_reason = db.Column(db.String(255), nullable=True)
+    meta_credit_line_status = db.Column(db.String(50), default="SHARED_MASTER")  # Master Centralized Line
+    monthly_limit = db.Column(db.Integer, default=1000)
+    messages_sent_this_month = db.Column(db.Integer, default=0)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class PaymentConfig(db.Model):
+    __tablename__ = "payment_configs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+
+    # Razorpay Route Connected Sub-Account
+    razorpay_account_id = db.Column(db.String(100), nullable=True, index=True)  # acc_xxxx
+    merchant_name = db.Column(db.String(200), nullable=True)
+    merchant_email = db.Column(db.String(150), nullable=True)
+    onboarding_status = db.Column(db.String(50), default="PENDING")  # PENDING, LINKED, VERIFIED
+
+    # Service Controls & Split Platform Commission
+    service_status = db.Column(db.String(20), nullable=False, default=ServiceStatus.INACTIVE, index=True)  # ACTIVE, SUSPENDED, INACTIVE
+    suspension_reason = db.Column(db.String(255), nullable=True)
+    platform_commission_rate = db.Column(db.Float, nullable=False, default=0.05)  # 5% commission retained
+    currency = db.Column(db.String(10), default="INR")
+    auto_capture = db.Column(db.Boolean, default=True)
+
+    # OAuth Partner Tokens
+    oauth_access_token_encrypted = db.Column(db.Text, nullable=True)
+    oauth_refresh_token_encrypted = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+# Alias Tenant to Organization for clean multi-tenant domain nomenclature
+Tenant = Organization
+
 
 

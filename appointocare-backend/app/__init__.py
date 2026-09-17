@@ -72,7 +72,8 @@ def create_app():
     # Platform, Providers, Payments, Audit Logs, Staff & AI
     app.register_blueprint(platform_bp, url_prefix="/api/v1/platform")
     app.register_blueprint(provider_bp, url_prefix="/api/v1/providers")
-    app.register_blueprint(payments_bp, url_prefix="/api/v1/payments")
+    app.register_blueprint(payments_bp, url_prefix="/payments")
+    app.register_blueprint(payments_bp, url_prefix="/api/v1/payments", name="payments_api_v1")
     app.register_blueprint(audit_bp, url_prefix="/api/v1/audit-logs")
     app.register_blueprint(org_v1_bp, url_prefix="/api/v1/organization")
     app.register_blueprint(ai_bp, url_prefix="/api/v1/ai")
