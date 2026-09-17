@@ -2,7 +2,10 @@
   <!-- Sidebar Header -->
   <div class="sidebar-header">
     <div class="sidebar-brand" *ngIf="!isCollapsed">
-      <span class="brand-portal">PORTAL NAVIGATION</span>
+      <div class="brand-mini-row">
+        <mat-icon class="pulse-spark">auto_awesome</mat-icon>
+        <span class="brand-portal">PORTAL NAVIGATION</span>
+      </div>
     </div>
     <button mat-icon-button class="toggle-btn" (click)="toggleSidebar()" [matTooltip]="isCollapsed ? 'Expand Menu' : 'Collapse Menu'">
       <mat-icon>{{ isCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
@@ -21,7 +24,9 @@
           [matTooltip]="isCollapsed ? item.label : ''"
           matTooltipPosition="right"
         >
-          <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+          <div class="nav-icon-wrap">
+            <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+          </div>
           <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
         </a>
       </li>
@@ -29,14 +34,20 @@
   </nav>
 
   <!-- Sidebar Footer / Role Card -->
-  <div class="sidebar-footer" *ngIf="!isCollapsed && role">
+  <div class="sidebar-footer" *ngIf="role">
     <div class="user-chip">
-      <div class="user-avatar">{{ username ? username.charAt(0).toUpperCase() : 'U' }}</div>
-      <div class="user-details">
+      <div class="user-avatar-wrap">
+        <div class="user-avatar">{{ username ? username.charAt(0).toUpperCase() : 'U' }}</div>
+        <span class="status-indicator-dot" title="Active Connection"></span>
+      </div>
+      <div class="user-details" *ngIf="!isCollapsed">
         <div class="user-name">{{ username || 'User' }}</div>
-        <span class="role-badge" [ngClass]="'role-' + (role | lowercase)">
-          {{ getRoleBadgeLabel() }}
-        </span>
+        <div class="user-sub-row">
+          <span class="role-badge" [ngClass]="'role-' + (role | lowercase)">
+            {{ getRoleBadgeLabel() }}
+          </span>
+          <span class="org-sub-name" *ngIf="orgName">{{ orgName }}</span>
+        </div>
       </div>
     </div>
   </div>

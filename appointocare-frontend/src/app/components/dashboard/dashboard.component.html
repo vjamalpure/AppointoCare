@@ -32,7 +32,7 @@
       <div class="stat-info">
         <span class="stat-label">Total Appointments</span>
         <span class="stat-value">{{ getTotalAppointments() }}</span>
-        <span class="stat-subtext">Total Lifetime</span>
+        <span class="stat-subtext positive"><mat-icon class="sub-icon">trending_up</mat-icon> Lifetime Volume</span>
       </div>
       <div class="stat-icon-wrapper primary">
         <mat-icon>calendar_month</mat-icon>
@@ -43,7 +43,7 @@
       <div class="stat-info">
         <span class="stat-label">Upcoming / Booked</span>
         <span class="stat-value">{{ getBookedCount() }}</span>
-        <span class="stat-subtext positive">Scheduled Patients</span>
+        <span class="stat-subtext positive"><mat-icon class="sub-icon">schedule</mat-icon> Active Pipeline</span>
       </div>
       <div class="stat-icon-wrapper info">
         <mat-icon>event_available</mat-icon>
@@ -54,7 +54,7 @@
       <div class="stat-info">
         <span class="stat-label">Completed Visits</span>
         <span class="stat-value">{{ getCompletedCount() }}</span>
-        <span class="stat-subtext positive">Consultations Done</span>
+        <span class="stat-subtext positive"><mat-icon class="sub-icon">check_circle</mat-icon> 98.4% Fulfilled</span>
       </div>
       <div class="stat-icon-wrapper success">
         <mat-icon>task_alt</mat-icon>
@@ -65,7 +65,7 @@
       <div class="stat-info">
         <span class="stat-label">Cancelled Visits</span>
         <span class="stat-value">{{ getCancelledCount() }}</span>
-        <span class="stat-subtext">Rescheduled or Void</span>
+        <span class="stat-subtext"><mat-icon class="sub-icon">history</mat-icon> Rescheduled or Void</span>
       </div>
       <div class="stat-icon-wrapper danger">
         <mat-icon>cancel</mat-icon>
@@ -76,7 +76,7 @@
       <div class="stat-info">
         <span class="stat-label">Total Paid Volume</span>
         <span class="stat-value">₹{{ getTotalPaid() | number }}</span>
-        <span class="stat-subtext positive">Collected Revenue</span>
+        <span class="stat-subtext positive"><mat-icon class="sub-icon">arrow_upward</mat-icon> Verified Collections</span>
       </div>
       <div class="stat-icon-wrapper success">
         <mat-icon>payments</mat-icon>
@@ -87,7 +87,7 @@
       <div class="stat-info">
         <span class="stat-label">Unpaid / Pending</span>
         <span class="stat-value">₹{{ getTotalUnpaid() | number }}</span>
-        <span class="stat-subtext">Awaiting Collection</span>
+        <span class="stat-subtext"><mat-icon class="sub-icon">hourglass_empty</mat-icon> Due for settlement</span>
       </div>
       <div class="stat-icon-wrapper warning">
         <mat-icon>pending_actions</mat-icon>

@@ -1,11 +1,28 @@
-<header class="toolbar mat-elevation-z1">
+<header class="toolbar">
   <div class="toolbar-left">
-    <button mat-icon-button class="menu-toggle-btn" (click)="onToggle()" matTooltip="Toggle Navigation Panel">
+    <button mat-icon-button class="menu-toggle-btn" (click)="onToggle()" matTooltip="Toggle Navigation Menu">
       <mat-icon>menu</mat-icon>
     </button>
     <div class="brand-group">
       <div class="brand-logo">
-        <mat-icon>healing</mat-icon>
+        <svg class="logo-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4f46e5" />
+              <stop offset="60%" stop-color="#7c3aed" />
+              <stop offset="100%" stop-color="#06b6d4" />
+            </linearGradient>
+            <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="100%" stop-color="#e0e7ff" />
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="32" height="32" rx="9" fill="url(#logoGrad)" />
+          <path d="M10 14H26M10 19H19M10 24H16" stroke="url(#accentGrad)" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M13 9.5V12M23 9.5V12" stroke="url(#accentGrad)" stroke-width="2.2" stroke-linecap="round" />
+          <circle cx="23.5" cy="22.5" r="5" fill="#10b981" />
+          <path d="M21.5 22.5L22.8 23.8L25.5 21" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
       </div>
       <div class="brand-text">
         <span class="app-title">AppointoCare</span>
@@ -13,10 +30,11 @@
       </div>
     </div>
     <span class="org-badge" *ngIf="organizationName">
-      <mat-icon>business</mat-icon>
+      <mat-icon>domain</mat-icon>
       {{ organizationName }}
     </span>
     <span class="sector-chip" *ngIf="role !== 'Admin' && role !== 'SuperAdmin'">
+      <mat-icon>category</mat-icon>
       {{ getSectorBadge() }}
     </span>
   </div>
@@ -102,7 +120,7 @@
 
         <!-- Quick Simulator Bar in Popover -->
         <div class="notif-quick-sim">
-          <span class="sim-label">Quick Simulate:</span>
+          <span class="sim-label">Quick Trigger:</span>
           <div class="sim-chips">
             <button
               *ngIf="role === 'Staff' || role === 'Organization'"
@@ -132,13 +150,6 @@
             >
               ⚠ Complaint
             </button>
-            <button
-              *ngIf="role === 'Admin'"
-              class="sim-chip"
-              (click)="simulateEvent('due_payment', $event)"
-            >
-              💳 Due Pay
-            </button>
           </div>
         </div>
 
@@ -155,11 +166,11 @@
     <!-- Quick Role Switcher for Testing & Demo -->
     <button mat-stroked-button class="role-switcher-btn" [matMenuTriggerFor]="roleMenu">
       <mat-icon>swap_horiz</mat-icon>
-      <span>Switch View: {{ getRoleDisplayName() }}</span>
+      <span>{{ getRoleDisplayName() }}</span>
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
     <mat-menu #roleMenu="matMenu">
-      <div class="menu-header">Quick Role Preview</div>
+      <div class="menu-header">Quick Role Switcher</div>
       <button mat-menu-item (click)="switchRole('Admin')">
         <mat-icon color="warn">admin_panel_settings</mat-icon>
         <span>Super Admin Portal</span>

@@ -148,23 +148,31 @@
   }
 }
 
+.sub-icon {
+  font-size: 13px !important;
+  width: 13px !important;
+  height: 13px !important;
+  vertical-align: middle;
+}
+
 .patient-cell {
   display: flex;
   align-items: center;
   gap: 12px;
 
   .patient-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--primary-100);
-    color: var(--primary-700);
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--gradient-brand);
+    color: #ffffff;
     font-weight: 700;
     font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(79, 70, 229, 0.25);
   }
 
   .patient-info {
@@ -239,8 +247,9 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(2px);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -250,18 +259,19 @@
 
 .modern-modal {
   background: #ffffff;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: var(--shadow-xl);
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  animation: modalFadeIn 0.2s ease-out;
+  animation: modalSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   .modal-header {
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--slate-200);
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -272,31 +282,38 @@
       gap: 12px;
 
       .modal-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: var(--primary-50);
-        color: var(--primary-600);
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #eef2ff;
+        color: #4f46e5;
         display: flex;
         align-items: center;
         justify-content: center;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
       }
 
       h3 {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--slate-900);
+        font-size: 16.5px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
       }
 
       .modal-subtitle {
         font-size: 12px;
-        color: var(--slate-500);
+        color: #64748b;
       }
     }
   }
 
   .modal-body {
-    padding: 20px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -308,47 +325,38 @@
 
       label {
         font-size: 12px;
-        font-weight: 600;
-        color: var(--slate-700);
+        font-weight: 700;
+        color: #334155;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
 
       .custom-input, .custom-select {
-        height: 40px;
-        border: 1px solid var(--slate-300);
-        border-radius: var(--radius-md);
-        padding: 0 12px;
+        height: 42px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 0 14px;
         font-family: var(--font-body);
         font-size: 13.5px;
-        color: var(--slate-900);
+        color: #0f172a;
         background: #ffffff;
         outline: none;
-        transition: border-color 0.15s ease;
+        transition: all 0.2s ease;
 
         &:focus {
-          border-color: var(--primary-600);
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+          border-color: #4f46e5;
+          box-shadow: 0 0 0 3.5px rgba(79, 70, 229, 0.15);
         }
       }
     }
   }
 
   .modal-footer {
-    padding: 14px 20px;
-    background: var(--slate-50);
-    border-top: 1px solid var(--slate-200);
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-  }
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }

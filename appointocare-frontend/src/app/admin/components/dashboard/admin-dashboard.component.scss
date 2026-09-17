@@ -125,9 +125,10 @@
 
       .bar-fill-inner {
         width: 100%;
-        background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
-        border-radius: 6px 6px 0 0;
-        transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(180deg, #6366f1 0%, #4f46e5 50%, #06b6d4 100%);
+        border-radius: 8px 8px 0 0;
+        transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
       }
     }
 
