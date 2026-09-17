@@ -34,9 +34,13 @@ from app.models import (
     MessageLog,
     AuditLog,
     Notification,
-    IndustryRecord
+    IndustryRecord,
+    WhatsAppConfig,
+    PaymentConfig,
+    ServiceStatus
 )
 from app.utils.hash_helper import hash_password
+from app.utils.crypto_helper import encrypt_token
 
 DEFAULT_ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@12345")
 DEFAULT_ORG_PASSWORD = os.getenv("ORG_PASSWORD", "Org@12345")
@@ -994,6 +998,7 @@ def seed_all_sample_data(reset=False):
         table_list = [
             'payment_orders', 'provider_events', 'campaigns', 'notifications',
             'industry_records', 'message_logs', 'audit_logs',
+            'whatsapp_configs', 'payment_configs',
             'appointment_transactions', 'organization_transactions',
             'appointments', 'patients', 'customers', 'services', 'branches',
             'users', 'subscriptions', 'subscription_plans', 'sector_templates',
@@ -1289,6 +1294,49 @@ def seed_all_sample_data(reset=False):
             status="unread",
             created_at=now - timedelta(hours=2)
         ))
+
+        # Multi-Tenant Meta WhatsApp Business Config (Shared Billing Model)
+        w_cfg = WhatsAppConfig.query.filter_by(tenant_id=org.id).first()
+        if not w_cfg:
+            w_cfg = WhatsAppConfig(
+                tenant_id=org.id,
+                waba_id=f"waba_act_{org.code.lower()}_{1000 + org.id}",
+                phone_number_id=f"phone_{org.code.lower()}_{2000 + org.id}",
+                business_account_id=f"bacc_meta_{org.code.lower()}",
+                display_phone_number=f"+1 (555) {org.id:02d}0-0199",
+                verified_name=f"{org.name} WhatsApp Desk",
+                quality_rating="GREEN",
+                access_token_encrypted=encrypt_token(f"EAAG_system_user_token_{org.code}_{org.id}"),
+                service_status=ServiceStatus.ACTIVE,
+                meta_credit_line_status="SHARED_MASTER",
+                monthly_limit=5000,
+                messages_sent_this_month=28
+            )
+            db.session.add(w_cfg)
+        else:
+            w_cfg.service_status = ServiceStatus.ACTIVE
+            w_cfg.meta_credit_line_status = "SHARED_MASTER"
+
+        # Multi-Tenant Razorpay Route Connected Account Config (Partner Split Model)
+        p_cfg = PaymentConfig.query.filter_by(tenant_id=org.id).first()
+        if not p_cfg:
+            p_cfg = PaymentConfig(
+                tenant_id=org.id,
+                razorpay_account_id=f"acc_{org.code.lower()}_rzp_partner",
+                merchant_name=org.name,
+                merchant_email=f"billing@{org.username}.appointocare.com",
+                onboarding_status="VERIFIED",
+                service_status=ServiceStatus.ACTIVE,
+                platform_commission_rate=0.05,
+                currency="INR",
+                auto_capture=True,
+                oauth_access_token_encrypted=encrypt_token(f"rzp_oauth_access_{org.code}"),
+                oauth_refresh_token_encrypted=encrypt_token(f"rzp_oauth_refresh_{org.code}")
+            )
+            db.session.add(p_cfg)
+        else:
+            p_cfg.service_status = ServiceStatus.ACTIVE
+            p_cfg.platform_commission_rate = 0.05
 
         db.session.commit()
 

@@ -146,7 +146,54 @@ def ensure_schema_synced():
             # users columns
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(150);",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120);",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(30);"
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(30);",
+            # Enums for Meta and Razorpay integrations
+            "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'service_status_enum') THEN CREATE TYPE service_status_enum AS ENUM ('ACTIVE', 'SUSPENDED', 'INACTIVE'); END IF; END $$;",
+            "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'meta_credit_line_status_enum') THEN CREATE TYPE meta_credit_line_status_enum AS ENUM ('SHARED_MASTER', 'DIRECT_CLIENT', 'SUSPENDED'); END IF; END $$;",
+            "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'razorpay_onboarding_status_enum') THEN CREATE TYPE razorpay_onboarding_status_enum AS ENUM ('PENDING', 'LINKED', 'VERIFIED', 'REJECTED'); END IF; END $$;",
+            # whatsapp_configs table
+            """
+            CREATE TABLE IF NOT EXISTS whatsapp_configs (
+                id SERIAL PRIMARY KEY,
+                tenant_id INT NOT NULL UNIQUE REFERENCES organizations(id) ON DELETE CASCADE,
+                waba_id VARCHAR(100),
+                phone_number_id VARCHAR(100),
+                business_account_id VARCHAR(100),
+                display_phone_number VARCHAR(50),
+                verified_name VARCHAR(200),
+                quality_rating VARCHAR(50) DEFAULT 'GREEN',
+                access_token_encrypted TEXT,
+                token_expires_at TIMESTAMP WITH TIME ZONE,
+                webhook_verify_token VARCHAR(255),
+                service_status service_status_enum NOT NULL DEFAULT 'INACTIVE',
+                suspension_reason VARCHAR(255),
+                meta_credit_line_status meta_credit_line_status_enum NOT NULL DEFAULT 'SHARED_MASTER',
+                monthly_limit INT NOT NULL DEFAULT 1000,
+                messages_sent_this_month INT NOT NULL DEFAULT 0,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+            """,
+            # payment_configs table
+            """
+            CREATE TABLE IF NOT EXISTS payment_configs (
+                id SERIAL PRIMARY KEY,
+                tenant_id INT NOT NULL UNIQUE REFERENCES organizations(id) ON DELETE CASCADE,
+                razorpay_account_id VARCHAR(100),
+                merchant_name VARCHAR(200),
+                merchant_email VARCHAR(150),
+                onboarding_status razorpay_onboarding_status_enum NOT NULL DEFAULT 'PENDING',
+                service_status service_status_enum NOT NULL DEFAULT 'INACTIVE',
+                suspension_reason VARCHAR(255),
+                platform_commission_rate NUMERIC(5, 4) NOT NULL DEFAULT 0.0500,
+                currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+                auto_capture BOOLEAN NOT NULL DEFAULT TRUE,
+                oauth_access_token_encrypted TEXT,
+                oauth_refresh_token_encrypted TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+            """
         ]
 
         for stmt in schema_statements:
