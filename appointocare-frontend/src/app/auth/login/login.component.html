@@ -152,9 +152,13 @@
 
         <!-- Login Form -->
         <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="login-form" novalidate>
-          <!-- Organization Code (shown for Organization and Staff roles) -->
-          <div class="form-group" *ngIf="selectedRole !== 'admin'">
-            <label for="orgCode">Organization Code</label>
+          <!-- Organization Code (Permanently rendered for rock-solid zero-shift layout) -->
+          <div class="form-group" [class.is-disabled-group]="selectedRole === 'admin'">
+            <label for="orgCode">
+              <span>Organization Code</span>
+              <span class="field-badge admin-badge" *ngIf="selectedRole === 'admin'">Not needed for SuperAdmin</span>
+              <span class="field-badge req-badge" *ngIf="selectedRole !== 'admin'">Required</span>
+            </label>
             <div class="input-with-icon">
               <mat-icon class="field-icon">domain</mat-icon>
               <input
@@ -163,20 +167,25 @@
                 name="organization_code"
                 [(ngModel)]="organization_code"
                 #orgCodeInput="ngModel"
-                required
+                [required]="selectedRole !== 'admin'"
+                [disabled]="selectedRole === 'admin'"
                 autocomplete="organization"
-                placeholder="e.g. ORG1, ORG2... ORG9"
+                [placeholder]="selectedRole === 'admin' ? 'Not applicable for SuperAdmin' : 'e.g. ORG1, ORG2... ORG9'"
                 class="std-input"
-                [class.has-error]="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
+                [class.is-disabled]="selectedRole === 'admin'"
+                [class.has-error]="selectedRole !== 'admin' && orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
             </div>
-            <div class="field-error" *ngIf="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
+            <div class="field-error" *ngIf="selectedRole !== 'admin' && orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
               Organization code is required for tenant isolation.
             </div>
           </div>
 
           <!-- Username Input -->
           <div class="form-group">
-            <label for="username">Username</label>
+            <label for="username">
+              <span>Username</span>
+              <span class="field-badge req-badge">Required</span>
+            </label>
             <div class="input-with-icon">
               <mat-icon class="field-icon">person</mat-icon>
               <input
@@ -251,27 +260,59 @@
           </button>
         </form>
 
-        <!-- 1-Click Multi-Industry Demo Logins -->
+        <!-- 1-Click Multi-Industry Demo Access -->
         <div class="demo-section">
           <div class="demo-header">
             <span class="divider-text">1-Click Multi-Industry Demo Access</span>
+            <div class="demo-filter-pills">
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="demoFilter === 'all'"
+                (click)="setDemoFilter('all')">
+                All (13)
+              </button>
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="demoFilter === 'organization'"
+                (click)="setDemoFilter('organization')">
+                🏢 Tenants (9)
+              </button>
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="demoFilter === 'staff'"
+                (click)="setDemoFilter('staff')">
+                👥 Staff (3)
+              </button>
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="demoFilter === 'admin'"
+                (click)="setDemoFilter('admin')">
+                👑 SuperAdmin
+              </button>
+            </div>
           </div>
 
           <div class="demo-grid">
             <button
+              *ngIf="showAdminPreset"
               type="button"
               class="demo-card-chip admin"
               [class.chip-active]="selectedRole === 'admin' && username === 'superadmin'"
               (click)="fillAdminDemo()">
               <mat-icon>admin_panel_settings</mat-icon>
               <div class="chip-info">
-                <span class="chip-title">SuperAdmin</span>
-                <span class="chip-user">superadmin</span>
+                <span class="chip-title">SuperAdmin Portal</span>
+                <span class="chip-user">superadmin · Global Admin</span>
               </div>
+              <span class="chip-select-mark" *ngIf="selectedRole === 'admin' && username === 'superadmin'">✓ Active</span>
             </button>
 
             <button
-              *ngFor="let preset of industryPresets"
+              *ngFor="let preset of filteredPresets"
               type="button"
               class="demo-card-chip"
               [class.chip-active]="selectedRole === preset.role && username === preset.user && organization_code === preset.code"
@@ -281,6 +322,7 @@
                 <span class="chip-title">{{ preset.label }}</span>
                 <span class="chip-user">{{ preset.user }} · {{ preset.code }}</span>
               </div>
+              <span class="chip-select-mark" *ngIf="selectedRole === preset.role && username === preset.user && organization_code === preset.code">✓ Active</span>
             </button>
           </div>
         </div>

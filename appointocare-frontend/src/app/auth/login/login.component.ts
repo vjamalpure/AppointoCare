@@ -19,6 +19,7 @@ export class LoginComponent {
   showPassword = false;
 
   selectedRole: 'admin' | 'organization' | 'staff' = 'organization';
+  demoFilter: 'all' | 'organization' | 'staff' | 'admin' = 'all';
   currentYear: number = new Date().getFullYear();
 
   industryPresets = [
@@ -42,9 +43,25 @@ export class LoginComponent {
     private router: Router
   ) {}
 
+  get filteredPresets() {
+    if (this.demoFilter === 'all') {
+      return this.industryPresets;
+    }
+    return this.industryPresets.filter(p => p.role === this.demoFilter);
+  }
+
+  get showAdminPreset(): boolean {
+    return this.demoFilter === 'all' || this.demoFilter === 'admin';
+  }
+
+  setDemoFilter(filter: 'all' | 'organization' | 'staff' | 'admin'): void {
+    this.demoFilter = filter;
+  }
+
   setRole(role: 'admin' | 'organization' | 'staff'): void {
     this.selectedRole = role;
     this.errorMsg = '';
+    this.demoFilter = role;
     if (role === 'admin') {
       this.username = 'superadmin';
       this.password = 'Admin@12345';
