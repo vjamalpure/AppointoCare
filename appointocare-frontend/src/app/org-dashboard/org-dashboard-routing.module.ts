@@ -14,6 +14,7 @@ import { ServicesComponent } from './services/services.component';
 import { WhatsAppChatComponent } from './whatsapp/whatsapp-chat.component';
 import { StaffComponent } from './staff/staff.component';
 import { NotificationsCenterComponent } from '../components/notifications/notifications-center.component';
+import { IndustrySuiteComponent } from './industry-suite/industry-suite.component';
 
 const routes: Routes = [
   {
@@ -28,6 +29,7 @@ const routes: Routes = [
       { path: 'services', component: ServicesComponent },
       { path: 'whatsapp', component: WhatsAppChatComponent },
       { path: 'staff', component: StaffComponent },
+      { path: 'industry-suite', component: IndustrySuiteComponent },
       { path: 'transactions', component: OrgTransactionsComponent },
       { path: 'profile', component: OrgProfileComponent },
       { path: 'subscription', component: OrgSubscriptionComponent },

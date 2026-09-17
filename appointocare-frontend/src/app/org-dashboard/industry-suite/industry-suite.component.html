@@ -1,0 +1,472 @@
+<div class="industry-suite-container">
+  <!-- Top Hero Banner -->
+  <div class="hero-banner">
+    <div class="banner-content">
+      <div class="sector-pill">
+        <mat-icon>{{ config?.icon || 'domain' }}</mat-icon>
+        <span>{{ sector }} Industry Edition</span>
+      </div>
+      <h1 class="banner-title">{{ sector }} Enterprise Suite & Add-on Engine</h1>
+      <p class="banner-sub">
+        Production-grade workflows tailored for your {{ terms?.organizationLabel || 'Organization' }}.
+        Activate market-benchmarked SaaS modules, record sector-specific dossiers, and leverage peer intelligence.
+      </p>
+
+      <!-- Benchmarks KPI Strip -->
+      <div class="benchmarks-strip" *ngIf="benchmarks">
+        <div class="kpi-card">
+          <span class="kpi-label">Market Benchmark Benchmark</span>
+          <span class="kpi-val">{{ benchmarks.peer_platform }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Efficiency Lift</span>
+          <span class="kpi-val highlight">{{ benchmarks.efficiency_gain }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Standard Compliance</span>
+          <span class="kpi-val">{{ benchmarks.standard }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Active Modules</span>
+          <span class="kpi-val">{{ addons.length }} Available</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Segmented Tabs -->
+  <div class="tabs-nav">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'tool'"
+      (click)="activeTab = 'tool'">
+      <mat-icon>auto_fix_high</mat-icon>
+      <span>{{ getDefaultToolName() }}</span>
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'addons'"
+      (click)="activeTab = 'addons'">
+      <mat-icon>extension</mat-icon>
+      <span>Modular SaaS Add-ons</span>
+      <span class="badge-count">{{ addons.length }}</span>
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'records'"
+      (click)="activeTab = 'records'">
+      <mat-icon>inventory_2</mat-icon>
+      <span>Sector Records Vault</span>
+      <span class="badge-count">{{ records.length }}</span>
+    </button>
+  </div>
+
+  <!-- Tab 1: Interactive Sector Tool Workspace -->
+  <div class="tab-pane" *ngIf="activeTab === 'tool'">
+    <div class="tool-card">
+      <div class="card-header">
+        <div class="header-left">
+          <mat-icon class="header-icon">{{ config?.icon || 'assignment' }}</mat-icon>
+          <div>
+            <h2>{{ getDefaultToolName() }} Workspace</h2>
+            <p>Enter specialized operational data for your {{ terms?.customerLabel || 'Client' }} and save to persistent cloud ledger.</p>
+          </div>
+        </div>
+        <button mat-flat-button color="primary" class="save-btn" (click)="saveCurrentToolRecord()" [disabled]="savingRecord">
+          <mat-icon>save</mat-icon>
+          <span>{{ savingRecord ? 'Saving...' : 'Save to Vault' }}</span>
+        </button>
+      </div>
+
+      <!-- Base Common Fields -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label>{{ terms?.customerLabel || 'Client' }} Name</label>
+          <input type="text" class="custom-input" [(ngModel)]="toolForm.client_name" placeholder="Enter recipient name">
+        </div>
+        <div class="form-group">
+          <label>Dossier / Record Title</label>
+          <input type="text" class="custom-input" [(ngModel)]="toolForm.title" placeholder="Record subject">
+        </div>
+      </div>
+
+      <!-- Sector 1: HEALTHCARE -->
+      <div class="sector-specific-form" *ngIf="sector === 'Healthcare'">
+        <h3 class="section-heading"><mat-icon>favorite</mat-icon> Clinical Vitals & Triage (Practo Ray / Epic Benchmark)</h3>
+        <div class="vitals-row">
+          <div class="vital-box">
+            <span class="v-label">Blood Pressure</span>
+            <input type="text" class="custom-input small" [(ngModel)]="toolForm.vitals_bp" placeholder="e.g. 120/80">
+          </div>
+          <div class="vital-box">
+            <span class="v-label">Pulse Rate</span>
+            <input type="text" class="custom-input small" [(ngModel)]="toolForm.vitals_pulse" placeholder="e.g. 72 bpm">
+          </div>
+          <div class="vital-box">
+            <span class="v-label">Body Temp</span>
+            <input type="text" class="custom-input small" [(ngModel)]="toolForm.vitals_temp" placeholder="e.g. 98.6 F">
+          </div>
+          <div class="vital-box">
+            <span class="v-label">Oxygen SpO2</span>
+            <input type="text" class="custom-input small" [(ngModel)]="toolForm.vitals_spo2" placeholder="e.g. 99%">
+          </div>
+        </div>
+
+        <div class="form-group full-width" style="margin-top: 1.25rem;">
+          <label>Clinical Diagnosis & Treatment Plan</label>
+          <textarea class="custom-textarea" rows="2" [(ngModel)]="toolForm.diagnosis" placeholder="Diagnosis notes..."></textarea>
+        </div>
+
+        <div class="table-container-card">
+          <div class="table-header">
+            <h4>E-Prescription Medication Schedule</h4>
+            <button class="small-add-btn" (click)="addMedicine()">
+              <mat-icon>add</mat-icon> Add Medication
+            </button>
+          </div>
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>Drug / Molecule</th>
+                <th>Dosage & Frequency</th>
+                <th>Duration</th>
+                <th>Special Instructions</th>
+                <th style="width: 50px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let med of toolForm.medications; let i = index">
+                <td><input type="text" class="custom-input table-input" [(ngModel)]="med.name"></td>
+                <td><input type="text" class="custom-input table-input" [(ngModel)]="med.dosage"></td>
+                <td><input type="text" class="custom-input table-input" [(ngModel)]="med.duration"></td>
+                <td><input type="text" class="custom-input table-input" [(ngModel)]="med.instructions"></td>
+                <td>
+                  <button class="remove-btn" (click)="removeMedicine(i)" title="Remove item">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sector 2: SALON & SPA -->
+      <div class="sector-specific-form" *ngIf="sector === 'Salon'">
+        <h3 class="section-heading"><mat-icon>spa</mat-icon> Station Allocation & Formulation Card (Fresha / Zenoti Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Assigned Treatment Suite / Stylist Station</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.treatment_room" placeholder="e.g. Suite 4 - Hydrotherapy">
+          </div>
+          <div class="form-group">
+            <label>Color Formulation / Essential Oil Blend</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.hair_skin_formula" placeholder="Formula ratios and shade codes">
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label>Add-on Spa Treatments & Upsells Selected</label>
+          <div class="pill-group">
+            <span class="feature-chip" *ngFor="let upsell of toolForm.selected_upsells">
+              <mat-icon>check_circle</mat-icon> {{ upsell }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sector 3: FINANCE -->
+      <div class="sector-specific-form" *ngIf="sector === 'Finance'">
+        <h3 class="section-heading"><mat-icon>account_balance</mat-icon> Fiduciary Investor Profile & Allocation (AdvisorEngine Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Investable Net Worth / AUM</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.investable_net_worth" placeholder="e.g. $1,500,000">
+          </div>
+          <div class="form-group">
+            <label>Risk Tolerance Classification</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.risk_tolerance" placeholder="e.g. Balanced Growth">
+          </div>
+        </div>
+        <div class="vitals-row">
+          <div class="vital-box">
+            <span class="v-label">Public Equity %</span>
+            <input type="number" class="custom-input small" [(ngModel)]="toolForm.equity_pct">
+          </div>
+          <div class="vital-box">
+            <span class="v-label">Fixed Income %</span>
+            <input type="number" class="custom-input small" [(ngModel)]="toolForm.fixed_income_pct">
+          </div>
+          <div class="vital-box">
+            <span class="v-label">Cash / Alternatives %</span>
+            <input type="number" class="custom-input small" [(ngModel)]="toolForm.cash_alternatives_pct">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sector 4: RETAIL -->
+      <div class="sector-specific-form" *ngIf="sector === 'Retail'">
+        <h3 class="section-heading"><mat-icon>shopping_bag</mat-icon> VIP Sizing & Curated Lookbook (Farfetch Private Client Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Reserved VIP Fitting Suite</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.fitting_suite">
+          </div>
+          <div class="form-group">
+            <label>Bespoke Tailoring Measurements</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.wardrobe_measurements">
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label>Curated Lookbook Items for Private Session</label>
+          <textarea class="custom-textarea" rows="2" [(ngModel)]="toolForm.curated_lookbook_items"></textarea>
+        </div>
+      </div>
+
+      <!-- Sector 5: INSURANCE -->
+      <div class="sector-specific-form" *ngIf="sector === 'Insurance'">
+        <h3 class="section-heading"><mat-icon>verified_user</mat-icon> Underwriting Risk & Policy Dossier (Applied Systems Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Policy Category & Coverage</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.policy_type">
+          </div>
+          <div class="form-group">
+            <label>Total Sum Assured</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.sum_assured">
+          </div>
+          <div class="form-group">
+            <label>Risk Underwriting Factor</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.tobacco_use">
+          </div>
+          <div class="form-group">
+            <label>Annual Premium Estimate</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.annual_premium_estimate">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sector 6: EDUCATION -->
+      <div class="sector-specific-form" *ngIf="sector === 'Education'">
+        <h3 class="section-heading"><mat-icon>school</mat-icon> Admissions Roadmap & Target Universities (Naviance Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Target Major / Degree</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.target_major">
+          </div>
+          <div class="form-group">
+            <label>Cumulative Academic GPA</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.student_gpa">
+          </div>
+          <div class="form-group">
+            <label>Standardized Scores (SAT / GRE / TOEFL)</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.standardized_score">
+          </div>
+          <div class="form-group">
+            <label>Reach Universities Tier</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.reach_universities">
+          </div>
+          <div class="form-group">
+            <label>Match Universities Tier</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.match_universities">
+          </div>
+          <div class="form-group">
+            <label>Safety Universities Tier</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.safety_universities">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sector 7: LEGAL / CONSULTANCY -->
+      <div class="sector-specific-form" *ngIf="sector === 'Consultancy'">
+        <h3 class="section-heading"><mat-icon>gavel</mat-icon> Conflict Clearance & Retainer Ledger (Clio Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Matter / Case Scope</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.matter_title">
+          </div>
+          <div class="form-group">
+            <label>Adverse Party Conflict Check</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.adverse_parties_checked">
+          </div>
+          <div class="form-group">
+            <label>Retainer Hours Deposited</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.retainer_hours_deposited">
+          </div>
+          <div class="form-group">
+            <label>Billable Hourly Rate</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.billable_rate">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sector 8: REAL ESTATE -->
+      <div class="sector-specific-form" *ngIf="sector === 'Real Estate'">
+        <h3 class="section-heading"><mat-icon>apartment</mat-icon> Property Tour Itinerary & Lockbox Dossier (Buildium Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Property Requirements / Wishlist</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.property_wishlist">
+          </div>
+          <div class="form-group">
+            <label>Target Budget Range</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.budget_range">
+          </div>
+        </div>
+
+        <div class="table-container-card">
+          <div class="table-header">
+            <h4>Scheduled Tour Stops & Lockbox Access</h4>
+            <button class="small-add-btn" (click)="addTourStop()">
+              <mat-icon>add_location_alt</mat-icon> Add Tour Stop
+            </button>
+          </div>
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>Property Address</th>
+                <th>Tour Time Slot</th>
+                <th>Lockbox / Access Code</th>
+                <th style="width: 50px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let stop of toolForm.tour_stops; let i = index">
+                <td><input type="text" class="custom-input table-input" [(ngModel)]="stop.address"></td>
+                <td><input type="text" class="custom-input table-input" [(ngModel)]="stop.time"></td>
+                <td><input type="text" class="custom-input table-input" [(ngModel)]="stop.lockbox"></td>
+                <td>
+                  <button class="remove-btn" (click)="removeTourStop(i)" title="Remove stop">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sector 9: PROFESSIONAL SERVICES / ENTERPRISE -->
+      <div class="sector-specific-form" *ngIf="sector === 'Professional Services'">
+        <h3 class="section-heading"><mat-icon>business_center</mat-icon> SOW Deliverables & SLA Audit (Accenture Client Exchange Benchmark)</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>SOW Phase & Key Deliverables</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.sow_deliverable">
+          </div>
+          <div class="form-group">
+            <label>SLA Tier Commitment</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.sla_tier">
+          </div>
+          <div class="form-group">
+            <label>Enterprise Architecture & Compliance Framework</label>
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.architecture_framework">
+          </div>
+        </div>
+      </div>
+
+      <div class="action-footer">
+        <button mat-flat-button color="primary" class="large-save-btn" (click)="saveCurrentToolRecord()" [disabled]="savingRecord">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>{{ savingRecord ? 'Persisting to Cloud...' : 'Commit Record to ' + sector + ' Vault' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Modular SaaS Add-ons Manager -->
+  <div class="tab-pane" *ngIf="activeTab === 'addons'">
+    <div class="addons-grid">
+      <div class="addon-card" *ngFor="let addon of addons" [class.enabled]="addon.enabled">
+        <div class="addon-top">
+          <div class="addon-icon-box">
+            <mat-icon>{{ addon.icon }}</mat-icon>
+          </div>
+          <div class="addon-toggle-box">
+            <mat-slide-toggle [checked]="addon.enabled" (change)="toggleAddon(addon)" color="primary">
+            </mat-slide-toggle>
+          </div>
+        </div>
+
+        <div class="addon-meta">
+          <span class="badge-category">{{ addon.category }}</span>
+          <span class="badge-state" [class.active-state]="addon.enabled">
+            {{ addon.enabled ? 'ACTIVE MODULE' : 'DISABLED' }}
+          </span>
+        </div>
+
+        <h3 class="addon-name">{{ addon.name }}</h3>
+        <div class="benchmark-pill" *ngIf="addon.benchmark_source || addon.benchmark">
+          <mat-icon>verified</mat-icon>
+          <span>Benchmarked: {{ addon.benchmark_source || addon.benchmark }}</span>
+        </div>
+
+        <p class="addon-desc">{{ addon.description }}</p>
+
+        <div class="features-list" *ngIf="addon.features && addon.features.length">
+          <div class="feature-item" *ngFor="let f of addon.features">
+            <mat-icon>check</mat-icon>
+            <span>{{ f }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Specialized Records Vault -->
+  <div class="tab-pane" *ngIf="activeTab === 'records'">
+    <div class="records-card">
+      <div class="card-header">
+        <div class="header-left">
+          <mat-icon class="header-icon">folder_shared</mat-icon>
+          <div>
+            <h2>{{ sector }} Specialized Records Vault</h2>
+            <p>Cryptographically logged operational dossiers, prescriptions, portfolios, and legal retainers.</p>
+          </div>
+        </div>
+        <button mat-stroked-button color="primary" (click)="activeTab = 'tool'">
+          <mat-icon>add</mat-icon> Create New Record
+        </button>
+      </div>
+
+      <div *ngIf="loading" class="loading-state">
+        <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+        <span>Loading sector ledger...</span>
+      </div>
+
+      <div *ngIf="!loading && records.length === 0" class="empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <h3>No Specialized Records Found</h3>
+        <p>Switch to the <strong>{{ getDefaultToolName() }}</strong> tab to create and save the first record for this organization.</p>
+        <button mat-flat-button color="primary" (click)="activeTab = 'tool'" style="margin-top: 1rem;">
+          Open Workspace
+        </button>
+      </div>
+
+      <div class="records-list" *ngIf="!loading && records.length > 0">
+        <div class="record-item" *ngFor="let rec of records">
+          <div class="rec-icon">
+            <mat-icon>{{ config?.icon || 'article' }}</mat-icon>
+          </div>
+          <div class="rec-info">
+            <div class="rec-header">
+              <span class="rec-title">{{ rec.title }}</span>
+              <span class="rec-badge">{{ rec.record_type }}</span>
+              <span class="rec-status">{{ rec.status }}</span>
+            </div>
+            <div class="rec-date">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ rec.created_at | date:'medium' }}</span>
+            </div>
+          </div>
+          <div class="rec-actions">
+            <button class="delete-btn" (click)="deleteRecord(rec.id)" title="Delete record">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

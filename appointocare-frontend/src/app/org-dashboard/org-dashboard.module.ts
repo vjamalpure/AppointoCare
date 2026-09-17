@@ -30,6 +30,7 @@ import { CustomersComponent } from './customers/customers.component';
 import { ServicesComponent } from './services/services.component';
 import { WhatsAppChatComponent } from './whatsapp/whatsapp-chat.component';
 import { StaffComponent } from './staff/staff.component';
+import { IndustrySuiteComponent } from './industry-suite/industry-suite.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { StaffComponent } from './staff/staff.component';
     CustomersComponent,
     ServicesComponent,
     WhatsAppChatComponent,
-    StaffComponent
+    StaffComponent,
+    IndustrySuiteComponent
   ],
   imports: [
     CommonModule,

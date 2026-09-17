@@ -45,6 +45,7 @@ def create_app():
     from .routes.payments import payments_bp
     from .routes.audit_logs import audit_bp
     from .routes.organization_v1 import org_v1_bp, ai_bp
+    from .routes.industry_suite import industry_suite_bp
 
     # Auth & Admin & Core
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -72,5 +73,6 @@ def create_app():
     app.register_blueprint(audit_bp, url_prefix="/api/v1/audit-logs")
     app.register_blueprint(org_v1_bp, url_prefix="/api/v1/organization")
     app.register_blueprint(ai_bp, url_prefix="/api/v1/ai")
+    app.register_blueprint(industry_suite_bp, url_prefix="/api/v1/industry-suite")
 
     return app

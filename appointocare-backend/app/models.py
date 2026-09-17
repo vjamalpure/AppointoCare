@@ -328,3 +328,21 @@ class ProviderEvent(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     processed_at = db.Column(db.DateTime, nullable=True)
     __table_args__ = (db.UniqueConstraint("provider", "event_id", name="uq_provider_event"),)
+
+
+class IndustryRecord(db.Model):
+    __tablename__ = "industry_records"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False)
+    appointment_id = db.Column(db.Integer, db.ForeignKey("appointments.id"), nullable=True)
+    customer_id = db.Column(db.Integer, nullable=True)
+    sector = db.Column(db.String(50), nullable=False)
+    record_type = db.Column(db.String(80), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    data = db.Column(db.JSON, nullable=False, default=dict)
+    status = db.Column(db.String(50), default="Active")
+    created_by_user = db.Column(db.String(100), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
