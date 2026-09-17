@@ -14,6 +14,21 @@ class Organization(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
+    # Contact & Profile
+    email = db.Column(db.String(120), nullable=True)
+    phone = db.Column(db.String(30), nullable=True)
+    address = db.Column(db.String(255), nullable=True)
+    logo_url = db.Column(db.String(255), nullable=True)
+
+    # WhatsApp & Feature Toggles
+    whatsapp_enabled = db.Column(db.Boolean, default=True)
+    whatsapp_monthly_limit = db.Column(db.Integer, default=1000)
+    whatsapp_messages_used = db.Column(db.Integer, default=0)
+    booking_flow_enabled = db.Column(db.Boolean, default=True)
+    auto_welcome_enabled = db.Column(db.Boolean, default=True)
+    reminders_enabled = db.Column(db.Boolean, default=True)
+    campaigns_enabled = db.Column(db.Boolean, default=True)
+
     # Subscription details
     subscription_status = db.Column(db.String(50), default="Active")  # Active, Paused, Stopped
     subscription_plan = db.Column(db.String(100), default="Basic")  # Basic, Premium, Enterprise
@@ -38,6 +53,12 @@ class Appointment(db.Model):
     appointment_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(50), default="Booked")  # Booked, Cancelled, Completed
     payment_status = db.Column(db.String(50), default="Pending")  # Paid, Unpaid
+
+    # Metadata & Relations
+    service_name = db.Column(db.String(150), nullable=True)
+    staff_name = db.Column(db.String(150), nullable=True)
+    customer_id = db.Column(db.Integer, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
 
     organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -105,6 +126,8 @@ class Admin(db.Model):
     __tablename__ = "admins"
 
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), default="SuperAdmin")  # SuperAdmin, Manager
@@ -119,6 +142,9 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False)
+    name = db.Column(db.String(150), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    phone = db.Column(db.String(30), nullable=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), default="Staff")  # Staff, Manager, Receptionist, etc.
@@ -155,7 +181,11 @@ class MessageLog(db.Model):
     message_type = db.Column(db.String(50), nullable=False)  # WhatsApp, SMS, Email
     message_content = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), default="Sent")  # Sent, Failed, Delivered
+    direction = db.Column(db.String(20), default="Outbound")
+    provider_message_id = db.Column(db.String(200), nullable=True)
     sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
     related_appointment_id = db.Column(db.Integer, db.ForeignKey("appointments.id"), nullable=True)
     remarks = db.Column(db.String(255), nullable=True)
 
@@ -189,6 +219,7 @@ class Service(db.Model):
     price = db.Column(db.Float, nullable=False, default=0.0)
     duration_minutes = db.Column(db.Integer, nullable=False, default=30)
     active = db.Column(db.Boolean, default=True)
+    sector = db.Column(db.String(50), nullable=True)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
@@ -345,4 +376,14 @@ class IndustryRecord(db.Model):
     created_by_user = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class GlobalSetting(db.Model):
+    __tablename__ = "global_settings"
+
+    key = db.Column(db.String(120), primary_key=True)
+    value = db.Column(db.Text, nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 

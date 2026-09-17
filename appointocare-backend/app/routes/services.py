@@ -87,6 +87,7 @@ def get_services():
             "price": s.price,
             "duration_minutes": s.duration_minutes,
             "active": s.active,
+            "sector": s.sector or (s.organization.sector if s.organization else "General"),
             "created_at": s.created_at.isoformat() if s.created_at else None,
             "updated_at": s.updated_at.isoformat() if s.updated_at else None,
         }
@@ -103,28 +104,49 @@ def create_service():
     data = request.json or {}
 
     if role == "Admin":
-        if not data.get("organization_id"):
-            return jsonify({"msg": "organization_id is required for admin-created services"}), 400
-        organization_id = int(data["organization_id"])
+        if data.get("organization_id"):
+            organization_id = int(data["organization_id"])
+        elif claims.get("organization_id"):
+            organization_id = int(claims["organization_id"])
+        else:
+            first_org = Organization.query.first()
+            if first_org:
+                organization_id = first_org.id
+            else:
+                return jsonify({"msg": "No organization found to attach service to"}), 400
     else:
         organization_id = int(claims.get("organization_id") or 0)
 
     if not data.get("name"):
         return jsonify({"msg": "name is required"}), 400
 
+    org = Organization.query.get(organization_id)
+    sector = data.get("sector") or (org.sector if org else "General")
+
     service = Service(
         organization_id=organization_id,
         name=data["name"],
-        description=data.get("description"),
+        description=data.get("description", ""),
         category=data.get("category", "General"),
         price=float(data.get("price", 0.0)),
         duration_minutes=int(data.get("duration_minutes", 30)),
-        active=data.get("active", True)
+        active=data.get("active", True),
+        sector=sector
     )
     db.session.add(service)
     db.session.commit()
 
-    return jsonify({"msg": "Service created successfully", "service_id": service.id, "id": service.id}), 201
+    return jsonify({
+        "msg": "Service created successfully",
+        "service_id": service.id,
+        "id": service.id,
+        "name": service.name,
+        "category": service.category,
+        "price": service.price,
+        "duration_minutes": service.duration_minutes,
+        "active": service.active,
+        "sector": service.sector
+    }), 201
 
 
 @service_bp.route("/<int:service_id>", methods=["GET"])
@@ -174,9 +196,11 @@ def update_service(service_id):
         service.duration_minutes = int(data["duration_minutes"])
     if "active" in data:
         service.active = bool(data["active"])
+    if "sector" in data:
+        service.sector = data["sector"]
 
     db.session.commit()
-    return jsonify({"msg": "Service updated successfully", "id": service.id})
+    return jsonify({"msg": "Service updated successfully", "id": service.id, "name": service.name, "sector": service.sector})
 
 
 @service_bp.route("/<int:service_id>", methods=["DELETE"])

@@ -9,7 +9,7 @@
       <h1 class="banner-title">{{ sector }} Enterprise Suite & Add-on Engine</h1>
       <p class="banner-sub">
         Production-grade workflows tailored for your {{ terms?.organizationLabel || 'Organization' }}.
-        Activate market-benchmarked SaaS modules, record sector-specific dossiers, and leverage peer intelligence.
+        Activate market-benchmarked SaaS modules, manage live operational queues, record sector-specific dossiers, and leverage peer intelligence.
       </p>
 
       <!-- Benchmarks KPI Strip -->
@@ -46,6 +46,15 @@
 
     <button
       class="tab-btn"
+      [class.active]="activeTab === 'queue'"
+      (click)="activeTab = 'queue'; loadQueue()">
+      <mat-icon>queue_play_next</mat-icon>
+      <span>Live Token & Queue Board</span>
+      <span class="badge-count" *ngIf="queueTokens.length">{{ queueTokens.length }}</span>
+    </button>
+
+    <button
+      class="tab-btn"
       [class.active]="activeTab === 'addons'"
       (click)="activeTab = 'addons'">
       <mat-icon>extension</mat-icon>
@@ -63,7 +72,9 @@
     </button>
   </div>
 
-  <!-- Tab 1: Interactive Sector Tool Workspace -->
+  <!-- ========================================== -->
+  <!-- Tab 1: Interactive Sector Tool Workspace   -->
+  <!-- ========================================== -->
   <div class="tab-pane" *ngIf="activeTab === 'tool'">
     <div class="tool-card">
       <div class="card-header">
@@ -74,10 +85,15 @@
             <p>Enter specialized operational data for your {{ terms?.customerLabel || 'Client' }} and save to persistent cloud ledger.</p>
           </div>
         </div>
-        <button mat-flat-button color="primary" class="save-btn" (click)="saveCurrentToolRecord()" [disabled]="savingRecord">
-          <mat-icon>save</mat-icon>
-          <span>{{ savingRecord ? 'Saving...' : 'Save to Vault' }}</span>
-        </button>
+        <div class="header-actions">
+          <button mat-stroked-button class="print-btn" (click)="printDossier()">
+            <mat-icon>print</mat-icon> Print Dossier
+          </button>
+          <button mat-flat-button color="primary" class="save-btn" (click)="saveCurrentToolRecord()" [disabled]="savingRecord">
+            <mat-icon>save</mat-icon>
+            <span>{{ savingRecord ? 'Saving...' : 'Save to Vault' }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Base Common Fields -->
@@ -182,7 +198,7 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Investable Net Worth / AUM</label>
-            <input type="text" class="custom-input" [(ngModel)]="toolForm.investable_net_worth" placeholder="e.g. $1,500,000">
+            <input type="text" class="custom-input" [(ngModel)]="toolForm.investable_net_worth" placeholder="e.g. ₹ 1,50,00,000">
           </div>
           <div class="form-group">
             <label>Risk Tolerance Classification</label>
@@ -201,6 +217,14 @@
           <div class="vital-box">
             <span class="v-label">Cash / Alternatives %</span>
             <input type="number" class="custom-input small" [(ngModel)]="toolForm.cash_alternatives_pct">
+          </div>
+        </div>
+        <div class="allocation-bar-wrap">
+          <span class="alloc-label">Total Asset Weighting: {{ (toolForm.equity_pct || 0) + (toolForm.fixed_income_pct || 0) + (toolForm.cash_alternatives_pct || 0) }}%</span>
+          <div class="alloc-bar">
+            <div class="bar-equity" [style.width.%]="toolForm.equity_pct"></div>
+            <div class="bar-fixed" [style.width.%]="toolForm.fixed_income_pct"></div>
+            <div class="bar-cash" [style.width.%]="toolForm.cash_alternatives_pct"></div>
           </div>
         </div>
       </div>
@@ -243,6 +267,47 @@
           <div class="form-group">
             <label>Annual Premium Estimate</label>
             <input type="text" class="custom-input" [(ngModel)]="toolForm.annual_premium_estimate">
+          </div>
+        </div>
+
+        <!-- Live Actuarial Calculator Box -->
+        <div class="calc-box-card">
+          <div class="calc-header">
+            <h4><mat-icon>calculate</mat-icon> Instant Actuarial Premium Estimator</h4>
+            <button mat-flat-button color="accent" [disabled]="calculatingInsurance" (click)="runInsuranceCalc()">
+              <span>{{ calculatingInsurance ? 'Calculating...' : 'Recalculate Premium' }}</span>
+            </button>
+          </div>
+          <div class="calc-grid">
+            <div class="calc-input-group">
+              <label>Applicant Age</label>
+              <input type="number" [(ngModel)]="insuranceCalcInput.age" class="custom-input small">
+            </div>
+            <div class="calc-input-group">
+              <label>Sum Assured (₹)</label>
+              <input type="number" [(ngModel)]="insuranceCalcInput.sum_assured" class="custom-input small">
+            </div>
+            <div class="calc-input-group">
+              <label>Policy Term (Yrs)</label>
+              <input type="number" [(ngModel)]="insuranceCalcInput.policy_term" class="custom-input small">
+            </div>
+            <div class="calc-input-group">
+              <label>Nicotine / Smoker</label>
+              <select [(ngModel)]="insuranceCalcInput.is_smoker" class="custom-input small">
+                <option [ngValue]="false">Non-Smoker</option>
+                <option [ngValue]="true">Smoker / Tobacco</option>
+              </select>
+            </div>
+          </div>
+          <div class="calc-result" *ngIf="insuranceResult">
+            <div class="res-item">
+              <span class="res-label">Estimated Monthly</span>
+              <span class="res-val highlight">₹ {{ insuranceResult.monthly_premium.toLocaleString('en-IN') }}</span>
+            </div>
+            <div class="res-item">
+              <span class="res-label">Annual Total</span>
+              <span class="res-val">₹ {{ insuranceResult.annual_premium.toLocaleString('en-IN') }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -303,30 +368,30 @@
 
       <!-- Sector 8: REAL ESTATE -->
       <div class="sector-specific-form" *ngIf="sector === 'Real Estate'">
-        <h3 class="section-heading"><mat-icon>apartment</mat-icon> Property Tour Itinerary & Lockbox Dossier (Buildium Benchmark)</h3>
+        <h3 class="section-heading"><mat-icon>apartment</mat-icon> Property Showings & Valuation Matrix (Zillow Benchmark)</h3>
         <div class="form-grid">
           <div class="form-group">
-            <label>Property Requirements / Wishlist</label>
+            <label>Client Property Wishlist</label>
             <input type="text" class="custom-input" [(ngModel)]="toolForm.property_wishlist">
           </div>
           <div class="form-group">
-            <label>Target Budget Range</label>
+            <label>Approved Budget Range</label>
             <input type="text" class="custom-input" [(ngModel)]="toolForm.budget_range">
           </div>
         </div>
 
         <div class="table-container-card">
           <div class="table-header">
-            <h4>Scheduled Tour Stops & Lockbox Access</h4>
+            <h4>Property Tour Itinerary Sequence</h4>
             <button class="small-add-btn" (click)="addTourStop()">
-              <mat-icon>add_location_alt</mat-icon> Add Tour Stop
+              <mat-icon>add_location_alt</mat-icon> Add Showing Stop
             </button>
           </div>
           <table class="spec-table">
             <thead>
               <tr>
                 <th>Property Address</th>
-                <th>Tour Time Slot</th>
+                <th>Tour Slot</th>
                 <th>Lockbox / Access Code</th>
                 <th style="width: 50px;"></th>
               </tr>
@@ -337,7 +402,7 @@
                 <td><input type="text" class="custom-input table-input" [(ngModel)]="stop.time"></td>
                 <td><input type="text" class="custom-input table-input" [(ngModel)]="stop.lockbox"></td>
                 <td>
-                  <button class="remove-btn" (click)="removeTourStop(i)" title="Remove stop">
+                  <button class="remove-btn" (click)="removeTourStop(i)" title="Remove showing">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>
@@ -345,110 +410,222 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Cap Rate & NOI Modeler -->
+        <div class="calc-box-card">
+          <div class="calc-header">
+            <h4><mat-icon>analytics</mat-icon> Cap Rate & Net Operating Income (NOI) Modeler</h4>
+            <button mat-flat-button color="accent" [disabled]="calculatingRealEstate" (click)="runRealEstateCalc()">
+              <span>{{ calculatingRealEstate ? 'Calculating...' : 'Recalculate Cap Rate' }}</span>
+            </button>
+          </div>
+          <div class="calc-grid">
+            <div class="calc-input-group">
+              <label>Purchase Price (₹)</label>
+              <input type="number" [(ngModel)]="realEstateCalcInput.purchase_price" class="custom-input small">
+            </div>
+            <div class="calc-input-group">
+              <label>Monthly Rent (₹)</label>
+              <input type="number" [(ngModel)]="realEstateCalcInput.monthly_rent" class="custom-input small">
+            </div>
+            <div class="calc-input-group">
+              <label>Annual Operating Expenses (₹)</label>
+              <input type="number" [(ngModel)]="realEstateCalcInput.annual_expenses" class="custom-input small">
+            </div>
+          </div>
+          <div class="calc-result" *ngIf="realEstateResult">
+            <div class="res-item">
+              <span class="res-label">Cap Rate</span>
+              <span class="res-val highlight">{{ realEstateResult.cap_rate_percent }}%</span>
+            </div>
+            <div class="res-item">
+              <span class="res-label">Net Operating Income (NOI)</span>
+              <span class="res-val">₹ {{ realEstateResult.net_operating_income.toLocaleString('en-IN') }}/yr</span>
+            </div>
+            <div class="res-item">
+              <span class="res-label">Gross Rent Multiplier</span>
+              <span class="res-val">{{ realEstateResult.gross_rent_multiplier }}x</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Sector 9: PROFESSIONAL SERVICES / ENTERPRISE -->
+      <!-- Sector 9: PROFESSIONAL SERVICES -->
       <div class="sector-specific-form" *ngIf="sector === 'Professional Services'">
-        <h3 class="section-heading"><mat-icon>business_center</mat-icon> SOW Deliverables & SLA Audit (Accenture Client Exchange Benchmark)</h3>
+        <h3 class="section-heading"><mat-icon>business_center</mat-icon> SOW Deliverables & Technical Review (Accenture Benchmark)</h3>
         <div class="form-grid">
           <div class="form-group full-width">
-            <label>SOW Phase & Key Deliverables</label>
+            <label>Statement of Work (SOW) Active Deliverable</label>
             <input type="text" class="custom-input" [(ngModel)]="toolForm.sow_deliverable">
           </div>
           <div class="form-group">
-            <label>SLA Tier Commitment</label>
+            <label>SLA Tier & Escalation Threshold</label>
             <input type="text" class="custom-input" [(ngModel)]="toolForm.sla_tier">
           </div>
           <div class="form-group">
-            <label>Enterprise Architecture & Compliance Framework</label>
+            <label>Architecture & Governance Standard</label>
             <input type="text" class="custom-input" [(ngModel)]="toolForm.architecture_framework">
           </div>
         </div>
       </div>
-
-      <div class="action-footer">
-        <button mat-flat-button color="primary" class="large-save-btn" (click)="saveCurrentToolRecord()" [disabled]="savingRecord">
-          <mat-icon>cloud_upload</mat-icon>
-          <span>{{ savingRecord ? 'Persisting to Cloud...' : 'Commit Record to ' + sector + ' Vault' }}</span>
-        </button>
-      </div>
     </div>
   </div>
 
-  <!-- Tab 2: Modular SaaS Add-ons Manager -->
+  <!-- ========================================== -->
+  <!-- Tab 2: Live Token & Queue Board            -->
+  <!-- ========================================== -->
+  <div class="tab-pane" *ngIf="activeTab === 'queue'">
+    <div class="queue-section-card">
+      <div class="queue-header">
+        <div>
+          <h2>{{ getQueueTitle() }}</h2>
+          <p class="queue-subtitle">{{ getQueueSubtitle() }}</p>
+        </div>
+        <div class="queue-header-actions">
+          <button mat-stroked-button (click)="loadQueue()">
+            <mat-icon>refresh</mat-icon> Refresh
+          </button>
+          <button mat-flat-button color="primary" (click)="showTokenModal = true">
+            <mat-icon>add</mat-icon> Issue New Token
+          </button>
+        </div>
+      </div>
+
+      <mat-progress-bar *ngIf="loadingQueue" mode="indeterminate" class="mb-3"></mat-progress-bar>
+
+      <div class="queue-board-grid" *ngIf="queueTokens.length; else emptyQueue">
+        <div
+          class="queue-token-card"
+          *ngFor="let t of queueTokens"
+          [class.status-waiting]="t.status === 'Waiting'"
+          [class.status-active]="t.status === 'In Consultation' || t.status === 'In Service'"
+          [class.status-completed]="t.status === 'Completed'"
+        >
+          <div class="token-head">
+            <span class="token-badge">{{ t.data?.token_number || ('#' + t.id) }}</span>
+            <span class="priority-badge" [class.urgent]="t.data?.priority === 'Urgent'" [class.vip]="t.data?.priority === 'VIP'">
+              {{ t.data?.priority || 'Standard' }}
+            </span>
+          </div>
+
+          <div class="token-body">
+            <h3 class="token-name">{{ t.data?.client_name || t.title }}</h3>
+            <span class="token-service"><mat-icon>medical_services</mat-icon> {{ t.data?.service || 'General Service' }}</span>
+
+            <div class="token-meta">
+              <span *ngIf="t.data?.treatment_room"><mat-icon>room</mat-icon> {{ t.data?.treatment_room }}</span>
+              <span *ngIf="t.data?.check_in_time"><mat-icon>schedule</mat-icon> In: {{ t.data?.check_in_time }}</span>
+            </div>
+
+            <div class="token-status-pill" [class.active-pill]="t.status === 'In Consultation'">
+              {{ t.status }}
+            </div>
+          </div>
+
+          <div class="token-footer">
+            <button
+              *ngIf="t.status === 'Waiting'"
+              mat-flat-button
+              color="primary"
+              class="advance-btn"
+              (click)="advanceToken(t, 'In Consultation')"
+            >
+              <mat-icon>play_arrow</mat-icon> Call / Begin
+            </button>
+
+            <button
+              *ngIf="t.status === 'In Consultation' || t.status === 'In Service'"
+              mat-flat-button
+              color="accent"
+              class="advance-btn"
+              (click)="advanceToken(t, 'Completed')"
+            >
+              <mat-icon>check</mat-icon> Mark Done
+            </button>
+
+            <button
+              *ngIf="t.status === 'Completed'"
+              mat-stroked-button
+              class="advance-btn done-state"
+              disabled
+            >
+              Completed
+            </button>
+
+            <button mat-icon-button color="warn" class="dismiss-btn" (click)="deleteToken(t.id, $event)" title="Dismiss token">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyQueue>
+        <div class="empty-state-box" *ngIf="!loadingQueue">
+          <mat-icon class="empty-icon">sensor_occupied</mat-icon>
+          <h3>No Active Tokens in Queue</h3>
+          <p>All clients have been served. Click "Issue New Token" to check in a walk-in patient or arriving client.</p>
+          <button mat-flat-button color="primary" (click)="showTokenModal = true">
+            <mat-icon>add</mat-icon> Issue First Token
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Tab 3: Modular SaaS Add-ons Engine         -->
+  <!-- ========================================== -->
   <div class="tab-pane" *ngIf="activeTab === 'addons'">
     <div class="addons-grid">
       <div class="addon-card" *ngFor="let addon of addons" [class.enabled]="addon.enabled">
-        <div class="addon-top">
+        <div class="addon-header">
           <div class="addon-icon-box">
-            <mat-icon>{{ addon.icon }}</mat-icon>
+            <mat-icon>{{ addon.icon || 'extension' }}</mat-icon>
           </div>
-          <div class="addon-toggle-box">
-            <mat-slide-toggle [checked]="addon.enabled" (change)="toggleAddon(addon)" color="primary">
-            </mat-slide-toggle>
+          <mat-slide-toggle [checked]="addon.enabled" (change)="toggleAddon(addon)"></mat-slide-toggle>
+        </div>
+
+        <div class="addon-body">
+          <div class="addon-category">{{ addon.category }}</div>
+          <h3 class="addon-name">{{ addon.name }}</h3>
+          <p class="addon-desc">{{ addon.description }}</p>
+
+          <div class="benchmark-tag">
+            <mat-icon>verified</mat-icon>
+            <span>Peer: {{ addon.benchmark_source }}</span>
           </div>
         </div>
 
-        <div class="addon-meta">
-          <span class="badge-category">{{ addon.category }}</span>
-          <span class="badge-state" [class.active-state]="addon.enabled">
-            {{ addon.enabled ? 'ACTIVE MODULE' : 'DISABLED' }}
+        <div class="addon-footer">
+          <span class="status-tag" [class.active]="addon.enabled">
+            {{ addon.enabled ? 'Module Active' : 'Disabled' }}
           </span>
-        </div>
-
-        <h3 class="addon-name">{{ addon.name }}</h3>
-        <div class="benchmark-pill" *ngIf="addon.benchmark_source || addon.benchmark">
-          <mat-icon>verified</mat-icon>
-          <span>Benchmarked: {{ addon.benchmark_source || addon.benchmark }}</span>
-        </div>
-
-        <p class="addon-desc">{{ addon.description }}</p>
-
-        <div class="features-list" *ngIf="addon.features && addon.features.length">
-          <div class="feature-item" *ngFor="let f of addon.features">
-            <mat-icon>check</mat-icon>
-            <span>{{ f }}</span>
-          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Tab 3: Specialized Records Vault -->
+  <!-- ========================================== -->
+  <!-- Tab 4: Sector Records Vault                -->
+  <!-- ========================================== -->
   <div class="tab-pane" *ngIf="activeTab === 'records'">
-    <div class="records-card">
-      <div class="card-header">
-        <div class="header-left">
-          <mat-icon class="header-icon">folder_shared</mat-icon>
-          <div>
-            <h2>{{ sector }} Specialized Records Vault</h2>
-            <p>Cryptographically logged operational dossiers, prescriptions, portfolios, and legal retainers.</p>
-          </div>
+    <div class="records-vault-card">
+      <div class="vault-header">
+        <div>
+          <h2>{{ sector }} Dossiers & Cloud Vault</h2>
+          <p>Persistent encrypted records, clinical prescriptions, KYC matrices, and compliance sign-offs.</p>
         </div>
-        <button mat-stroked-button color="primary" (click)="activeTab = 'tool'">
-          <mat-icon>add</mat-icon> Create New Record
+        <button mat-stroked-button (click)="loadData()">
+          <mat-icon>refresh</mat-icon> Refresh Vault
         </button>
       </div>
 
-      <div *ngIf="loading" class="loading-state">
-        <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
-        <span>Loading sector ledger...</span>
-      </div>
-
-      <div *ngIf="!loading && records.length === 0" class="empty-state">
-        <mat-icon>inventory_2</mat-icon>
-        <h3>No Specialized Records Found</h3>
-        <p>Switch to the <strong>{{ getDefaultToolName() }}</strong> tab to create and save the first record for this organization.</p>
-        <button mat-flat-button color="primary" (click)="activeTab = 'tool'" style="margin-top: 1rem;">
-          Open Workspace
-        </button>
-      </div>
-
-      <div class="records-list" *ngIf="!loading && records.length > 0">
-        <div class="record-item" *ngFor="let rec of records" (click)="inspectRecord(rec)">
+      <div class="records-list" *ngIf="records.length; else emptyRecords">
+        <div class="record-item" *ngFor="let rec of records">
           <div class="rec-icon">
-            <mat-icon>{{ config?.icon || 'article' }}</mat-icon>
+            <mat-icon>{{ config?.icon || 'description' }}</mat-icon>
           </div>
+
           <div class="rec-info">
             <div class="rec-header">
               <span class="rec-title">{{ rec.title }}</span>
@@ -456,25 +633,85 @@
               <span class="rec-status">{{ rec.status }}</span>
             </div>
             <div class="rec-date">
-              <mat-icon>schedule</mat-icon>
+              <mat-icon>event</mat-icon>
               <span>{{ rec.created_at | date:'medium' }}</span>
-              <span *ngIf="rec.created_by_user" style="margin-left: 0.75rem;">• Signed by: {{ rec.created_by_user }}</span>
+              <span *ngIf="rec.created_by_user"> • by {{ rec.created_by_user }}</span>
             </div>
           </div>
-          <div class="rec-actions" (click)="$event.stopPropagation()">
-            <button mat-stroked-button color="primary" class="inspect-chip-btn" (click)="inspectRecord(rec)">
-              <mat-icon>visibility</mat-icon> View Dossier
+
+          <div class="rec-actions">
+            <button mat-stroked-button class="inspect-chip-btn" (click)="inspectRecord(rec)">
+              <mat-icon>visibility</mat-icon> Inspect
             </button>
-            <button class="delete-btn" (click)="deleteRecord(rec.id)" title="Delete record">
+            <button mat-icon-button class="delete-btn" (click)="deleteRecord(rec.id)">
               <mat-icon>delete_outline</mat-icon>
             </button>
           </div>
         </div>
       </div>
+
+      <ng-template #emptyRecords>
+        <div class="empty-state-box" *ngIf="!loading">
+          <mat-icon class="empty-icon">folder_open</mat-icon>
+          <h3>Vault is Empty</h3>
+          <p>Create and save records using the {{ getDefaultToolName() }} workspace above.</p>
+        </div>
+      </ng-template>
     </div>
   </div>
 
-  <!-- Specialized Record Inspection Modal -->
+  <!-- Modal: Issue New Token -->
+  <div class="modal-backdrop" *ngIf="showTokenModal" (click)="showTokenModal = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Issue New Queue Token</h3>
+        <button mat-icon-button (click)="showTokenModal = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-form">
+        <div class="form-group full">
+          <label>Recipient / Client Name *</label>
+          <input type="text" [(ngModel)]="newToken.client_name" placeholder="e.g. John Doe" class="custom-input">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" [(ngModel)]="newToken.phone" placeholder="+91 98765 43210" class="custom-input">
+          </div>
+          <div class="form-group">
+            <label>Priority Tier</label>
+            <select [(ngModel)]="newToken.priority" class="custom-input">
+              <option value="Standard">Standard</option>
+              <option value="VIP">VIP</option>
+              <option value="Urgent">Urgent / Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Service / Consultation Requested</label>
+          <input type="text" [(ngModel)]="newToken.service" placeholder="e.g. General Consultation" class="custom-input">
+        </div>
+
+        <div class="form-group full">
+          <label>Check-in Notes</label>
+          <textarea rows="2" [(ngModel)]="newToken.notes" placeholder="Notes or instructions..." class="custom-input"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-stroked-button (click)="showTokenModal = false">Cancel</button>
+        <button mat-flat-button color="primary" (click)="issueToken()">
+          <mat-icon>check</mat-icon> Issue Token
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Record Inspection Dossier -->
   <div class="record-modal-backdrop" *ngIf="selectedRecord" (click)="closeInspection()">
     <div class="record-modal-card" (click)="$event.stopPropagation()">
       <div class="record-modal-header">
@@ -487,122 +724,76 @@
             <div class="modal-meta-pills">
               <span class="meta-pill sector-pill-tag">{{ selectedRecord.sector }}</span>
               <span class="meta-pill type-pill-tag">{{ selectedRecord.record_type }}</span>
-              <span class="meta-pill status-pill-tag">{{ selectedRecord.status || 'Active' }}</span>
-              <span class="meta-pill user-pill-tag" *ngIf="selectedRecord.created_by_user">Author: {{ selectedRecord.created_by_user }}</span>
+              <span class="meta-pill status-pill-tag">{{ selectedRecord.status }}</span>
+              <span class="meta-pill user-pill-tag" *ngIf="selectedRecord.created_by_user">By: {{ selectedRecord.created_by_user }}</span>
             </div>
           </div>
         </div>
-        <button class="modal-close-btn" (click)="closeInspection()" title="Close">
+        <button class="modal-close-btn" (click)="closeInspection()">
           <mat-icon>close</mat-icon>
         </button>
       </div>
 
       <div class="record-modal-body">
-        <!-- If medications are present (Healthcare) -->
+        <!-- Medications table if prescription -->
         <div class="specialized-block" *ngIf="selectedRecord.data?.medications?.length">
-          <h4><mat-icon>medical_services</mat-icon> Clinical Medication Regimen</h4>
-          <table class="spec-table">
+          <h4><mat-icon>medication</mat-icon> Prescribed Pharmacopeia</h4>
+          <table class="spec-table modal-table">
             <thead>
               <tr>
-                <th>Drug / Molecule</th>
-                <th>Dosage & Frequency</th>
+                <th>Drug</th>
+                <th>Dosage</th>
                 <th>Duration</th>
                 <th>Instructions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of selectedRecord.data.medications">
-                <td><strong>{{ m.name }}</strong></td>
-                <td>{{ m.dosage }}</td>
-                <td>{{ m.duration }}</td>
-                <td>{{ m.instructions }}</td>
+              <tr *ngFor="let med of selectedRecord.data.medications">
+                <td><strong>{{ med.name }}</strong></td>
+                <td>{{ med.dosage }}</td>
+                <td>{{ med.duration }}</td>
+                <td>{{ med.instructions }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- If tour stops are present (Real Estate) -->
+        <!-- Tour stops if property tour -->
         <div class="specialized-block" *ngIf="selectedRecord.data?.tour_stops?.length">
-          <h4><mat-icon>tour</mat-icon> Scheduled Property Tour Itinerary</h4>
-          <table class="spec-table">
+          <h4><mat-icon>tour</mat-icon> Itinerary Showings</h4>
+          <table class="spec-table modal-table">
             <thead>
               <tr>
-                <th>#</th>
                 <th>Property Address</th>
-                <th>Time Slot</th>
+                <th>Time</th>
                 <th>Lockbox Access</th>
-                <th>Notes</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let s of selectedRecord.data.tour_stops">
-                <td><strong>{{ s.order || 1 }}</strong></td>
-                <td>{{ s.address }}</td>
+                <td><strong>{{ s.address }}</strong></td>
                 <td><span class="time-badge">{{ s.time }}</span></td>
                 <td><code>{{ s.lockbox }}</code></td>
-                <td>{{ s.notes || 'Concierge notified' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- If curated garments are present (Retail) -->
-        <div class="specialized-block" *ngIf="selectedRecord.data?.curated_garments?.length">
-          <h4><mat-icon>checkroom</mat-icon> Curated Runway Lookbook</h4>
-          <table class="spec-table">
-            <thead>
-              <tr>
-                <th>SKU</th>
-                <th>Garment Name</th>
-                <th>Color / Fabric</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let g of selectedRecord.data.curated_garments">
-                <td><code>{{ g.sku }}</code></td>
-                <td><strong>{{ g.name }}</strong></td>
-                <td>{{ g.color }}</td>
-                <td>{{ g.price | currency }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- If phase milestones are present (Enterprise) -->
-        <div class="specialized-block" *ngIf="selectedRecord.data?.phase_milestones?.length">
-          <h4><mat-icon>assignment_turned_in</mat-icon> SOW Phase Gate Deliverables</h4>
-          <table class="spec-table">
-            <thead>
-              <tr>
-                <th>Milestone Deliverable</th>
-                <th>SLA Target</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let m of selectedRecord.data.phase_milestones">
-                <td><strong>{{ m.name }}</strong></td>
-                <td>{{ m.sla_days }} days</td>
-                <td><span class="milestone-badge">{{ m.status }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Dynamic Data Grid for all other attributes -->
-        <div class="data-attributes-grid" *ngIf="getFormattedAttributes(selectedRecord.data).length">
-          <div class="attr-card" *ngFor="let item of getFormattedAttributes(selectedRecord.data)">
-            <span class="attr-label">{{ item.label }}</span>
-            <span class="attr-value">{{ item.value }}</span>
+        <!-- Attributes Grid -->
+        <div class="data-attributes-grid">
+          <div class="attr-card" *ngFor="let attr of getFormattedAttributes(selectedRecord.data)">
+            <span class="attr-label">{{ attr.label }}</span>
+            <span class="attr-value">{{ attr.value }}</span>
           </div>
         </div>
       </div>
 
       <div class="record-modal-footer">
-        <button mat-stroked-button (click)="closeInspection()">Close</button>
-        <button mat-flat-button color="primary" (click)="printDossier()">
-          <mat-icon>print</mat-icon> Print / Export Dossier
+        <button mat-stroked-button (click)="printDossier()">
+          <mat-icon>print</mat-icon> Print Official Dossier
+        </button>
+        <button mat-flat-button color="primary" (click)="closeInspection()">
+          Close
         </button>
       </div>
     </div>

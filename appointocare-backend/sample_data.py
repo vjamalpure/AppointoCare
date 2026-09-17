@@ -1142,8 +1142,13 @@ def seed_all_sample_data(reset=False):
                     price=svc_info["price"],
                     duration_minutes=svc_info["duration"],
                     description=f"{svc_info['name']} provided by specialized professionals at {org.name}.",
-                    active=True
+                    active=True,
+                    sector=org.sector
                 ))
+            else:
+                service.sector = org.sector
+                service.price = svc_info["price"]
+                service.duration_minutes = svc_info["duration"]
 
         # Customers & Patients
         cust_map = {}

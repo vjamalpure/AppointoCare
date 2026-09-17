@@ -1,7 +1,9 @@
 .whatsapp-page {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: clamp(14px, 1.8vw, 28px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
 
   .header-section {
     display: flex;

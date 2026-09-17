@@ -16,9 +16,41 @@ export class IndustrySuiteComponent implements OnInit {
   records: IndustryRecordItem[] = [];
   benchmarks: any = null;
 
-  activeTab: 'addons' | 'tool' | 'records' = 'tool';
+  activeTab: 'tool' | 'queue' | 'addons' | 'records' = 'tool';
   loading = false;
   savingRecord = false;
+
+  // Live Queue & Token Board State
+  queueTokens: any[] = [];
+  loadingQueue = false;
+  showTokenModal = false;
+  newToken: any = {
+    client_name: '',
+    phone: '',
+    service: 'General Consultation',
+    priority: 'Standard',
+    assigned_staff: 'Next Available Specialist',
+    notes: ''
+  };
+
+  // Actuarial & Financial Calculators
+  insuranceCalcInput = {
+    age: 32,
+    sum_assured: 1000000,
+    is_smoker: false,
+    policy_term: 25,
+    riders: ['critical_illness']
+  };
+  insuranceResult: any = null;
+  calculatingInsurance = false;
+
+  realEstateCalcInput = {
+    purchase_price: 1250000,
+    monthly_rent: 7500,
+    annual_expenses: 18000
+  };
+  realEstateResult: any = null;
+  calculatingRealEstate = false;
 
   // Generic tool form state adapting to current sector
   toolForm: any = {
@@ -39,7 +71,7 @@ export class IndustrySuiteComponent implements OnInit {
     selected_upsells: ['Herbal Foot Soak', 'Collagen Eye Mask'],
     hair_skin_formula: '7.1 Ash Blonde + 20 Vol (1:1.5 ratio), Lavender oil 4 drops',
     // Finance
-    investable_net_worth: '$1,250,000',
+    investable_net_worth: '₹ 1,25,00,000',
     risk_tolerance: 'Moderate Growth',
     equity_pct: 65,
     fixed_income_pct: 25,
@@ -51,9 +83,9 @@ export class IndustrySuiteComponent implements OnInit {
     curated_lookbook_items: 'Bespoke Silk Tuxedo, Hand-stitched Leather Loafers',
     // Insurance
     policy_type: 'Comprehensive Term Life + Critical Illness',
-    sum_assured: '$1,000,000',
+    sum_assured: '₹ 1,00,00,000',
     tobacco_use: 'Non-Smoker',
-    annual_premium_estimate: '$840 / year',
+    annual_premium_estimate: '₹ 28,400 / year',
     // Education
     target_major: 'Computer Science & AI',
     student_gpa: '3.92 / 4.0',
@@ -65,10 +97,10 @@ export class IndustrySuiteComponent implements OnInit {
     matter_title: 'Cross-Border SaaS Master Services Agreement',
     adverse_parties_checked: 'Verified - No conflict detected',
     retainer_hours_deposited: '15.0 Hours',
-    billable_rate: '$350 / hour',
+    billable_rate: '₹ 12,500 / hour',
     // Real Estate
     property_wishlist: '3-BHK Penthouse with Skyline Terrace',
-    budget_range: '$1,800,000 - $2,500,000',
+    budget_range: '₹ 1.8 Cr - ₹ 2.5 Cr',
     tour_stops: [
       { address: '750 Lexington Ave, Penthouse 40', time: '10:30 AM', lockbox: '8841' },
       { address: '420 Marina Blvd, Loft 12', time: '12:00 PM', lockbox: '9120' }
@@ -78,6 +110,8 @@ export class IndustrySuiteComponent implements OnInit {
     sla_tier: 'Enterprise Platinum (15-min SLA)',
     architecture_framework: 'AWS Well-Architected & SOC2 Type II Certified'
   };
+
+  selectedRecord: IndustryRecordItem | null = null;
 
   constructor(
     public industryService: IndustryService,
@@ -91,10 +125,16 @@ export class IndustrySuiteComponent implements OnInit {
     this.config = this.industryService.getConfig(this.sector);
     this.initToolDefaults();
     this.loadData();
+    this.loadQueue();
+    if (this.sector === 'Insurance') {
+      this.runInsuranceCalc();
+    } else if (this.sector === 'Real Estate') {
+      this.runRealEstateCalc();
+    }
   }
 
   initToolDefaults(): void {
-    const customer = this.terms.customerLabel || 'Client';
+    const customer = this.terms?.customerLabel || 'Client';
     this.toolForm.client_name = `Valued ${customer}`;
     this.toolForm.title = `${this.sector} ${this.getDefaultToolName()}`;
   }
@@ -111,6 +151,28 @@ export class IndustrySuiteComponent implements OnInit {
       case 'Real Estate': return 'Property Tour Itinerary';
       case 'Professional Services': return 'SOW Deliverables & Architecture Audit';
       default: return 'Specialized Sector Record';
+    }
+  }
+
+  getQueueTitle(): string {
+    switch (this.sector) {
+      case 'Healthcare': return 'Live Clinical OPD & Emergency Queue';
+      case 'Salon': return 'Stylist Stations & Treatment Room Floor';
+      case 'Finance': return 'Client Wealth Advisory & KYC Consultation Queue';
+      case 'Retail': return 'VIP Fitting Lounge & Styling Concierge';
+      case 'Real Estate': return 'Today\'s Scheduled Property Showings & Site Visits';
+      default: return 'Live Service Queue & Client Waitlist';
+    }
+  }
+
+  getQueueSubtitle(): string {
+    switch (this.sector) {
+      case 'Healthcare': return 'Live token board for patient arrival, triage status, and consultation room advance (Practo Ray / Apollo benchmark).';
+      case 'Salon': return 'Real-time stylist chair and treatment room occupancy manager (Fresha / Zenoti benchmark).';
+      case 'Finance': return 'High-net-worth client arrival tracking and portfolio briefing room dispatch.';
+      case 'Retail': return 'Private dressing room suite concierge and personal shopper assignments.';
+      case 'Real Estate': return 'Sequenced property tour schedule, attendee arrivals, and lockbox checklist.';
+      default: return 'Token calling board and real-time floor occupancy tracker.';
     }
   }
 
@@ -138,6 +200,96 @@ export class IndustrySuiteComponent implements OnInit {
       }
     });
   }
+
+  // --- Live Queue Actions ---
+
+  loadQueue(): void {
+    this.loadingQueue = true;
+    this.industryService.getQueue().subscribe({
+      next: (tokens) => {
+        this.queueTokens = tokens || [];
+        this.loadingQueue = false;
+      },
+      error: () => {
+        this.loadingQueue = false;
+      }
+    });
+  }
+
+  advanceToken(token: any, newStatus: string): void {
+    this.industryService.advanceQueue(token.id, newStatus).subscribe({
+      next: () => {
+        token.status = newStatus;
+        if (token.data) token.data.queue_status = newStatus;
+        this.snackBar.open(`Token status updated to '${newStatus}'`, 'OK', { duration: 2000 });
+      },
+      error: () => {
+        this.snackBar.open('Failed to advance token', 'Dismiss', { duration: 2000 });
+      }
+    });
+  }
+
+  issueToken(): void {
+    if (!this.newToken.client_name?.trim()) {
+      this.snackBar.open('Please enter client/patient name', 'Dismiss', { duration: 2000 });
+      return;
+    }
+
+    this.industryService.createQueueToken(this.newToken).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg || 'Token issued successfully', 'OK', { duration: 2500 });
+        this.showTokenModal = false;
+        this.newToken = { client_name: '', phone: '', service: 'General Consultation', priority: 'Standard', assigned_staff: 'Next Available Specialist', notes: '' };
+        this.loadQueue();
+      },
+      error: () => {
+        this.snackBar.open('Failed to issue queue token', 'Dismiss', { duration: 2500 });
+      }
+    });
+  }
+
+  deleteToken(tokenId: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (confirm('Dismiss this token from the active queue?')) {
+      this.industryService.deleteQueueToken(tokenId).subscribe({
+        next: () => {
+          this.snackBar.open('Token dismissed', 'OK', { duration: 2000 });
+          this.queueTokens = this.queueTokens.filter(t => t.id !== tokenId);
+        }
+      });
+    }
+  }
+
+  // --- Calculators ---
+
+  runInsuranceCalc(): void {
+    this.calculatingInsurance = true;
+    this.industryService.calculateInsurancePremium(this.insuranceCalcInput).subscribe({
+      next: (res) => {
+        this.insuranceResult = res;
+        this.toolForm.annual_premium_estimate = `₹ ${res.annual_premium.toLocaleString('en-IN')} / year (₹ ${res.monthly_premium.toLocaleString('en-IN')}/mo)`;
+        this.calculatingInsurance = false;
+      },
+      error: () => {
+        this.calculatingInsurance = false;
+      }
+    });
+  }
+
+  runRealEstateCalc(): void {
+    this.calculatingRealEstate = true;
+    this.industryService.calculateRealEstateRoi(this.realEstateCalcInput).subscribe({
+      next: (res) => {
+        this.realEstateResult = res;
+        this.calculatingRealEstate = false;
+      },
+      error: () => {
+        this.calculatingRealEstate = false;
+      }
+    });
+  }
+
+  // --- Add-on & Record Actions ---
 
   toggleAddon(addon: SectorAddon): void {
     const nextState = !addon.enabled;
@@ -187,8 +339,6 @@ export class IndustrySuiteComponent implements OnInit {
       });
     }
   }
-
-  selectedRecord: IndustryRecordItem | null = null;
 
   inspectRecord(rec: IndustryRecordItem): void {
     this.selectedRecord = rec;

@@ -147,4 +147,39 @@ export class IndustryService {
     if (orgId) params = params.set('organization_id', String(orgId));
     return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/stats`, { params });
   }
+
+  // --- Live Queue & Token Board APIs ---
+
+  public getQueue(orgId?: number): Observable<any[]> {
+    let params = new HttpParams();
+    if (orgId) params = params.set('organization_id', String(orgId));
+    return this.http.get<any[]>(`${this.baseUrl}/api/v1/industry-suite/queue`, { params });
+  }
+
+  public advanceQueue(recordId: number, status: string, orgId?: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/queue/advance`, {
+      record_id: recordId,
+      status,
+      organization_id: orgId
+    });
+  }
+
+  public createQueueToken(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/queue/create`, payload);
+  }
+
+  public deleteQueueToken(recordId: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/api/v1/industry-suite/queue/${recordId}`);
+  }
+
+  // --- Specialized Actuarial & Financial Calculators ---
+
+  public calculateInsurancePremium(payload: { age: number; sum_assured: number; is_smoker: boolean; policy_term?: number; riders?: string[] }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/calculate-insurance-premium`, payload);
+  }
+
+  public calculateRealEstateRoi(payload: { purchase_price: number; monthly_rent: number; annual_expenses?: number }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/calculate-real-estate-roi`, payload);
+  }
 }
+

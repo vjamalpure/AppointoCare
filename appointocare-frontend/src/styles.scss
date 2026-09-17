@@ -137,21 +137,30 @@ a {
 }
 
 /* --------------------------------------------------------------------------
-   Universal Page Layout Structure
+   Universal Page Layout Structure (Fluid Window Auto-Adjust)
    -------------------------------------------------------------------------- */
 .page-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 24px 28px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: clamp(14px, 1.8vw, 28px);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: clamp(16px, 1.6vw, 24px);
+}
+
+@media (min-width: 1920px) {
+  .page-container {
+    padding: 28px 36px;
+    gap: 28px;
+  }
 }
 
 @media (max-width: 768px) {
   .page-container {
-    padding: 16px;
-    gap: 16px;
+    padding: 12px;
+    gap: 14px;
   }
 }
 
@@ -161,11 +170,20 @@ a {
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 }
 
 .page-header-text {
   h1 {
-    font-size: 26px;
+    font-size: clamp(20px, 1.8vw, 28px);
     font-weight: 800;
     color: var(--slate-900);
     line-height: 1.25;
@@ -173,7 +191,7 @@ a {
   }
 
   p {
-    font-size: 14px;
+    font-size: clamp(12.5px, 0.95vw, 14px);
     color: var(--slate-500);
     margin-top: 4px;
   }
@@ -184,15 +202,21 @@ a {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 /* --------------------------------------------------------------------------
-   Standard KPI / Metric Stat Cards
+   Standard KPI / Metric Stat Cards (Fluid Resolution Auto-Fit)
    -------------------------------------------------------------------------- */
 .stat-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 18vw, 280px), 1fr));
+  gap: clamp(12px, 1.2vw, 20px);
+  width: 100%;
   margin-bottom: 8px;
 }
 
@@ -284,11 +308,13 @@ a {
     }
 
     .stat-value {
-      font-size: 28px;
+      font-size: clamp(22px, 2vw, 28px);
       font-weight: 800;
       color: var(--slate-900);
       font-family: var(--font-display);
       line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
     }
 
     .stat-subtext {
@@ -448,8 +474,15 @@ a {
   }
 
   .table-responsive {
+    width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
+}
+
+.tabular-nums, .amount-val, .kpi-number {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 /* --------------------------------------------------------------------------

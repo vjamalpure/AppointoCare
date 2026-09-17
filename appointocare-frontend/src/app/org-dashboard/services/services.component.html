@@ -1,25 +1,32 @@
 <div class="services-page">
   <!-- Page Header -->
   <div class="header-section">
-    <div class="title-group">
-      <div class="badge-pill">MULTI-SECTOR CATALOG</div>
-      <h1 class="page-title">Service & Pricing Catalog</h1>
-      <p class="subtitle">Generic service blueprint tailored for Healthcare, Finance, Salons, Retail, Education, and Consultancies</p>
+    <div class="title-group" *ngIf="isSuperAdmin">
+      <div class="badge-pill superadmin-badge">SUPERADMIN MASTER CATALOG</div>
+      <h1 class="page-title">Multi-Sector Service Blueprints</h1>
+      <p class="subtitle">Global templates and industry master blueprints for client onboarding</p>
     </div>
+
+    <div class="title-group" *ngIf="!isSuperAdmin">
+      <div class="badge-pill">{{ (orgSector || 'Organization') | uppercase }} SERVICES</div>
+      <h1 class="page-title">Service & Pricing Catalog</h1>
+      <p class="subtitle">Manage service offerings, pricing, and appointment durations for {{ orgName || 'your organization' }}</p>
+    </div>
+
     <div class="header-actions">
       <button mat-flat-button color="primary" class="add-btn" (click)="openCreateDialog()">
-        <mat-icon>add</mat-icon> Add Custom Service
+        <mat-icon>add</mat-icon> Add New Service Offering
       </button>
     </div>
   </div>
 
-  <!-- Quick Import Sector Banner -->
-  <div class="import-banner-card">
+  <!-- Quick Import Sector Banner (SuperAdmin only) -->
+  <div class="import-banner-card" *ngIf="isSuperAdmin">
     <div class="banner-info">
       <div class="icon-wrap"><mat-icon>category</mat-icon></div>
       <div>
-        <h4>Instant Sector Onboarding</h4>
-        <p>Instantly pre-populate your service menu with standardized sector pricing, categories, and durations without manual typing.</p>
+        <h4>Instant Sector Onboarding Master</h4>
+        <p>Pre-populate organization service catalogs with standardized sector pricing, categories, and durations across all 9 industry verticals.</p>
       </div>
     </div>
     <div class="banner-action">
@@ -42,7 +49,8 @@
 
   <!-- Filter & Search Controls -->
   <div class="controls-card">
-    <div class="sector-pills">
+    <!-- SuperAdmin Sector Filter -->
+    <div class="sector-pills" *ngIf="isSuperAdmin">
       <button
         *ngFor="let s of sectors"
         class="sector-pill"
@@ -53,17 +61,64 @@
       </button>
     </div>
 
-    <div class="search-box">
-      <mat-icon class="search-icon">search</mat-icon>
-      <input
-        type="text"
-        placeholder="Filter services by title or category..."
-        [(ngModel)]="searchTerm"
-        (input)="applyFilter()"
-      />
-      <button *ngIf="searchTerm" mat-icon-button class="clear-btn" (click)="searchTerm = ''; applyFilter()">
-        <mat-icon>close</mat-icon>
+    <!-- Organization Category Filter -->
+    <div class="sector-pills" *ngIf="!isSuperAdmin">
+      <button
+        class="sector-pill"
+        [class.active]="selectedCategory === 'ALL'"
+        (click)="selectedCategory = 'ALL'; applyFilter()"
+      >
+        All Categories ({{ services.length }})
       </button>
+      <button
+        *ngFor="let cat of categories"
+        class="sector-pill"
+        [class.active]="selectedCategory === cat"
+        (click)="selectedCategory = cat; applyFilter()"
+      >
+        {{ cat }}
+      </button>
+    </div>
+
+    <div class="filter-right-group">
+      <!-- Status Filter -->
+      <div class="status-pills">
+        <button
+          class="status-btn"
+          [class.active]="selectedStatus === 'ALL'"
+          (click)="selectedStatus = 'ALL'; applyFilter()"
+        >
+          All
+        </button>
+        <button
+          class="status-btn active-state"
+          [class.active]="selectedStatus === 'ACTIVE'"
+          (click)="selectedStatus = 'ACTIVE'; applyFilter()"
+        >
+          Active
+        </button>
+        <button
+          class="status-btn inactive-state"
+          [class.active]="selectedStatus === 'INACTIVE'"
+          (click)="selectedStatus = 'INACTIVE'; applyFilter()"
+        >
+          Disabled
+        </button>
+      </div>
+
+      <!-- Search Box -->
+      <div class="search-box">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input
+          type="text"
+          placeholder="Filter by title, category, description..."
+          [(ngModel)]="searchTerm"
+          (input)="applyFilter()"
+        />
+        <button *ngIf="searchTerm" mat-icon-button class="clear-btn" (click)="searchTerm = ''; applyFilter()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -73,7 +128,8 @@
   <div class="services-grid" *ngIf="filteredServices.length; else emptyServices">
     <div class="service-card" *ngFor="let s of filteredServices" [class.inactive]="!s.active">
       <div class="card-head">
-        <span class="sector-badge">{{ s.sector || 'General' }}</span>
+        <span class="sector-badge" *ngIf="isSuperAdmin">{{ s.sector || 'General' }}</span>
+        <span class="sector-badge" *ngIf="!isSuperAdmin">{{ s.category || orgSector }}</span>
         <span class="status-indicator" [class.active]="s.active" (click)="toggleActive(s, $event)" [matTooltip]="'Click to toggle status'">
           {{ s.active ? 'Active' : 'Disabled' }}
         </span>
@@ -81,7 +137,8 @@
 
       <div class="card-body">
         <h3 class="service-name">{{ s.name }}</h3>
-        <span class="category-name">{{ s.category }}</span>
+        <span class="category-name" *ngIf="isSuperAdmin">{{ s.category }}</span>
+        <p class="service-desc" *ngIf="s.description">{{ s.description }}</p>
 
         <div class="specs-row">
           <div class="spec-item">
@@ -89,7 +146,7 @@
             <span>{{ s.duration_minutes }} mins</span>
           </div>
           <div class="spec-item price">
-            <span class="curr">$</span>
+            <span class="curr">₹</span>
             <span class="val">{{ s.price }}</span>
           </div>
         </div>
@@ -110,16 +167,25 @@
     <div class="empty-state-box" *ngIf="!loading">
       <mat-icon class="empty-icon">inventory_2</mat-icon>
       <h3>No Services Found</h3>
-      <p>Import a sector template above or click "Add Custom Service" to define your appointment offerings.</p>
+      <p *ngIf="isSuperAdmin">Import a sector template above or click "Add New Service Offering" to define blueprints.</p>
+      <p *ngIf="!isSuperAdmin">You haven't configured any service offerings matching your current filter. Click "Add New Service Offering" to define your menu.</p>
+      <div class="empty-actions" *ngIf="!isSuperAdmin && services.length === 0">
+        <button mat-flat-button color="primary" (click)="openCreateDialog()">
+          <mat-icon>add</mat-icon> Add First Service
+        </button>
+        <button mat-stroked-button [disabled]="importingSector" (click)="importOwnSectorTemplate()">
+          <mat-icon>file_download</mat-icon> Load Standard {{ orgSector }} Templates
+        </button>
+      </div>
     </div>
   </ng-template>
 
   <!-- Add / Edit Modal -->
-  <div class="modal-backdrop" *ngIf="showDialog" (click)="showDialog = false">
+  <div class="modal-backdrop" *ngIf="showDialog" (click)="!isSaving && (showDialog = false)">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ isEditMode ? 'Edit Service' : 'Add New Service Offering' }}</h3>
-        <button mat-icon-button (click)="showDialog = false">
+        <h3>{{ isEditMode ? 'Edit Service Offering' : 'Add New Service Offering' }}</h3>
+        <button mat-icon-button [disabled]="isSaving" (click)="showDialog = false">
           <mat-icon>close</mat-icon>
         </button>
       </div>
@@ -127,13 +193,20 @@
       <div class="modal-form">
         <div class="form-group full">
           <label>Service Title *</label>
-          <input type="text" [(ngModel)]="currentService.name" placeholder="e.g. Root Canal Treatment" class="std-input" />
+          <input
+            type="text"
+            [(ngModel)]="currentService.name"
+            placeholder="e.g. General Consultation, Dental Cleaning, Hair Styling"
+            class="std-input"
+            [disabled]="isSaving"
+          />
         </div>
 
         <div class="form-row">
-          <div class="form-group">
-            <label>Business Sector</label>
-            <select [(ngModel)]="currentService.sector" class="std-input">
+          <!-- SuperAdmin gets sector select; Org users get locked sector tag -->
+          <div class="form-group" *ngIf="isSuperAdmin">
+            <label>Business Sector *</label>
+            <select [(ngModel)]="currentService.sector" class="std-input" [disabled]="isSaving">
               <option value="Healthcare">Healthcare & Clinic</option>
               <option value="Finance">Wealth & Financial Advisory</option>
               <option value="Salon">Salon & Wellness Spa</option>
@@ -146,37 +219,84 @@
             </select>
           </div>
 
+          <div class="form-group" *ngIf="!isSuperAdmin">
+            <label>Sector</label>
+            <div class="sector-readonly-tag">
+              <mat-icon>domain</mat-icon>
+              <span>{{ orgSector }}</span>
+            </div>
+          </div>
+
           <div class="form-group">
             <label>Category Group</label>
-            <input type="text" [(ngModel)]="currentService.category" placeholder="e.g. Endodontics" class="std-input" />
+            <input
+              type="text"
+              [(ngModel)]="currentService.category"
+              placeholder="e.g. Consultation, Therapy, Diagnostics"
+              class="std-input"
+              [disabled]="isSaving"
+            />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Fee / Price ($) *</label>
-            <input type="number" [(ngModel)]="currentService.price" placeholder="75" class="std-input" />
+            <label>Fee / Price (₹) *</label>
+            <input
+              type="number"
+              [(ngModel)]="currentService.price"
+              placeholder="500"
+              min="0"
+              class="std-input"
+              [disabled]="isSaving"
+            />
           </div>
 
           <div class="form-group">
             <label>Duration (Minutes) *</label>
-            <input type="number" [(ngModel)]="currentService.duration_minutes" placeholder="45" class="std-input" />
+            <input
+              type="number"
+              [(ngModel)]="currentService.duration_minutes"
+              placeholder="30"
+              min="5"
+              step="5"
+              class="std-input"
+              [disabled]="isSaving"
+            />
           </div>
         </div>
 
         <div class="form-group full">
+          <label>Service Description</label>
+          <textarea
+            rows="2"
+            [(ngModel)]="currentService.description"
+            placeholder="Brief overview of procedures or benefits included in this service..."
+            class="std-input"
+            [disabled]="isSaving"
+          ></textarea>
+        </div>
+
+        <div class="form-group full">
           <label>Availability Status</label>
-          <select [(ngModel)]="currentService.active" class="std-input">
-            <option [ngValue]="true">Active (Bookable online and via WhatsApp bot)</option>
-            <option [ngValue]="false">Disabled (Hidden from clients)</option>
+          <select [(ngModel)]="currentService.active" class="std-input" [disabled]="isSaving">
+            <option [ngValue]="true">Active (Bookable online, staff calendar, and WhatsApp bot)</option>
+            <option [ngValue]="false">Disabled (Hidden from public booking)</option>
           </select>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button mat-stroked-button (click)="showDialog = false">Cancel</button>
-        <button mat-flat-button color="primary" (click)="saveService()">
-          <mat-icon>check</mat-icon> {{ isEditMode ? 'Update Service' : 'Save Service' }}
+        <button mat-stroked-button [disabled]="isSaving" (click)="showDialog = false">Cancel</button>
+        <button
+          mat-flat-button
+          color="primary"
+          [disabled]="isSaving || !currentService.name || currentService.price === null || currentService.price === undefined"
+          (click)="saveService()"
+        >
+          <mat-icon *ngIf="!isSaving">check</mat-icon>
+          <mat-progress-spinner *ngIf="isSaving" diameter="18" mode="indeterminate" class="btn-spinner"></mat-progress-spinner>
+          <span>{{ isSaving ? 'Saving...' : (isEditMode ? 'Update Service' : 'Save Service') }}</span>
         </button>
       </div>
     </div>

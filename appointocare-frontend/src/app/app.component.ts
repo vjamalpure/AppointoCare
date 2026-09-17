@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { AuthService } from './auth/auth.service';
 import { Router, NavigationEnd } from '@angular/router';
 
@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
+    this.checkResolution();
     // Hide toolbar/sidebar on auth pages and refresh user info on navigation
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -44,6 +45,19 @@ export class AppComponent implements OnInit {
 
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(): void {
+    this.checkResolution();
+  }
+
+  private checkResolution(): void {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 1100 && !this.isSidebarCollapsed) {
+        this.isSidebarCollapsed = true;
+      }
+    }
   }
 
   getSidebarClass(): string {

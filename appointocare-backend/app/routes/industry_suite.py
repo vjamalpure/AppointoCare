@@ -557,9 +557,9 @@ def get_queue():
     role = claims.get("role")
     org_id = get_organization_id() if role != "Admin" else int(request.args.get("organization_id") or 1)
 
-    records = IndustryRecord.query.filter_by(
-        organization_id=org_id,
-        record_type="opd_queue"
+    records = IndustryRecord.query.filter(
+        IndustryRecord.organization_id == org_id,
+        IndustryRecord.record_type.in_(["opd_queue", "queue_token"])
     ).order_by(IndustryRecord.created_at.asc()).all()
 
     return jsonify([
@@ -572,6 +572,73 @@ def get_queue():
         }
         for r in records
     ])
+
+
+@industry_suite_bp.route("/queue/create", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def create_queue_token():
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else int(request.json.get("organization_id") or 1)
+    data = request.json or {}
+
+    client_name = data.get("client_name") or data.get("customer_name") or "Walk-in Guest"
+    token_number = data.get("token_number")
+    if not token_number:
+        today_count = IndustryRecord.query.filter(
+            IndustryRecord.organization_id == org_id,
+            IndustryRecord.record_type.in_(["opd_queue", "queue_token"])
+        ).count()
+        token_number = f"T-{today_count + 1:03d}"
+
+    org = Organization.query.get(org_id)
+    sector_key = _get_sector_key(org.sector if org else "Healthcare")
+
+    queue_rec = IndustryRecord(
+        organization_id=org_id,
+        customer_id=int(data["customer_id"]) if data.get("customer_id") else None,
+        appointment_id=int(data["appointment_id"]) if data.get("appointment_id") else None,
+        sector=sector_key,
+        record_type="opd_queue" if sector_key == "Healthcare" else "queue_token",
+        title=f"Token {token_number} — {client_name}",
+        status="Waiting",
+        created_by_user=claims.get("username") or "staff",
+        data={
+            "token_number": token_number,
+            "client_name": client_name,
+            "phone": data.get("phone", ""),
+            "service": data.get("service", "General Consultation"),
+            "priority": data.get("priority", "Standard"),
+            "assigned_staff": data.get("assigned_staff", "Next Available Specialist"),
+            "treatment_room": data.get("treatment_room", "Station 1"),
+            "check_in_time": datetime.utcnow().strftime("%I:%M %p"),
+            "notes": data.get("notes", "")
+        }
+    )
+    db.session.add(queue_rec)
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Token {token_number} issued successfully",
+        "id": queue_rec.id,
+        "token_number": token_number,
+        "status": queue_rec.status
+    }), 201
+
+
+@industry_suite_bp.route("/queue/<int:record_id>", methods=["DELETE"])
+@require_roles(*ORG_ROLES)
+def delete_queue_token(record_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+    rec = IndustryRecord.query.get_or_404(record_id)
+    if role != "Admin" and rec.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    db.session.delete(rec)
+    db.session.commit()
+    return jsonify({"msg": f"Queue token #{record_id} dismissed"})
 
 
 @industry_suite_bp.route("/queue/advance", methods=["POST"])
@@ -603,6 +670,64 @@ def advance_queue():
         "msg": f"Queue token status updated to '{new_status}'",
         "id": rec.id,
         "status": new_status
+    })
+
+
+@industry_suite_bp.route("/calculate-insurance-premium", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def calculate_insurance_premium():
+    data = request.json or {}
+    age = int(data.get("age", 30))
+    sum_assured = float(data.get("sum_assured", 1000000.0))
+    is_smoker = bool(data.get("is_smoker", False))
+    policy_term = int(data.get("policy_term", 20))
+    riders = data.get("riders", [])
+
+    base_rate = 0.00085
+    if age > 30:
+        base_rate += (age - 30) * 0.00004
+    if is_smoker:
+        base_rate *= 1.45
+
+    annual_base = sum_assured * base_rate
+    rider_surcharge = 0.0
+    if "critical_illness" in riders or "Critical Illness" in riders:
+        rider_surcharge += (sum_assured * 0.0002)
+    if "accidental_disability" in riders or "Accidental Disability" in riders:
+        rider_surcharge += (sum_assured * 0.0001)
+
+    total_annual = round(annual_base + rider_surcharge, 2)
+    monthly_premium = round(total_annual / 12.0, 2)
+
+    return jsonify({
+        "annual_premium": total_annual,
+        "monthly_premium": monthly_premium,
+        "base_premium": round(annual_base, 2),
+        "riders_cost": round(rider_surcharge, 2),
+        "sum_assured": sum_assured,
+        "policy_term_years": policy_term
+    })
+
+
+@industry_suite_bp.route("/calculate-real-estate-roi", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def calculate_real_estate_roi():
+    data = request.json or {}
+    purchase_price = float(data.get("purchase_price", 1000000.0))
+    monthly_rent = float(data.get("monthly_rent", 6500.0))
+    annual_operating_expenses = float(data.get("annual_expenses", 15000.0))
+
+    gross_annual_income = monthly_rent * 12.0
+    net_operating_income = gross_annual_income - annual_operating_expenses
+    cap_rate = round((net_operating_income / purchase_price) * 100.0, 2) if purchase_price > 0 else 0.0
+    gross_rent_multiplier = round(purchase_price / gross_annual_income, 2) if gross_annual_income > 0 else 0.0
+
+    return jsonify({
+        "purchase_price": purchase_price,
+        "gross_annual_income": round(gross_annual_income, 2),
+        "net_operating_income": round(net_operating_income, 2),
+        "cap_rate_percent": cap_rate,
+        "gross_rent_multiplier": gross_rent_multiplier
     })
 
 

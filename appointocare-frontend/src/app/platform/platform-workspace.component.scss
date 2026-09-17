@@ -54,8 +54,8 @@
 
 .split-layout {
   display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: clamp(16px, 1.5vw, 24px);
   align-items: start;
 
   @media (max-width: 960px) {
