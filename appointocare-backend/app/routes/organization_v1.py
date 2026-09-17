@@ -136,6 +136,24 @@ def raise_complaint():
     return jsonify({"msg": "Support ticket created. Support team ticket #TK-88902", "ticket_id": 88902}), 201
 
 
+@org_v1_bp.route("/subscription", methods=["GET"])
+@jwt_required()
+def get_subscription_v1():
+    claims = get_jwt()
+    org_id = int(claims.get("organization_id") or claims.get("sub"))
+    org = Organization.query.get(org_id)
+    if not org:
+        return jsonify({"msg": "Organization not found"}), 404
+    return jsonify({
+        "status": org.subscription_status or "Active",
+        "plan": org.subscription_plan or "Premium",
+        "start_date": org.subscription_start.isoformat() if org.subscription_start else None,
+        "end_date": org.subscription_end.isoformat() if org.subscription_end else None,
+        "next_billing_date": org.next_billing_date.isoformat() if org.next_billing_date else None,
+    })
+
+
+
 # ----------------------------------------------------
 # AI Multi-Industry Intake Triage
 # ----------------------------------------------------

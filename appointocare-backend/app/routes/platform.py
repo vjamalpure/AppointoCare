@@ -7,7 +7,11 @@ from app.models import Branch, Campaign, Notification, SectorTemplate, Subscript
 from app.security import get_organization_id, require_roles
 
 platform_bp = Blueprint("platform_bp", __name__)
-ORG_ROLES = ("Organization", "Manager", "Staff")
+ORG_ROLES = (
+    "Admin", "SuperAdmin", "Organization", "Manager", "Staff",
+    "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",
+    "Broker", "Consultant", "Specialist"
+)
 
 
 def _date(value):

@@ -251,3 +251,23 @@ def update_org():
     db.session.commit()
 
     return jsonify({"msg": "Organization updated successfully"})
+
+
+@organization_bp.route("/subscription", methods=["GET"])
+@jwt_required()
+def get_subscription():
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin", "Organization", "Manager", "Staff"]:
+        return jsonify({"msg": "Unauthorized"}), 403
+    org_id = int(claims.get("organization_id") or claims.get("sub"))
+    org = Organization.query.get(org_id)
+    if not org:
+        return jsonify({"msg": "Organization not found"}), 404
+    return jsonify({
+        "status": org.subscription_status or "Active",
+        "plan": org.subscription_plan or "Premium",
+        "start_date": org.subscription_start.isoformat() if org.subscription_start else None,
+        "end_date": org.subscription_end.isoformat() if org.subscription_end else None,
+        "next_billing_date": org.next_billing_date.isoformat() if org.next_billing_date else None,
+    })
+

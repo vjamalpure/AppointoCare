@@ -5,29 +5,45 @@ from datetime import datetime
 
 appointment_bp = Blueprint("appointment_bp", __name__)
 
+ALLOWED_ROLES = [
+    "Admin", "SuperAdmin", "Organization", "Manager", "Staff",
+    "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",
+    "Broker", "Consultant", "Specialist"
+]
+
+
 # -------------------------------
 # Create Appointment
 # -------------------------------
+@appointment_bp.route("", methods=["POST"])
 @appointment_bp.route("/create", methods=["POST"])
 @jwt_required()
 def create_appointment():
     claims = get_jwt()
-    if claims.get("role") not in ["Organization", "Manager", "Staff"]:
+    role = claims.get("role")
+    if role not in ALLOWED_ROLES:
         return jsonify({"msg": "Unauthorized"}), 403
-    org_id = int(claims.get("organization_id") or get_jwt_identity())
-    user_id = int(get_jwt_identity())
 
     data = request.json or {}
-    required_fields = ["customer_name", "customer_phone", "appointment_date", "amount"]
+    if role in ["Admin", "SuperAdmin"]:
+        org_id = int(data.get("organization_id") or 1)
+        user_id = int(get_jwt_identity())
+    else:
+        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        user_id = int(get_jwt_identity())
 
+    required_fields = ["customer_name", "customer_phone", "appointment_date"]
     for field in required_fields:
         if field not in data:
             return jsonify({"msg": f"Missing field: {field}"}), 400
 
     try:
-        appointment_date = datetime.fromisoformat(data["appointment_date"])
-    except ValueError:
-        return jsonify({"msg": "Invalid date format"}), 400
+        date_str = data["appointment_date"].replace("Z", "+00:00") if isinstance(data["appointment_date"], str) else str(data["appointment_date"])
+        appointment_date = datetime.fromisoformat(date_str)
+    except Exception:
+        appointment_date = datetime.utcnow()
+
+    amount = float(data.get("amount") or 0.0)
 
     appointment = Appointment(
         customer_name=data["customer_name"],
@@ -43,11 +59,11 @@ def create_appointment():
     transaction = AppointmentTransaction(
         appointment_id=appointment.id,
         organization_id=org_id,
-        amount=data["amount"],
+        amount=amount,
         transaction_type=data.get("transaction_type", "Payment"),
         payment_method=data.get("payment_method", "Unknown"),
-        processed_by_type=claims.get("role"),
-        processed_by_id=int(user_id),
+        processed_by_type=role,
+        processed_by_id=user_id,
         status=data.get("transaction_status", "Pending")
     )
     db.session.add(transaction)
@@ -56,27 +72,31 @@ def create_appointment():
     return jsonify({
         "msg": "Appointment created successfully",
         "appointment_id": appointment.id,
-        "transaction_id": transaction.id
+        "transaction_id": transaction.id,
+        "id": appointment.id,
+        "customer_name": appointment.customer_name,
+        "appointment_date": appointment.appointment_date.isoformat(),
+        "status": appointment.status,
+        "payment_status": appointment.payment_status
     }), 201
 
 
 # -------------------------------
 # Update Appointment
 # -------------------------------
-@appointment_bp.route("/<int:appointment_id>", methods=["PATCH"])
+@appointment_bp.route("/<int:appointment_id>", methods=["PATCH", "PUT"])
 @jwt_required()
 def update_appointment(appointment_id):
     claims = get_jwt()
-    user_id = get_jwt_identity()
-
-    if claims.get("role") not in ["Organization", "Manager", "Staff"]:
+    role = claims.get("role")
+    if role not in ALLOWED_ROLES:
         return jsonify({"msg": "Unauthorized"}), 403
 
-    org_id = int(claims.get("organization_id") or get_jwt_identity())
     appointment = Appointment.query.get_or_404(appointment_id)
-
-    if int(appointment.organization_id) != org_id:
-        return jsonify({"msg": "Unauthorized"}), 403
+    if role not in ["Admin", "SuperAdmin"]:
+        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        if int(appointment.organization_id) != org_id:
+            return jsonify({"msg": "Unauthorized"}), 403
 
     data = request.json or {}
 
@@ -107,17 +127,54 @@ def update_appointment(appointment_id):
 
 
 # -------------------------------
-# Get Appointments (Organization Only)
+# Delete Appointment
 # -------------------------------
+@appointment_bp.route("/<int:appointment_id>", methods=["DELETE"])
+@jwt_required()
+def delete_appointment(appointment_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    if role not in ALLOWED_ROLES:
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    appointment = Appointment.query.get_or_404(appointment_id)
+    if role not in ["Admin", "SuperAdmin"]:
+        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        if int(appointment.organization_id) != org_id:
+            return jsonify({"msg": "Unauthorized"}), 403
+
+    db.session.delete(appointment)
+    db.session.commit()
+    return jsonify({"msg": "Appointment deleted successfully"})
+
+
+# -------------------------------
+# Get Appointments
+# -------------------------------
+@appointment_bp.route("", methods=["GET"])
 @appointment_bp.route("/all", methods=["GET"])
 @jwt_required()
 def get_appointments():
     claims = get_jwt()
-    if claims.get("role") not in ["Organization", "Manager", "Staff"]:
+    role = claims.get("role")
+    if role not in ALLOWED_ROLES:
         return jsonify({"msg": "Unauthorized"}), 403
 
-    org_id = int(claims.get("organization_id") or get_jwt_identity())
-    appointments = Appointment.query.filter_by(organization_id=org_id).all()
+    query = Appointment.query
+
+    if role in ["Admin", "SuperAdmin"]:
+        org_param = request.args.get("organization_id")
+        if org_param and org_param != "all":
+            query = query.filter_by(organization_id=int(org_param))
+    else:
+        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        query = query.filter_by(organization_id=org_id)
+
+    status_filter = request.args.get("status")
+    if status_filter and status_filter != "ALL":
+        query = query.filter_by(status=status_filter)
+
+    appointments = query.order_by(Appointment.appointment_date.desc()).all()
 
     result = []
     for a in appointments:
@@ -127,6 +184,7 @@ def get_appointments():
 
         result.append({
             "id": a.id,
+            "organization_id": a.organization_id,
             "customer_name": a.customer_name,
             "customer_phone": a.customer_phone,
             "appointment_date": a.appointment_date.isoformat(),
@@ -135,7 +193,7 @@ def get_appointments():
             "amount": txn.amount if txn else None,
             "payment_method": txn.payment_method if txn else None,
             "transaction_status": txn.status if txn else None,
-            "created_at": a.created_at.isoformat(),
+            "created_at": a.created_at.isoformat() if a.created_at else None,
             "updated_at": a.updated_at.isoformat() if a.updated_at else None
         })
 

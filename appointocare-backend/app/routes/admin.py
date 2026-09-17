@@ -418,3 +418,105 @@ def view_transactions():
         })
 
     return jsonify(results)
+
+
+# --------------------------------------
+# Organization Settings
+# --------------------------------------
+@admin_bp.route("/organization/<int:org_id>/settings", methods=["PATCH"])
+@jwt_required()
+def update_organization_settings(org_id):
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Unauthorized"}), 403
+    org = Organization.query.get_or_404(org_id)
+    data = request.json or {}
+    if "name" in data: org.name = data["name"]
+    if "sector" in data: org.sector = data["sector"]
+    if "subscription_plan" in data: org.subscription_plan = data["subscription_plan"]
+    if "subscription_status" in data: org.subscription_status = data["subscription_status"]
+    db.session.commit()
+    return jsonify({"msg": "Organization settings updated successfully"})
+
+
+# --------------------------------------
+# Toggle User Status
+# --------------------------------------
+@admin_bp.route("/organization/<int:org_id>/user/<int:user_id>/toggle-status", methods=["PATCH"])
+@jwt_required()
+def toggle_user_status(org_id, user_id):
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Unauthorized"}), 403
+    user = User.query.filter_by(id=user_id, organization_id=org_id).first_or_404()
+    data = request.json or {}
+    user.is_active = data.get("is_active", not user.is_active)
+    db.session.commit()
+    return jsonify({"msg": "User status updated", "is_active": user.is_active})
+
+
+# --------------------------------------
+# Broadcast Notification
+# --------------------------------------
+@admin_bp.route("/broadcast-notification", methods=["POST"])
+@jwt_required()
+def broadcast_notification():
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Unauthorized"}), 403
+    data = request.json or {}
+    title = data.get("title", "Platform Announcement")
+    message = data.get("message", "")
+    target_org_id = data.get("organization_id")
+    from app.models import Notification
+    if target_org_id and target_org_id != "all":
+        orgs = [Organization.query.get(int(target_org_id))]
+    else:
+        orgs = Organization.query.all()
+    created = 0
+    for org in orgs:
+        if org:
+            n = Notification(
+                organization_id=org.id,
+                title=title,
+                message=message,
+                status="unread"
+            )
+            db.session.add(n)
+            created += 1
+    db.session.commit()
+    return jsonify({"msg": f"Broadcast sent to {created} organizations", "count": created})
+
+
+# --------------------------------------
+# Analytics Reports
+# --------------------------------------
+@admin_bp.route("/analytics-reports", methods=["GET"])
+@jwt_required()
+def analytics_reports():
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Unauthorized"}), 403
+    sector = request.args.get("sector")
+    org_id = request.args.get("organization_id", type=int)
+    query = Organization.query
+    if sector and sector != "ALL":
+        query = query.filter_by(sector=sector)
+    if org_id:
+        query = query.filter_by(id=org_id)
+    orgs = query.all()
+    org_ids = [o.id for o in orgs]
+    appt_query = Appointment.query.filter(Appointment.organization_id.in_(org_ids)) if org_ids else Appointment.query.filter(False)
+    total_appts = appt_query.count()
+    completed_appts = appt_query.filter_by(status="Completed").count()
+    cancelled_appts = appt_query.filter_by(status="Cancelled").count()
+    total_rev = db.session.query(db.func.sum(AppointmentTransaction.amount)).join(Appointment).filter(Appointment.organization_id.in_(org_ids)).scalar() or 0 if org_ids else 0
+    return jsonify({
+        "total_organizations": len(orgs),
+        "total_appointments": total_appts,
+        "completed_appointments": completed_appts,
+        "cancelled_appointments": cancelled_appts,
+        "total_revenue": total_rev,
+        "organizations": [{"id": o.id, "name": o.name, "sector": o.sector, "status": o.subscription_status} for o in orgs]
+    })
+

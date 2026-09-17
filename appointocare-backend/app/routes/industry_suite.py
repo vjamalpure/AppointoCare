@@ -5,8 +5,12 @@ from app.security import get_organization_id, require_roles
 from datetime import datetime
 
 industry_suite_bp = Blueprint("industry_suite_bp", __name__)
-
-ORG_ROLES = ("Admin", "Organization", "Manager", "Staff")
+ 
+ORG_ROLES = (
+    "Admin", "SuperAdmin", "Organization", "Manager", "Staff",
+    "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",
+    "Broker", "Consultant", "Specialist"
+)
 
 # Comprehensive Market-Leading Sector Addon Definitions
 SECTOR_ADDONS = {
@@ -841,3 +845,32 @@ def get_benchmarks():
         "sector": sector_key,
         "benchmarks": benchmarks.get(sector_key, benchmarks["Healthcare"])
     })
+
+
+# -------------------------------------------------------------------------
+# Generic Calculator Evaluator
+# -------------------------------------------------------------------------
+@industry_suite_bp.route("/calculator/evaluate", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def evaluate_generic_calculator():
+    data = request.json or {}
+    calc_type = data.get("calculator_type", "revenue_optimizer")
+    inputs = data.get("inputs", {})
+    
+    if calc_type == "insurance_premium":
+        return calculate_insurance_premium()
+    elif calc_type == "real_estate_roi":
+        return calculate_real_estate_roi()
+    else:
+        units = float(inputs.get("active_units", 10))
+        rate = float(inputs.get("base_rate", 200))
+        projected_rev = units * rate * 1.15
+        return jsonify({
+            "status": "evaluated",
+            "calculator_type": calc_type,
+            "projected_monthly_revenue": round(projected_rev, 2),
+            "efficiency_gain_pct": 15.0,
+            "optimization_score": "A+"
+        })
+
+

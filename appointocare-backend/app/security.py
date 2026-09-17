@@ -9,10 +9,15 @@ ORGANIZATION_ADMIN = "Organization"
 ORGANIZATION_MANAGER = "Manager"
 ORGANIZATION_STAFF = "Staff"
 CUSTOMER = "Customer"
+SPECIALIST_ROLES = {
+    "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",
+    "Broker", "Consultant", "Specialist"
+}
 ORGANIZATION_ROLES = {
     ORGANIZATION_ADMIN,
     ORGANIZATION_MANAGER,
     ORGANIZATION_STAFF,
+    *SPECIALIST_ROLES
 }
 
 

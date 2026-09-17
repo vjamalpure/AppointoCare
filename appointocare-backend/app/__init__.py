@@ -46,12 +46,15 @@ def create_app():
     from .routes.audit_logs import audit_bp
     from .routes.organization_v1 import org_v1_bp, ai_bp
     from .routes.industry_suite import industry_suite_bp
+    from .routes.notifications import notifications_bp
 
     # Auth & Admin & Core
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(admin_bp, url_prefix="/api/v1/admin", name="admin_api_v1")
     app.register_blueprint(organization_bp, url_prefix="/organization")
     app.register_blueprint(appointment_bp, url_prefix="/appointments")
+    app.register_blueprint(appointment_bp, url_prefix="/api/v1/appointments", name="appointments_api_v1")
     app.register_blueprint(transaction_bp, url_prefix="/transactions")
 
     # Multi-Industry Services Catalog (dual-prefix)
@@ -74,5 +77,6 @@ def create_app():
     app.register_blueprint(org_v1_bp, url_prefix="/api/v1/organization")
     app.register_blueprint(ai_bp, url_prefix="/api/v1/ai")
     app.register_blueprint(industry_suite_bp, url_prefix="/api/v1/industry-suite")
+    app.register_blueprint(notifications_bp, url_prefix="/api/v1/notifications")
 
     return app
