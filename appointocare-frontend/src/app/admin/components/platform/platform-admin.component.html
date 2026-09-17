@@ -1,7 +1,80 @@
-<section class="admin-platform">
-  <header><div><p>Platform configuration</p><h1>Plans and sector templates</h1></div><button mat-stroked-button routerLink="/admin-dashboard"><mat-icon>arrow_back</mat-icon> Dashboard</button></header>
-  <div class="columns">
-    <div><h2>Subscription plans</h2><mat-card *ngFor="let plan of plans"><div class="item-head"><b>{{ plan.name }}</b><span>{{ plan.is_active ? 'Active' : 'Inactive' }}</span></div><p>{{ plan.description || 'No description' }}</p><strong>₹{{ plan.price }} / {{ plan.billing_cycle }}</strong></mat-card><p *ngIf="!plans.length">No plans configured.</p></div>
-    <div><h2>Sector templates</h2><mat-card *ngFor="let template of templates"><div class="item-head"><b>{{ template.name }}</b><span>{{ template.services.length }} services</span></div><p>{{ template.description || 'Configurable service template' }}</p></mat-card><p *ngIf="!templates.length">No templates configured.</p></div>
+<div class="platform-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Platform Configuration</h1>
+      <p class="page-subtitle">SaaS subscription tiers, billing pricing models, and sector templates.</p>
+    </div>
+    <div>
+      <a mat-stroked-button routerLink="/admin">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Back to Dashboard</span>
+      </a>
+    </div>
   </div>
-</section>
+
+  <div class="platform-grid">
+    <!-- Subscription Plans Section -->
+    <div class="platform-col">
+      <div class="col-header">
+        <h2>Subscription Plans ({{ plans.length }})</h2>
+        <span class="subtext">Active monetization models available for tenant subscription</span>
+      </div>
+
+      <div class="cards-stack">
+        <mat-card class="plan-card" *ngFor="let plan of plans">
+          <div class="plan-header">
+            <div>
+              <h3 class="plan-name">{{ plan.name }}</h3>
+              <span class="plan-cycle">{{ plan.billing_cycle | uppercase }} BILLING</span>
+            </div>
+            <span class="badge" [ngClass]="plan.is_active ? 'badge-success' : 'badge-danger'">
+              {{ plan.is_active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <p class="plan-desc">{{ plan.description || 'Full platform features with automated appointment workflows.' }}</p>
+
+          <div class="plan-footer">
+            <span class="plan-price">₹{{ plan.price | number }}</span>
+            <span class="plan-period">/ month</span>
+          </div>
+        </mat-card>
+
+        <p class="empty-text" *ngIf="!plans.length">No subscription plans found.</p>
+      </div>
+    </div>
+
+    <!-- Sector Templates Section -->
+    <div class="platform-col">
+      <div class="col-header">
+        <h2>Sector Templates ({{ templates.length }})</h2>
+        <span class="subtext">Preconfigured appointment taxonomies and workflows</span>
+      </div>
+
+      <div class="cards-stack">
+        <mat-card class="template-card" *ngFor="let template of templates">
+          <div class="template-header">
+            <div>
+              <h3 class="template-name">{{ template.name }}</h3>
+              <span class="template-services-count">{{ template.services?.length || 0 }} default services</span>
+            </div>
+            <mat-icon class="template-icon">category</mat-icon>
+          </div>
+
+          <p class="template-desc">{{ template.description || 'Configurable multi-practitioner clinic workflow.' }}</p>
+
+          <div class="template-chips" *ngIf="template.services?.length">
+            <span class="service-chip" *ngFor="let s of template.services.slice(0, 3)">
+              {{ s.name || s }}
+            </span>
+            <span class="service-chip more-chip" *ngIf="template.services.length > 3">
+              +{{ template.services.length - 3 }} more
+            </span>
+          </div>
+        </mat-card>
+
+        <p class="empty-text" *ngIf="!templates.length">No sector templates configured.</p>
+      </div>
+    </div>
+  </div>
+</div>

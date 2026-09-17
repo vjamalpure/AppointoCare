@@ -1,13 +1,33 @@
 <header class="toolbar">
   <div class="toolbar-left">
-    <h1 class="app-title">AppointoCare</h1>
-    <span class="org-name" *ngIf="organizationName">{{ organizationName }}</span>
+    <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar.emit()" title="Toggle Sidebar">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <div class="brand-group">
+      <div class="brand-icon">
+        <mat-icon>medical_services</mat-icon>
+      </div>
+      <span class="app-title">AppointoCare</span>
+    </div>
+    <div class="org-pill" *ngIf="organizationName">
+      <mat-icon class="org-icon">domain</mat-icon>
+      <span class="org-text">{{ organizationName }}</span>
+    </div>
   </div>
 
   <div class="toolbar-right">
-    <div class="user-info">
-      <span class="username">{{ username }}</span>
-      <button class="logout-btn" (click)="logout()">Logout</button>
+    <div class="user-profile">
+      <div class="user-avatar">
+        {{ (username || 'U')[0].toUpperCase() }}
+      </div>
+      <div class="user-meta">
+        <span class="user-name">{{ username }}</span>
+        <span class="role-badge" *ngIf="userRole">{{ userRole }}</span>
+      </div>
     </div>
+    <button type="button" class="logout-action-btn" (click)="logout()" title="Sign Out">
+      <mat-icon>logout</mat-icon>
+      <span class="logout-label">Logout</span>
+    </button>
   </div>
 </header>

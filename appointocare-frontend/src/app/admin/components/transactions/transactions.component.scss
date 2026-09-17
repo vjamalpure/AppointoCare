@@ -1,25 +1,46 @@
-mat-card {
-  padding: 20px;
-  margin: 20px;
+.transactions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-h2 {
-  margin-bottom: 20px;
+.page-header {
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+  }
 }
 
-table {
-  width: 100%;
-  th.mat-header-cell {
-    background-color: #607d8b;
-    color: white;
-    font-weight: 600;
-  }
+.table-card {
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
 
-  td.mat-cell {
-    padding: 10px;
-  }
+.card-header-clean {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
 
-  tr.mat-row:hover {
-    background-color: rgba(96, 125, 139, 0.1);
+  mat-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
   }
+}
+
+.amount-text {
+  font-weight: 700;
+  color: #047857;
+  font-size: 14px;
 }

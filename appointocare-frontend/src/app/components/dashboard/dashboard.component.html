@@ -1,95 +1,183 @@
-<div class="dashboard-wrapper">
+<div class="org-overview-container">
+  <!-- Organization KPI Tiles -->
+  <div class="tiles-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon total">
+        <mat-icon>calendar_today</mat-icon>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Total Appointments</span>
+        <span class="kpi-num">{{ getTotalAppointments() }}</span>
+      </div>
+    </div>
 
-  <!-- Stats Tiles -->
-  <div class="tiles-container">
-    <div class="tile total">
-      <i class="fas fa-calendar-alt"></i>
-      <h3>Total Appointments</h3>
-      <p>{{ getTotalAppointments() }}</p>
+    <div class="kpi-card">
+      <div class="kpi-icon booked">
+        <mat-icon>event_available</mat-icon>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Upcoming / Booked</span>
+        <span class="kpi-num">{{ getBookedCount() }}</span>
+      </div>
     </div>
-    <div class="tile booked">
-      <i class="fas fa-bookmark"></i>
-      <h3>Booked</h3>
-      <p>{{ getBookedCount() }}</p>
+
+    <div class="kpi-card">
+      <div class="kpi-icon completed">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Completed Visits</span>
+        <span class="kpi-num">{{ getCompletedCount() }}</span>
+      </div>
     </div>
-    <div class="tile completed">
-      <i class="fas fa-check-circle"></i>
-      <h3>Completed</h3>
-      <p>{{ getCompletedCount() }}</p>
+
+    <div class="kpi-card">
+      <div class="kpi-icon cancelled">
+        <mat-icon>cancel</mat-icon>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Cancelled</span>
+        <span class="kpi-num">{{ getCancelledCount() }}</span>
+      </div>
     </div>
-    <div class="tile cancelled">
-      <i class="fas fa-times-circle"></i>
-      <h3>Cancelled</h3>
-      <p>{{ getCancelledCount() }}</p>
+
+    <div class="kpi-card">
+      <div class="kpi-icon paid">
+        <mat-icon>payments</mat-icon>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Paid Visits</span>
+        <span class="kpi-num">{{ getTotalPaid() }}</span>
+      </div>
     </div>
-    <div class="tile paid">
-      <i class="fas fa-money-bill-wave"></i>
-      <h3>Total Paid</h3>
-      <p>{{ getTotalPaid() }}</p>
-    </div>
-    <div class="tile unpaid">
-      <i class="fas fa-exclamation-circle"></i>
-      <h3>Total Unpaid</h3>
-      <p>{{ getTotalUnpaid() }}</p>
+
+    <div class="kpi-card">
+      <div class="kpi-icon unpaid">
+        <mat-icon>pending</mat-icon>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Pending Payment</span>
+        <span class="kpi-num">{{ getTotalUnpaid() }}</span>
+      </div>
     </div>
   </div>
 
-  <!-- Appointments -->
-  <div class="dashboard-content">
-    <section class="appointments-section">
-      <h2>Recent Appointments</h2>
+  <!-- Appointments Management Section -->
+  <mat-card class="appointments-card">
+    <mat-card-header class="card-header-clean">
+      <div class="header-split">
+        <div>
+          <mat-card-title>Recent Client Appointments</mat-card-title>
+          <mat-card-subtitle>Live queue of patient and customer bookings</mat-card-subtitle>
+        </div>
+        <a mat-stroked-button color="primary" routerLink="/org-dashboard/bookings">
+          <mat-icon>calendar_view_week</mat-icon>
+          <span>All Bookings</span>
+        </a>
+      </div>
+    </mat-card-header>
 
+    <mat-card-content class="p-0">
       <div *ngIf="dashboardData.appointments.length > 0; else noAppointments">
-        <div class="appointment-card" *ngFor="let appt of dashboardData.appointments">
-          <div class="appt-header">
-            <h4>{{ appt.customer_name }}</h4>
-            <span [style.background-color]="getApptStatusColor(appt.status)" class="status">{{ appt.status }}</span>
-          </div>
-          <p>{{ appt.customer_phone }} | {{ formatDate(appt.appointment_date) }}</p>
-          <p>Amount: {{ appt.amount || '-' }} | Method: {{ appt.payment_method || '-' }} | Transaction: {{ appt.transaction_status || '-' }}</p>
-          <div class="appt-actions">
-            <button (click)="openEditModal(appt)">Edit</button>
-            <button (click)="updateAppointmentStatus(appt.id, 'Completed')">Complete</button>
-            <button (click)="updateAppointmentStatus(appt.id, 'Cancelled')">Cancel</button>
+        <div class="appointments-list">
+          <div class="appointment-row" *ngFor="let appt of dashboardData.appointments">
+            <div class="appt-patient">
+              <div class="patient-avatar">
+                <mat-icon>person</mat-icon>
+              </div>
+              <div class="patient-meta">
+                <span class="patient-name">{{ appt.customer_name }}</span>
+                <span class="patient-phone">{{ appt.customer_phone || 'No phone recorded' }}</span>
+              </div>
+            </div>
+
+            <div class="appt-time">
+              <mat-icon class="inline-icon">schedule</mat-icon>
+              <span>{{ formatDate(appt.appointment_date) }}</span>
+            </div>
+
+            <div class="appt-financials">
+              <span class="fee-amount" *ngIf="appt.amount">₹{{ appt.amount | number }}</span>
+              <span class="badge" [ngClass]="appt.payment_status === 'Paid' ? 'badge-success' : 'badge-warning'">
+                {{ appt.payment_status || 'Pending' }}
+              </span>
+            </div>
+
+            <div class="appt-status-col">
+              <span class="badge" [ngClass]="'badge-' + (appt.status || '').toLowerCase()">
+                {{ appt.status }}
+              </span>
+            </div>
+
+            <div class="appt-row-actions">
+              <button mat-icon-button (click)="openEditModal(appt)" title="Edit Details" color="primary">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button *ngIf="appt.status !== 'Completed'" (click)="updateAppointmentStatus(appt.id, 'Completed')" title="Mark Completed" color="accent">
+                <mat-icon>done_all</mat-icon>
+              </button>
+              <button mat-icon-button *ngIf="appt.status !== 'Cancelled'" (click)="updateAppointmentStatus(appt.id, 'Cancelled')" title="Cancel Appointment" color="warn">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <ng-template #noAppointments>
-        <p>No appointments available.</p>
+        <div class="empty-state">
+          <mat-icon class="empty-icon">event_busy</mat-icon>
+          <p>No appointments recorded yet.</p>
+        </div>
       </ng-template>
-    </section>
-  </div>
+    </mat-card-content>
+  </mat-card>
 </div>
 
-<!-- Edit Modal -->
+<!-- Refined Edit Modal -->
 <div class="modal-backdrop" *ngIf="showModal && editAppointment">
-  <div class="modal">
+  <div class="modal-card">
     <div class="modal-header">
-      <h3>Edit Appointment</h3>
-      <button (click)="closeModal()">×</button>
+      <h3>Edit Appointment #{{ editAppointment.id }}</h3>
+      <button mat-icon-button (click)="closeModal()">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
+
     <div class="modal-body">
-      <label>Appointment Date & Time
-        <input type="datetime-local" [(ngModel)]="editAppointmentDateTime" />
-      </label>
-      <label>Payment Status
-        <select [(ngModel)]="editAppointment.payment_status">
-          <option value="Paid">Paid</option>
-          <option value="Pending">Pending</option>
-        </select>
-      </label>
-      <label>Status
-        <select [(ngModel)]="editAppointment.status">
-          <option value="Booked">Booked</option>
-          <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
-        </select>
-      </label>
+      <p class="customer-info-line">
+        Customer: <strong>{{ editAppointment.customer_name }}</strong> ({{ editAppointment.customer_phone }})
+      </p>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Appointment Date & Time</mat-label>
+        <input matInput type="datetime-local" [(ngModel)]="editAppointmentDateTime" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Payment Status</mat-label>
+        <mat-select [(ngModel)]="editAppointment.payment_status">
+          <mat-option value="Paid">Paid</mat-option>
+          <mat-option value="Pending">Pending</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Appointment Status</mat-label>
+        <mat-select [(ngModel)]="editAppointment.status">
+          <mat-option value="Booked">Booked</mat-option>
+          <mat-option value="Completed">Completed</mat-option>
+          <mat-option value="Cancelled">Cancelled</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
+
     <div class="modal-footer">
-      <button (click)="saveEdit()">Save</button>
-      <button (click)="closeModal()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="saveEdit()">
+        <mat-icon>save</mat-icon>
+        <span>Save Changes</span>
+      </button>
+      <button mat-button (click)="closeModal()">Cancel</button>
     </div>
   </div>
 </div>

@@ -16,6 +16,14 @@ export class AdminService {
     return this.http.get<any[]>(url);
   }
 
+  getDashboardSummary(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/admin/dashboard`);
+  }
+
+  getAppointments(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/admin/appointments`);
+  }
+
   getOrganizations(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/organizations`);
   }

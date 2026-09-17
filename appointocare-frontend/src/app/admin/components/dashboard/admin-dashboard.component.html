@@ -1,93 +1,180 @@
-<div class="admin-dashboard">
-  <h1>Admin Dashboard</h1>
-  <div class="dashboard-cards">
-    <div class="dashboard-card">
-      <div>Total Organizations</div>
-      <div class="card-value">{{ summary.total_organizations || 0 }}</div>
+<div class="admin-dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h1 class="page-title">Platform Administration</h1>
+      <p class="page-subtitle">Overview of organizations, platform revenue, and real-time operations.</p>
     </div>
-    <div class="dashboard-card">
-      <div>Active Organizations</div>
-      <div class="card-value">{{ summary.active_organizations || 0 }}</div>
-    </div>
-    <div class="dashboard-card paused-card">
-      <div>Paused Organizations</div>
-      <div class="card-value">{{ summary.paused_organizations || 0 }}</div>
-    </div>
-    <div class="dashboard-card transactions-card">
-      <div>Total Revenue</div>
-      <div class="card-value">₹{{ summary.total_transactions || 0 }}</div>
+    <div class="quick-actions">
+      <a mat-flat-button color="primary" routerLink="/admin/organizations">
+        <mat-icon>add_business</mat-icon>
+        <span>Manage Organizations</span>
+      </a>
+      <a mat-stroked-button routerLink="/admin/subscriptions">
+        <mat-icon>card_membership</mat-icon>
+        <span>Subscriptions</span>
+      </a>
+      <a mat-stroked-button routerLink="/admin/transactions">
+        <mat-icon>payments</mat-icon>
+        <span>Transactions</span>
+      </a>
+      <a mat-stroked-button routerLink="/admin/platform">
+        <mat-icon>tune</mat-icon>
+        <span>Config</span>
+      </a>
     </div>
   </div>
 
-  <div class="quick-actions">
-    <button mat-raised-button color="primary" routerLink="/admin-dashboard/organizations">Manage Organizations</button>
-    <button mat-stroked-button color="accent" routerLink="/admin-dashboard/subscriptions">Subscriptions</button>
-    <button mat-stroked-button color="warn" routerLink="/admin-dashboard/transactions">Transactions</button>
-    <button mat-stroked-button routerLink="/admin-dashboard/platform">Platform Setup</button>
-  </div>
+  <!-- KPI Metrics Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon primary">
+        <mat-icon>corporate_fare</mat-icon>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Total Organizations</span>
+        <span class="metric-value">{{ summary.total_organizations || 0 }}</span>
+      </div>
+    </div>
 
-  <div class="dashboard-section">
-    <h2>Monthly Transactions</h2>
-    <div class="chart-list">
-      <div class="chart-bar" *ngFor="let amount of monthlyChartData; let idx = index">
-        <div class="bar-label">{{ monthlyChartLabels[idx] || '-' }}</div>
-        <div class="bar-fill" [style.height.%]="maxMonthlyChartValue ? (amount / maxMonthlyChartValue * 100) : 0"></div>
-        <div class="bar-value">₹{{ amount }}</div>
+    <div class="metric-card">
+      <div class="metric-icon success">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Active Organizations</span>
+        <span class="metric-value">{{ summary.active_organizations || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon warning">
+        <mat-icon>pause_circle</mat-icon>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Paused Organizations</span>
+        <span class="metric-value">{{ summary.paused_organizations || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon revenue">
+        <mat-icon>account_balance_wallet</mat-icon>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Total Platform Revenue</span>
+        <span class="metric-value">₹{{ (summary.total_transactions || 0) | number }}</span>
       </div>
     </div>
   </div>
 
-  <div class="dashboard-section">
-    <h2>Recent Appointments</h2>
-    <table mat-table [dataSource]="appointments" class="mat-elevation-z2" *ngIf="appointments.length">
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef>ID</th>
-        <td mat-cell *matCellDef="let a">{{ a.id }}</td>
-      </ng-container>
-      <ng-container matColumnDef="customer_name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let a">{{ a.customer_name }}</td>
-      </ng-container>
-      <ng-container matColumnDef="appointment_date">
-        <th mat-header-cell *matHeaderCellDef>Date</th>
-        <td mat-cell *matCellDef="let a">{{ a.appointment_date | date:'mediumDate' }}</td>
-      </ng-container>
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let a">{{ a.status }}</td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="['id','customer_name','appointment_date','status']"></tr>
-      <tr mat-row *matRowDef="let row; columns: ['id','customer_name','appointment_date','status'];"></tr>
-    </table>
-    <div *ngIf="!appointments.length">No recent appointments.</div>
-  </div>
+  <!-- Monthly Revenue Chart Section -->
+  <mat-card class="chart-card">
+    <mat-card-header>
+      <mat-card-title>Monthly Revenue Performance</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="chart-container" *ngIf="monthlyChartData.length; else loadingChart">
+        <div class="chart-bars-wrapper">
+          <div class="chart-column" *ngFor="let amount of monthlyChartData; let idx = index">
+            <span class="bar-tooltip">₹{{ amount | number }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.height.%]="maxMonthlyChartValue ? (amount / maxMonthlyChartValue * 100) : 0"></div>
+            </div>
+            <span class="bar-month">{{ monthlyChartLabels[idx] || '-' }}</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #loadingChart>
+        <p class="empty-state-text">Loading monthly revenue data...</p>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
 
-  <div class="dashboard-section">
-    <h2>Recent Transactions</h2>
-    <table mat-table [dataSource]="transactions" class="mat-elevation-z2" *ngIf="transactions.length">
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef>ID</th>
-        <td mat-cell *matCellDef="let t">{{ t.id }}</td>
-      </ng-container>
-      <ng-container matColumnDef="amount">
-        <th mat-header-cell *matHeaderCellDef>Amount</th>
-        <td mat-cell *matCellDef="let t">₹{{ t.amount }}</td>
-      </ng-container>
-      <ng-container matColumnDef="transaction_type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let t">{{ t.transaction_type }}</td>
-      </ng-container>
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let t">{{ t.status }}</td>
-      </ng-container>
-      <ng-container matColumnDef="created_at">
-        <th mat-header-cell *matHeaderCellDef>Date</th>
-        <td mat-cell *matCellDef="let t">{{ t.created_at | date:'mediumDate' }}</td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="['id','amount','transaction_type','status','created_at']"></tr>
-      <tr mat-row *matRowDef="let row; columns: ['id','amount','transaction_type','status','created_at'];"></tr>
-    </table>
-    <div *ngIf="!transactions.length">No recent transactions.</div>
+  <!-- 2-Column Split: Recent Appointments & Recent Transactions -->
+  <div class="tables-grid">
+    <!-- Appointments -->
+    <mat-card class="table-card">
+      <mat-card-header class="table-card-header">
+        <mat-card-title>Recent Appointments</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-0">
+        <table mat-table [dataSource]="appointments" class="w-full" *ngIf="appointments.length; else noAppointments">
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>#</th>
+            <td mat-cell *matCellDef="let a">#{{ a.id }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="customer_name">
+            <th mat-header-cell *matHeaderCellDef>Customer</th>
+            <td mat-cell *matCellDef="let a">
+              <strong>{{ a.customer_name }}</strong>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="appointment_date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let a">{{ a.appointment_date | date:'mediumDate' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let a">
+              <span class="badge" [ngClass]="'badge-' + (a.status || '').toLowerCase()">{{ a.status }}</span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['id','customer_name','appointment_date','status']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['id','customer_name','appointment_date','status'];"></tr>
+        </table>
+        <ng-template #noAppointments>
+          <div class="empty-state">No recent appointments found.</div>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Transactions -->
+    <mat-card class="table-card">
+      <mat-card-header class="table-card-header">
+        <mat-card-title>Recent Transactions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-0">
+        <table mat-table [dataSource]="transactions" class="w-full" *ngIf="transactions.length; else noTransactions">
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>#</th>
+            <td mat-cell *matCellDef="let t">#{{ t.id }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let t">
+              <strong>₹{{ t.amount | number }}</strong>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="transaction_type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let t">{{ t.transaction_type }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let t">
+              <span class="badge" [ngClass]="'badge-' + (t.status || '').toLowerCase()">{{ t.status }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="created_at">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let t">{{ t.created_at | date:'mediumDate' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['id','amount','transaction_type','status','created_at']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['id','amount','transaction_type','status','created_at'];"></tr>
+        </table>
+        <ng-template #noTransactions>
+          <div class="empty-state">No recent transactions found.</div>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>

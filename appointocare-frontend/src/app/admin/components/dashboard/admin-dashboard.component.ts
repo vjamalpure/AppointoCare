@@ -34,26 +34,23 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadSummary() {
-    const token = localStorage.getItem('appointocare_token');
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.get(`${environment.apiUrl}/admin/dashboard`, { headers }).subscribe((data: any) => {
-      this.summary = data;
+    this.adminService.getDashboardSummary().subscribe({
+      next: (data: any) => this.summary = data,
+      error: (err) => console.error('Error loading dashboard summary', err)
     });
   }
 
   loadAppointments() {
-    const token = localStorage.getItem('appointocare_token');
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.get<any[]>(`${environment.apiUrl}/admin/appointments`, { headers }).subscribe((data) => {
-      this.appointments = data.slice(0, 5); // Show only recent 5
+    this.adminService.getAppointments().subscribe({
+      next: (data) => this.appointments = (data || []).slice(0, 5),
+      error: (err) => console.error('Error loading appointments', err)
     });
   }
 
   loadTransactions() {
-    const token = localStorage.getItem('appointocare_token');
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.get<any[]>(`${environment.apiUrl}/admin/transactions`, { headers }).subscribe((data) => {
-      this.transactions = data.slice(0, 5); // Show only recent 5
+    this.adminService.getTransactions().subscribe({
+      next: (data) => this.transactions = (data || []).slice(0, 5),
+      error: (err) => console.error('Error loading transactions', err)
     });
   }
 

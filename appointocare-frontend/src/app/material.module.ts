@@ -16,6 +16,11 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatBadgeModule } from '@angular/material/badge';
 
 @NgModule({
   exports: [
@@ -34,8 +39,13 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatNativeDateModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatCheckboxModule
-    ,MatTabsModule
+    MatCheckboxModule,
+    MatTabsModule,
+    MatTooltipModule,
+    MatMenuModule,
+    MatDividerModule,
+    MatChipsModule,
+    MatBadgeModule
   ]
 })
 export class MaterialModule {}

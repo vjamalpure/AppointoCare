@@ -1,24 +1,30 @@
-<ng-container *ngIf="showLayout; else loginPage">
-  <app-toolbar
-    [username]="username"
-    [organizationName]="organizationName"
-    (toggleSidebar)="toggleSidebar()">
-  </app-toolbar>
+<div class="app-container" [class.authenticated]="showLayout">
+  <ng-container *ngIf="showLayout; else authTemplate">
+    <app-toolbar
+      [username]="username"
+      [userRole]="userRole"
+      [organizationName]="organizationName"
+      (toggleSidebar)="toggleSidebar()">
+    </app-toolbar>
 
-  <div class="app-body">
-    <app-sidebar
-      [class.collapsed]="isSidebarCollapsed"
-      (collapseChange)="onSidebarCollapse($event)">
-    </app-sidebar>
+    <div class="layout-body">
+      <app-sidebar
+        [isCollapsed]="isSidebarCollapsed"
+        (collapseChange)="onSidebarCollapse($event)">
+      </app-sidebar>
 
-    <div class="main-content" [class.sidebar-collapsed]="isSidebarCollapsed" [class.sidebar-open]="!isSidebarCollapsed">
+      <div class="main-wrapper">
+        <main class="main-content">
+          <router-outlet></router-outlet>
+        </main>
+        <app-footer></app-footer>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #authTemplate>
+    <div class="auth-wrapper">
       <router-outlet></router-outlet>
     </div>
-  </div>
-
-  <app-footer></app-footer>
-</ng-container>
-
-<ng-template #loginPage>
-  <router-outlet></router-outlet>
-</ng-template>
+  </ng-template>
+</div>

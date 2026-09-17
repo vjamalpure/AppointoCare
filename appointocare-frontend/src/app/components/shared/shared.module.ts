@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MaterialModule } from '../../material.module';
 
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { FooterComponent } from './footer/footer.component';
@@ -16,7 +17,8 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
   ],
   imports: [
     CommonModule,
-    RouterModule   // ✅ Needed for routerLink
+    RouterModule,
+    MaterialModule
   ],
   exports: [
     SidebarComponent,

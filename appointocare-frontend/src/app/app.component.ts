@@ -9,28 +9,44 @@ import { Router, NavigationEnd } from '@angular/router';
 })
 export class AppComponent implements OnInit {
   title = 'appointocare-frontend';
-  isSidebarCollapsed = true;
+  isSidebarCollapsed = false;
   username: string = '';
+  userRole: string = '';
   organizationName: string = '';
-  showLayout = true;
+  showLayout = false;
 
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // ✅ Hide toolbar/sidebar on login page and refresh user info on navigation
+    this.checkAuthState();
+
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showLayout = !event.url.includes('/login');
-        if (this.authService.isLoggedIn()) {
-          const decoded = this.authService.getDecodedToken();
-          this.username = decoded?.username ?? '';
-          this.organizationName = localStorage.getItem("OrgName") ?? sessionStorage.getItem("OrgName") ?? "";
-        } else {
-          this.username = '';
-          this.organizationName = '';
-        }
+        this.checkAuthState(event.urlAfterRedirects || event.url);
       }
     });
+  }
+
+  private checkAuthState(currentUrl?: string): void {
+    const url = currentUrl || this.router.url;
+    const isAuthPage = url.includes('/login') ||
+                       url.includes('/forgot-password') ||
+                       url.includes('/reset-password') ||
+                       url === '/';
+
+    const loggedIn = this.authService.isLoggedIn();
+    this.showLayout = !isAuthPage && loggedIn;
+
+    if (loggedIn) {
+      const decoded = this.authService.getDecodedToken();
+      this.username = decoded?.username ?? '';
+      this.userRole = decoded?.role ?? '';
+      this.organizationName = localStorage.getItem('OrgName') ?? sessionStorage.getItem('OrgName') ?? decoded?.organization_name ?? '';
+    } else {
+      this.username = '';
+      this.userRole = '';
+      this.organizationName = '';
+    }
   }
 
   toggleSidebar(): void {
@@ -39,17 +55,5 @@ export class AppComponent implements OnInit {
 
   onSidebarCollapse(isCollapsed: boolean): void {
     this.isSidebarCollapsed = isCollapsed;
-  }
-
-  isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
-  }
-
-  getSidebarClass(): string {
-    return this.isSidebarCollapsed ? 'collapsed' : '';
-  }
-
-  getMainContentClass(): string {
-    return this.isSidebarCollapsed ? 'collapsed' : '';
   }
 }

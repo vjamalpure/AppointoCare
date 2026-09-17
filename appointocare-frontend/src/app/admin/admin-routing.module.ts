@@ -8,14 +8,12 @@ import { AdminDashboardComponent } from './components/dashboard/admin-dashboard.
 import { PlatformAdminComponent } from './components/platform/platform-admin.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: AdminDashboardComponent
-  },
+  { path: '', component: AdminDashboardComponent },
+  { path: 'dashboard', component: AdminDashboardComponent },
   { path: 'organizations', component: OrganizationsComponent },
   { path: 'subscriptions', component: SubscriptionsComponent },
-  { path: 'transactions', component: TransactionsComponent }
-  , { path: 'platform', component: PlatformAdminComponent }
+  { path: 'transactions', component: TransactionsComponent },
+  { path: 'platform', component: PlatformAdminComponent }
 ];
 
 @NgModule({

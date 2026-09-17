@@ -53,6 +53,16 @@
       <!-- Error Message -->
       <div class="server-error" *ngIf="errorMsg">{{ errorMsg }}</div>
 
+      <!-- Quick Demo Credentials -->
+      <div class="demo-helpers">
+        <span class="demo-label">Quick Demo Access:</span>
+        <div class="demo-buttons">
+          <button type="button" class="demo-btn" (click)="fillAdminDemo()">SuperAdmin</button>
+          <button type="button" class="demo-btn" (click)="fillOrgDemo()">Org Admin</button>
+          <button type="button" class="demo-btn" (click)="fillStaffDemo()">Staff User</button>
+        </div>
+      </div>
+
       <!-- Forgot Password -->
       <div class="forgot-password">
         <a routerLink="/forgot-password">Forgot password?</a>

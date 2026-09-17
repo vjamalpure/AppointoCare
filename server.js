@@ -846,6 +846,34 @@ app.post('/organization/message/send', authenticateJWT, (req, res) => {
   res.json({ msg: 'Message sent successfully', recipient: recipient_number, type: message_type || 'WhatsApp' });
 });
 
+app.patch('/organization/update', authenticateJWT, (req, res) => {
+  const orgId = Number(req.user.organization_id || req.user.sub);
+  const org = organizations.find(o => o.id === orgId) || organizations[0];
+  if (!org) return res.status(404).json({ msg: 'Organization not found' });
+  const { name, sector, subscription_plan, subscription_status } = req.body || {};
+  if (name) org.name = name;
+  if (sector) org.sector = sector;
+  if (subscription_plan) org.subscription_plan = subscription_plan;
+  if (subscription_status) org.subscription_status = subscription_status;
+  org.updated_at = new Date().toISOString();
+  res.json({ msg: 'Organization updated successfully', organization: org });
+});
+
+app.post('/organization/subscription/upgrade', authenticateJWT, (req, res) => {
+  const orgId = Number(req.user.organization_id || req.user.sub);
+  const org = organizations.find(o => o.id === orgId) || organizations[0];
+  if (!org) return res.status(404).json({ msg: 'Organization not found' });
+  const { plan } = req.body || {};
+  if (plan) {
+    org.subscription_plan = plan;
+    org.subscription_status = 'Active';
+    org.subscription_start = new Date().toISOString();
+    org.subscription_end = new Date(Date.now() + 30 * 86400000).toISOString();
+    org.next_billing_date = new Date(Date.now() + 30 * 86400000).toISOString();
+  }
+  res.json({ msg: 'Subscription updated successfully', organization: org });
+});
+
 app.get('/organizations/:orgId/bookings', (req, res) => {
   const orgId = Number(req.params.orgId);
   const orgAppts = appointments.filter(a => a.organization_id === orgId);

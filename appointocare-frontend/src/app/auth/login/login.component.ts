@@ -48,11 +48,11 @@ export class LoginComponent {
 
           // Redirect based on role
           if (role === 'Admin') {
-            this.router.navigate(['/admin-dashboard']);
-          } else if (role === 'Organization') {
+            this.router.navigate(['/admin']);
+          } else if (role === 'Organization' || role === 'Manager' || role === 'Staff') {
             this.router.navigate(['/org-dashboard']);
           } else {
-            this.errorMsg = 'User role not recognized';
+            this.errorMsg = `User role '${role}' not recognized`;
           }
         },
         error: (err) => {
@@ -62,5 +62,29 @@ export class LoginComponent {
           this.loading = false;
         }
       });
+  }
+
+  fillAdminDemo(): void {
+    this.selectedRole = 'admin';
+    this.username = 'superadmin';
+    this.password = 'Admin@12345';
+    this.organization_code = '';
+    this.errorMsg = '';
+  }
+
+  fillOrgDemo(): void {
+    this.selectedRole = 'organization';
+    this.organization_code = 'ORG1';
+    this.username = 'org1';
+    this.password = 'Org@12345';
+    this.errorMsg = '';
+  }
+
+  fillStaffDemo(): void {
+    this.selectedRole = 'organization';
+    this.organization_code = 'ORG1';
+    this.username = 'staff1';
+    this.password = 'Staff@12345';
+    this.errorMsg = '';
   }
 }

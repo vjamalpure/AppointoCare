@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../auth/auth.service';
 import { AppointmentService } from '../../services/appointments.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface Appointment {
   id: number;
@@ -49,7 +50,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private appointmentService: AppointmentService
+    private appointmentService: AppointmentService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -59,7 +61,7 @@ export class DashboardComponent implements OnInit {
 
   loadDashboard() {
     this.loading = true;
-    this.dashboardService.getDashboard(this.role!).subscribe({
+    this.dashboardService.getDashboard(this.role || 'Organization').subscribe({
       next: (data: DashboardData) => {
         this.dashboardData = data;
         this.dashboardData.appointments = data.appointments || [];
@@ -112,39 +114,39 @@ export class DashboardComponent implements OnInit {
       status: this.editAppointment.status
     }).subscribe({
       next: () => {
+        this.snackBar.open('Appointment updated successfully', 'Close', { duration: 3000 });
         this.closeModal();
         this.loadDashboard();
       },
-      error: (err) => console.error('Update failed:', err)
+      error: () => this.snackBar.open('Failed to update appointment', 'Close', { duration: 3000 })
     });
   }
 
   updateAppointment(apptId: number, status?: string, paymentStatus?: string, appointmentDate?: string) {
-  if (!apptId) return;
+    if (!apptId) return;
 
-  const updateData: any = {};
-  if (status) updateData.status = status;
-  if (paymentStatus) updateData.payment_status = paymentStatus;
-  if (appointmentDate) updateData.appointment_date = appointmentDate;
+    const updateData: any = {};
+    if (status) updateData.status = status;
+    if (paymentStatus) updateData.payment_status = paymentStatus;
+    if (appointmentDate) updateData.appointment_date = appointmentDate;
 
-  this.appointmentService.updateAppointment(apptId, updateData).subscribe({
-    next: () => {
-      alert('Appointment updated successfully!');
-      this.loadDashboard(); // Refresh dashboard to reflect changes
-    },
-    error: (err) => {
-      console.error('Failed to update appointment:', err);
-      alert('Failed to update appointment. Please try again.');
-    }
-  });
-}
-
+    this.appointmentService.updateAppointment(apptId, updateData).subscribe({
+      next: () => {
+        this.snackBar.open('Appointment updated successfully', 'Close', { duration: 3000 });
+        this.loadDashboard();
+      },
+      error: () => this.snackBar.open('Failed to update appointment', 'Close', { duration: 3000 })
+    });
+  }
 
   updateAppointmentStatus(apptId: number, status: string) {
     if (!status) return;
     this.appointmentService.updateAppointment(apptId, { status }).subscribe({
-      next: () => this.loadDashboard(),
-      error: (err) => console.error('Status update failed:', err)
+      next: () => {
+        this.snackBar.open(`Appointment marked as ${status}`, 'Close', { duration: 2500 });
+        this.loadDashboard();
+      },
+      error: () => this.snackBar.open('Status update failed', 'Close', { duration: 3000 })
     });
   }
 
@@ -155,13 +157,4 @@ export class DashboardComponent implements OnInit {
   getCancelledCount(): number { return this.dashboardData.appointments.filter(a => a.status === 'Cancelled').length; }
   getTotalPaid(): number { return this.dashboardData.appointments.filter(a => a.payment_status === 'Paid').length; }
   getTotalUnpaid(): number { return this.dashboardData.appointments.filter(a => a.payment_status === 'Pending').length; }
-
-  getApptStatusColor(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'booked': return '#f9d77f';
-      case 'completed': return '#68d391';
-      case 'cancelled': return '#fc8181';
-      default: return '#e0e6ed';
-    }
-  }
 }
