@@ -363,6 +363,8 @@ def export_customers():
 
     customers = query.order_by(Customer.created_at.desc()).all()
 
+    export_format = (request.args.get("format") or "json").lower()
+
     # Record audit log
     try:
         user_id_val = claims.get("sub")
@@ -373,7 +375,7 @@ def export_customers():
             user_role=role,
             action="EXPORT_CUSTOMERS",
             entity="Customer",
-            details=f"Exported {len(customers)} customer records (tag filter: {tag or 'None'}, search: {q or 'None'})",
+            details=f"Exported {len(customers)} customer records (format: {export_format}, tag filter: {tag or 'None'}, search: {q or 'None'})",
             ip_address=request.remote_addr
         )
         db.session.add(audit)
@@ -381,9 +383,39 @@ def export_customers():
     except Exception:
         db.session.rollback()
 
+    if export_format == "csv":
+        import io
+        import csv
+        from flask import Response
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["ID", "Name", "Phone", "Email", "Gender", "DOB", "Address", "Tags", "Notes", "Source", "Created At"])
+        for c in customers:
+            writer.writerow([
+                c.id,
+                c.name or "",
+                c.phone or "",
+                c.email or "",
+                c.gender or "",
+                c.dob.isoformat() if c.dob else "",
+                c.address or "",
+                c.tags or "",
+                c.notes or "",
+                c.source or "",
+                c.created_at.isoformat() if c.created_at else ""
+            ])
+        output.seek(0)
+        org_tag = scoped_org_id if 'scoped_org_id' in locals() else (org_id if 'org_id' in locals() else "all")
+        return Response(
+            output.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=customers_export_{org_tag}.csv"}
+        )
+
     return jsonify({
         "count": len(customers),
         "exported_at": datetime.utcnow().isoformat(),
+        "format": "json",
         "customers": [
             {
                 "id": c.id,

@@ -1402,4 +1402,575 @@ def validate_statutory_format():
     })
 
 
+# -------------------------------------------------------------
+# ITERATION 2: COMPETITIVE BENCHMARK WORKFLOW CAPABILITIES
+# -------------------------------------------------------------
+
+@industry_suite_bp.route("/records/<int:record_id>/redeem-session-credit", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def redeem_session_credit(record_id):
+    """Salon & Wellness: Zenoti / Fresha benchmark - Package session credit redemption."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+    
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    data = request.json or {}
+    sessions_to_redeem = int(data.get("sessions_to_redeem", 1))
+    service_name = data.get("service_name", "Spa & Wellness Session")
+    staff_name = data.get("staff_name", "Assigned Therapist")
+    notes = data.get("notes", "")
+
+    rec_data = dict(record.data or {})
+    remaining = int(rec_data.get("remaining_sessions", rec_data.get("total_sessions", 10)))
+    total = int(rec_data.get("total_sessions", 10))
+
+    if remaining < sessions_to_redeem:
+        return jsonify({
+            "msg": f"Insufficient session credits. Available: {remaining}, Requested: {sessions_to_redeem}",
+            "available_credits": remaining
+        }), 400
+
+    new_remaining = remaining - sessions_to_redeem
+    redemptions = list(rec_data.get("credit_redemptions", []))
+    redemptions.append({
+        "timestamp": datetime.utcnow().isoformat(),
+        "sessions_redeemed": sessions_to_redeem,
+        "service_name": service_name,
+        "staff_name": staff_name,
+        "remaining_credits": new_remaining,
+        "notes": notes
+    })
+
+    rec_data["remaining_sessions"] = new_remaining
+    rec_data["total_sessions"] = total
+    rec_data["credit_redemptions"] = redemptions
+    record.data = rec_data
+    record.updated_at = datetime.utcnow()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=record.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="REDEEM_SESSION_CREDIT",
+        entity="IndustryRecord",
+        entity_id=record.id,
+        details=f"Redeemed {sessions_to_redeem} session credit(s) for '{service_name}'. Remaining: {new_remaining}/{total}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "sessions_redeemed": sessions_to_redeem,
+        "remaining_credits": new_remaining,
+        "total_credits": total,
+        "service_name": service_name,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+
+@industry_suite_bp.route("/records/<int:record_id>/log-billable-time", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def log_billable_time(record_id):
+    """Legal & Management: Clio / PracticePanther benchmark - Billable time tracking & retainer depletion."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    data = request.json or {}
+    hours = float(data.get("hours", 1.0))
+    rate = float(data.get("hourly_rate", 12500.0))
+    desc = data.get("activity_description", "Matter consultation and document review")
+    lawyer = data.get("lawyer_name", "Lead Counsel")
+
+    billable_amt = round(hours * rate, 2)
+    rec_data = dict(record.data or {})
+
+    current_retainer_hours = float(rec_data.get("retainer_hours_remaining", 15.0))
+    new_retainer_hours = round(current_retainer_hours - hours, 2)
+    retainer_depleted_alert = new_retainer_hours <= 2.0
+
+    time_entries = list(rec_data.get("time_entries", []))
+    time_entries.append({
+        "timestamp": datetime.utcnow().isoformat(),
+        "hours": hours,
+        "hourly_rate": rate,
+        "billable_amount": billable_amt,
+        "description": desc,
+        "lawyer_name": lawyer,
+        "retainer_hours_after": new_retainer_hours
+    })
+
+    rec_data["retainer_hours_remaining"] = new_retainer_hours
+    rec_data["time_entries"] = time_entries
+    rec_data["retainer_depleted_alert"] = retainer_depleted_alert
+    record.data = rec_data
+    record.updated_at = datetime.utcnow()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=record.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="LOG_BILLABLE_TIME",
+        entity="IndustryRecord",
+        entity_id=record.id,
+        details=f"Logged {hours} billable hrs (₹{billable_amt}) for matter '{record.title}'. Retainer left: {new_retainer_hours} hrs",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "hours_logged": hours,
+        "billable_amount": billable_amt,
+        "retainer_hours_remaining": new_retainer_hours,
+        "retainer_depleted_alert": retainer_depleted_alert,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+
+@industry_suite_bp.route("/records/<int:record_id>/transition-claim-status", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def transition_claim_status(record_id):
+    """Insurance Brokerage: Applied Epic / Policybazaar benchmark - Claim lifecycle state machine."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    VALID_CLAIM_STATUSES = ["Draft", "Filed", "Under_Review", "Approved", "Rejected", "Settled"]
+    data = request.json or {}
+    new_status = data.get("new_status")
+    if new_status not in VALID_CLAIM_STATUSES:
+        return jsonify({"msg": f"Invalid status '{new_status}'. Allowed: {', '.join(VALID_CLAIM_STATUSES)}"}), 400
+
+    notes = data.get("adjuster_notes", "")
+    approved_amount = float(data.get("approved_amount", 0.0))
+
+    rec_data = dict(record.data or {})
+    claim_history = list(rec_data.get("claim_status_history", []))
+    claim_history.append({
+        "from_status": record.status,
+        "to_status": new_status,
+        "timestamp": datetime.utcnow().isoformat(),
+        "notes": notes,
+        "approved_amount": approved_amount
+    })
+
+    old_status = record.status
+    record.status = new_status
+    rec_data["claim_status_history"] = claim_history
+    if approved_amount > 0:
+        rec_data["settled_claim_amount"] = approved_amount
+    record.data = rec_data
+    record.updated_at = datetime.utcnow()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=record.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="CLAIM_STATUS_TRANSITION",
+        entity="IndustryRecord",
+        entity_id=record.id,
+        details=f"Transitioned insurance claim #{record.id} from '{old_status}' to '{new_status}'. Approved: ₹{approved_amount}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "previous_status": old_status,
+        "current_status": new_status,
+        "approved_amount": approved_amount,
+        "history_count": len(claim_history)
+    })
+
+
+@industry_suite_bp.route("/records/<int:record_id>/update-alteration-stage", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def update_alteration_stage(record_id):
+    """Retail & Luxury: Shopify POS / Clienteling benchmark - Garment alteration stage progression."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    VALID_STAGES = ["Received", "Measuring", "In_Tailoring", "Ready_For_Fitting", "Delivered"]
+    data = request.json or {}
+    stage = data.get("stage")
+    if stage not in VALID_STAGES:
+        return jsonify({"msg": f"Invalid stage '{stage}'. Allowed: {', '.join(VALID_STAGES)}"}), 400
+
+    notes = data.get("tailor_notes", "")
+    fitting_suite = data.get("fitting_suite", "VIP Suite")
+    notification_dispatched = (stage == "Ready_For_Fitting")
+
+    rec_data = dict(record.data or {})
+    stages = list(rec_data.get("alteration_stages", []))
+    stages.append({
+        "stage": stage,
+        "timestamp": datetime.utcnow().isoformat(),
+        "notes": notes,
+        "fitting_suite": fitting_suite,
+        "notification_dispatched": notification_dispatched
+    })
+
+    record.status = stage
+    rec_data["alteration_stages"] = stages
+    rec_data["current_alteration_stage"] = stage
+    record.data = rec_data
+    record.updated_at = datetime.utcnow()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=record.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="UPDATE_ALTERATION_STAGE",
+        entity="IndustryRecord",
+        entity_id=record.id,
+        details=f"Updated alteration stage for '{record.title}' to '{stage}' (Ready notification: {notification_dispatched})",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "current_stage": stage,
+        "ready_for_fitting": (stage == "Ready_For_Fitting"),
+        "notification_dispatched": notification_dispatched,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+
+@industry_suite_bp.route("/records/<int:record_id>/update-application-milestone", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def update_application_milestone(record_id):
+    """Education & Study Abroad: Naviance / Teachmint benchmark - University application milestone progress."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    VALID_MILESTONES = ["Shortlisted", "Application_Submitted", "Interview_Scheduled", "Offer_Received", "Visa_Filed", "Enrolled"]
+    data = request.json or {}
+    milestone = data.get("milestone")
+    if milestone not in VALID_MILESTONES:
+        return jsonify({"msg": f"Invalid milestone '{milestone}'. Allowed: {', '.join(VALID_MILESTONES)}"}), 400
+
+    institution = data.get("institution_name", "Target University")
+    deadline = data.get("deadline_date")
+    counselor_notes = data.get("counselor_notes", "")
+
+    rec_data = dict(record.data or {})
+    milestones = list(rec_data.get("milestone_timeline", []))
+    milestones.append({
+        "milestone": milestone,
+        "institution": institution,
+        "timestamp": datetime.utcnow().isoformat(),
+        "deadline": deadline,
+        "notes": counselor_notes
+    })
+
+    record.status = milestone
+    rec_data["milestone_timeline"] = milestones
+    rec_data["current_milestone"] = milestone
+    record.data = rec_data
+    record.updated_at = datetime.utcnow()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=record.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="UPDATE_APPLICATION_MILESTONE",
+        entity="IndustryRecord",
+        entity_id=record.id,
+        details=f"Progressed student application for {institution} to '{milestone}'",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "current_milestone": milestone,
+        "institution": institution,
+        "milestones_count": len(milestones),
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+
+@industry_suite_bp.route("/appointments/<int:appointment_id>/schedule-followup", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def schedule_followup_appointment(appointment_id):
+    """Healthcare: Practo Ray / HealthPlix benchmark - Follow-up visit auto-scheduling."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    parent = Appointment.query.get_or_404(appointment_id)
+    if org_id and parent.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    data = request.json or {}
+    followup_date_str = data.get("followup_date")
+    if not followup_date_str:
+        return jsonify({"msg": "Missing required field: followup_date"}), 400
+
+    try:
+        followup_date = datetime.fromisoformat(followup_date_str.replace("Z", "+00:00"))
+        if followup_date.tzinfo is not None:
+            followup_date = followup_date.replace(tzinfo=None)
+    except Exception:
+        return jsonify({"msg": "Invalid date format for followup_date"}), 400
+
+    service_name = data.get("service_name") or f"Follow-up Consultation ({parent.service_name or 'General'})"
+    staff_name = data.get("staff_name") or parent.staff_name
+    notes = data.get("notes") or ""
+    combined_notes = f"Follow-up to appointment #{parent.id}. {notes}".strip()
+
+    followup_appt = Appointment(
+        customer_name=parent.customer_name,
+        customer_phone=parent.customer_phone,
+        appointment_date=followup_date,
+        status="Booked",
+        payment_status="Pending",
+        organization_id=parent.organization_id,
+        service_name=service_name,
+        staff_name=staff_name,
+        notes=combined_notes
+    )
+    db.session.add(followup_appt)
+    db.session.flush()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=parent.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="SCHEDULE_FOLLOWUP",
+        entity="Appointment",
+        entity_id=followup_appt.id,
+        details=f"Scheduled follow-up appointment #{followup_appt.id} from parent #{parent.id} for {parent.customer_name} on {followup_date.strftime('%Y-%m-%d %H:%M')}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "parent_appointment_id": parent.id,
+        "followup_appointment_id": followup_appt.id,
+        "customer_name": followup_appt.customer_name,
+        "followup_date": followup_appt.appointment_date.isoformat(),
+        "staff_name": followup_appt.staff_name,
+        "service_name": followup_appt.service_name
+    }), 201
+
+
+@industry_suite_bp.route("/records/<int:record_id>/create-tour-itinerary", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def create_tour_itinerary(record_id):
+    """Real Estate & Architecture: Dotloop / Sell.do benchmark - Multi-property tour itinerary builder."""
+    import urllib.parse
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    data = request.json or {}
+    tour_date = data.get("tour_date", datetime.utcnow().strftime("%Y-%m-%d"))
+    agent_name = data.get("agent_name", "Senior Property Broker")
+    stops = data.get("tour_stops", [])
+
+    formatted_stops = []
+    for s in stops:
+        addr = s.get("address", "Property Location")
+        encoded_addr = urllib.parse.quote(addr)
+        formatted_stops.append({
+            "address": addr,
+            "scheduled_time": s.get("time", "TBD"),
+            "lockbox_code": s.get("lockbox", "N/A"),
+            "unit": s.get("unit", ""),
+            "navigation_url": f"https://www.google.com/maps/search/?api=1&query={encoded_addr}",
+            "notes": s.get("notes", "")
+        })
+
+    rec_data = dict(record.data or {})
+    rec_data["tour_itinerary"] = {
+        "tour_date": tour_date,
+        "agent_name": agent_name,
+        "stops_count": len(formatted_stops),
+        "stops": formatted_stops,
+        "generated_at": datetime.utcnow().isoformat()
+    }
+    record.data = rec_data
+    record.updated_at = datetime.utcnow()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=record.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="CREATE_TOUR_ITINERARY",
+        entity="IndustryRecord",
+        entity_id=record.id,
+        details=f"Created property tour itinerary with {len(formatted_stops)} viewing stops for agent {agent_name}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "stops_count": len(formatted_stops),
+        "tour_date": tour_date,
+        "agent_name": agent_name,
+        "itinerary": formatted_stops
+    })
+
+
+@industry_suite_bp.route("/records/<int:record_id>/approve-milestone", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def approve_deliverable_milestone(record_id):
+    """Professional Services & IT: Jira SM / Odoo benchmark - SOW milestone deliverable sign-off."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    data = request.json or {}
+    milestone_id = data.get("milestone_id", "MS-01")
+    milestone_name = data.get("milestone_name", "Milestone Deliverable")
+    approved_by = data.get("approved_by", "Client Engagement Sponsor")
+    approval_role = data.get("approval_role", "Executive Sponsor")
+    comments = data.get("comments", "Deliverable reviewed and accepted per contract SLA.")
+
+    rec_data = dict(record.data or {})
+    approvals = list(rec_data.get("milestone_approvals", []))
+    approvals.append({
+        "milestone_id": milestone_id,
+        "milestone_name": milestone_name,
+        "approved_by": approved_by,
+        "approval_role": approval_role,
+        "comments": comments,
+        "approved_at": datetime.utcnow().isoformat(),
+        "status": "ACCEPTED"
+    })
+
+    rec_data["milestone_approvals"] = approvals
+    record.data = rec_data
+    record.updated_at = datetime.utcnow()
+
+    user_id_val = claims.get("sub")
+    audit = AuditLog(
+        organization_id=record.organization_id,
+        user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+        user_role=role,
+        action="APPROVE_DELIVERABLE_MILESTONE",
+        entity="IndustryRecord",
+        entity_id=record.id,
+        details=f"Approved project deliverable '{milestone_name}' ({milestone_id}) by {approved_by} ({approval_role})",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "milestone_id": milestone_id,
+        "milestone_name": milestone_name,
+        "approved_by": approved_by,
+        "approved_at": datetime.utcnow().isoformat()
+    })
+
+
+@industry_suite_bp.route("/generate-rebalance-plan", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def generate_rebalance_plan():
+    """Finance & Wealth: Wealthbox / Zoho Books benchmark - Portfolio rebalancing trade order action plan."""
+    data = request.json or {}
+    portfolio_value = float(data.get("portfolio_value", 500000.0))
+    current_weights = data.get("current_weights") or data.get("current_allocations") or {}
+    target_weights = data.get("target_weights") or data.get("target_allocations") or {}
+    fee_bps = float(data.get("fee_bps", 10.0)) # 10 basis points = 0.10%
+
+    all_assets = set(current_weights.keys()) | set(target_weights.keys())
+    actions = []
+    total_turnover = 0.0
+
+    for asset in sorted(all_assets):
+        curr_pct = float(current_weights.get(asset, 0.0))
+        targ_pct = float(target_weights.get(asset, 0.0))
+        curr_val = round(portfolio_value * (curr_pct / 100.0), 2)
+        targ_val = round(portfolio_value * (targ_pct / 100.0), 2)
+        diff_val = round(targ_val - curr_val, 2)
+        trade_action = "BUY" if diff_val > 0 else ("SELL" if diff_val < 0 else "HOLD")
+        
+        turnover_for_asset = abs(diff_val)
+        total_turnover += turnover_for_asset
+
+        actions.append({
+            "asset_class": asset,
+            "current_weight_pct": curr_pct,
+            "target_weight_pct": targ_pct,
+            "current_value": curr_val,
+            "target_value": targ_val,
+            "trade_action": trade_action,
+            "trade_amount": turnover_for_asset,
+            "net_shift": diff_val
+        })
+
+    estimated_fees = round(total_turnover * (fee_bps / 10000.0), 2)
+
+    return jsonify({
+        "status": "success",
+        "portfolio_value": portfolio_value,
+        "total_turnover": round(total_turnover, 2),
+        "estimated_execution_fees": estimated_fees,
+        "fee_basis_points": fee_bps,
+        "rebalance_orders": actions,
+        "disclaimer": "Simulated algorithmic rebalance model. Non-fiduciary advisory. Requires client consent before live trade execution."
+    })
+
+
+
 
