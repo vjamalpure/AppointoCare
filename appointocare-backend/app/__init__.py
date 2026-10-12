@@ -77,6 +77,7 @@ def create_app():
     app.register_blueprint(appointment_bp, url_prefix="/appointments")
     app.register_blueprint(appointment_bp, url_prefix="/api/v1/appointments", name="appointments_api_v1")
     app.register_blueprint(transaction_bp, url_prefix="/transactions")
+    app.register_blueprint(transaction_bp, url_prefix="/api/v1/transactions", name="transaction_api_v1")
 
     # Multi-Industry Services Catalog (dual-prefix)
     app.register_blueprint(service_bp, url_prefix="/service")
@@ -105,6 +106,7 @@ def create_app():
     app.register_blueprint(workflows_bp, url_prefix="/api/v1/workflows")
     app.register_blueprint(custom_fields_bp, url_prefix="/api/v1/custom-fields")
     app.register_blueprint(customer_portal_bp, url_prefix="/api/v1/portal")
+    app.register_blueprint(customer_portal_bp, url_prefix="/api/v1/customer-portal", name="customer_portal_api_v1")
     app.register_blueprint(analytics_bp, url_prefix="/api/v1/analytics")
     app.register_blueprint(automation_bp, url_prefix="/api/v1/automations")
 

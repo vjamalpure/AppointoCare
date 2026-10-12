@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import (
     db, Customer, CustomerPortalSession, CustomerDocument,
-    Appointment, IndustryRecord, Organization, AuditLog, Service
+    Appointment, IndustryRecord, Organization, AuditLog, Service,
+    ClinicalEncounter
 )
 from datetime import datetime, timedelta
 import secrets
@@ -11,11 +12,16 @@ customer_portal_bp = Blueprint("customer_portal_bp", __name__)
 
 
 def _authenticate_portal_session():
-    """Extracts and verifies customer portal session token from X-Portal-Token header or Authorization header."""
-    auth_header = request.headers.get("X-Portal-Token") or request.headers.get("Authorization")
-    if not auth_header:
+    """Extracts and verifies customer portal session token from X-Portal-Token, Authorization header, or query param token."""
+    token = request.args.get("token")
+    if not token:
+        auth_header = request.headers.get("X-Portal-Token") or request.headers.get("Authorization")
+        if auth_header:
+            token = auth_header.replace("Bearer ", "").strip()
+
+    if not token:
         return None
-    token = auth_header.replace("Bearer ", "").strip()
+
     session = CustomerPortalSession.query.filter_by(session_token=token, is_active=True).first()
     if not session:
         return None
@@ -178,6 +184,31 @@ def get_portal_overview():
         organization_id=session.organization_id
     ).order_by(CustomerDocument.created_at.desc()).all()
 
+    # 4. Clinical Encounters (for Healthcare patient self-service view)
+    encounters = ClinicalEncounter.query.filter_by(
+        organization_id=session.organization_id,
+        patient_id=customer.id
+    ).order_by(ClinicalEncounter.encounter_date.desc()).all()
+
+    permitted_encounters = []
+    for e in encounters:
+        permitted_encounters.append({
+            "id": e.id,
+            "encounter_date": e.encounter_date.isoformat(),
+            "encounter_type": e.encounter_type,
+            "practitioner_name": e.practitioner_name,
+            "practitioner_reg_no": e.practitioner_reg_no,
+            "chief_complaints": e.chief_complaints,
+            "vitals": e.vitals,
+            "diagnosis": e.diagnosis,
+            "medications": e.prescription_data.get("medications", []) if e.prescription_data else [],
+            "advice": e.prescription_data.get("advice", "") if e.prescription_data else "",
+            "rx_number": e.prescription_data.get("rx_number", f"RX-{e.id:05d}") if e.prescription_data else f"RX-{e.id:05d}",
+            "status": e.status,
+            "signed_at": e.signed_at.isoformat() if e.signed_at else None,
+            "follow_up_date": e.follow_up_date.isoformat() if e.follow_up_date else None
+        })
+
     return jsonify({
         "customer": {
             "id": customer.id,
@@ -204,6 +235,7 @@ def get_portal_overview():
             for a in appts
         ],
         "industry_records": permitted_records,
+        "clinical_encounters": permitted_encounters,
         "documents": [
             {
                 "id": d.id,
@@ -217,6 +249,78 @@ def get_portal_overview():
             for d in docs
         ]
     })
+
+
+@customer_portal_bp.route("/encounters/<int:encounter_id>/prescription-pdf", methods=["GET"])
+def download_portal_prescription_pdf(encounter_id):
+    """Allows patient to download their branded E-Prescription PDF securely via portal session."""
+    session = _authenticate_portal_session()
+    if not session:
+        return jsonify({"msg": "Unauthorized customer session"}), 401
+
+    encounter = ClinicalEncounter.query.filter_by(
+        id=encounter_id,
+        organization_id=session.organization_id,
+        patient_id=session.customer_id
+    ).first_or_404()
+
+    org = Organization.query.get(encounter.organization_id)
+    customer = Customer.query.get(session.customer_id)
+
+    org_data = {
+        "name": org.name if org else "Healthcare Medical Center",
+        "code": org.code if org else "HEALTH",
+        "sector": org.sector if org else "Healthcare",
+        "phone": getattr(org, "phone", "") or "+91 800-456-7890",
+        "email": getattr(org, "email", "") or "appointments@citycarehealth.com",
+        "address": getattr(org, "address", "") or "Main Clinic Campus, Sector 4"
+    }
+
+    diag_summary = "General Medical Review"
+    if encounter.diagnosis:
+        if isinstance(encounter.diagnosis, list):
+            diag_summary = ", ".join([d.get("description", d.get("code", "Clinical Evaluation")) for d in encounter.diagnosis])
+        else:
+            diag_summary = str(encounter.diagnosis)
+
+    meds = []
+    advice_text = "Adequate rest, hydration, and follow-up as advised."
+    rx_num = f"RX-{encounter.id:05d}"
+    if encounter.prescription_data and isinstance(encounter.prescription_data, dict):
+        meds = encounter.prescription_data.get("medications", [])
+        advice_text = encounter.prescription_data.get("advice", advice_text)
+        rx_num = encounter.prescription_data.get("rx_number", rx_num)
+
+    record_data = {
+        "title": f"Consultation: {encounter.chief_complaints or 'Outpatient'}",
+        "data": {
+            "prescriber": f"{encounter.practitioner_name} (Reg: {encounter.practitioner_reg_no})",
+            "rx_number": rx_num,
+            "diagnosis": diag_summary,
+            "vitals": encounter.vitals or {},
+            "medications": meds,
+            "advice": advice_text,
+            "follow_up": encounter.follow_up_date.strftime("%d %b %Y") if encounter.follow_up_date else "As needed",
+            "signed_at": encounter.signed_at.strftime("%d %b %Y, %I:%M %p") if encounter.signed_at else "Draft"
+        }
+    }
+
+    appt_data = {
+        "customer_name": customer.name if customer else f"Patient #{encounter.patient_id}",
+        "customer_phone": customer.phone if customer else "N/A",
+        "staff_name": encounter.practitioner_name
+    }
+
+    from app.services.pdf_service import generate_prescription_pdf
+    from flask import Response
+    pdf_bytes = generate_prescription_pdf(org_data, record_data, appt_data)
+    filename = f"prescription_rx_{rx_num}.pdf"
+
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 @customer_portal_bp.route("/documents/upload", methods=["POST"])

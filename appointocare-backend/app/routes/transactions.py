@@ -226,13 +226,21 @@ def get_transactions():
 
 
 @transaction_bp.route("/<int:txn_id>/download-pdf", methods=["GET"])
+@transaction_bp.route("/<int:txn_id>/invoice-pdf", methods=["GET"])
 @transaction_bp.route("/appointment/<int:txn_id>/download-pdf", methods=["GET"])
 @jwt_required()
 def download_transaction_pdf(txn_id):
     claims = get_jwt()
     role = claims.get("role")
-    txn = AppointmentTransaction.query.get_or_404(txn_id)
     user_org_id = int(claims.get("organization_id") or 0)
+
+    # Check AppointmentTransaction or OrganizationTransaction
+    txn = AppointmentTransaction.query.get(txn_id)
+    is_org_txn = False
+    if not txn:
+        txn = OrganizationTransaction.query.get_or_404(txn_id)
+        is_org_txn = True
+
     if role not in ["Admin", "SuperAdmin"] and txn.organization_id != user_org_id:
         return jsonify({"msg": "Unauthorized: Cross-tenant access denied"}), 403
 
@@ -251,7 +259,7 @@ def download_transaction_pdf(txn_id):
     }
 
     appt_data = {}
-    if txn.appointment_id:
+    if not is_org_txn and getattr(txn, "appointment_id", None):
         appt = Appointment.query.get(txn.appointment_id)
         if appt:
             appt_data = {
@@ -260,6 +268,13 @@ def download_transaction_pdf(txn_id):
                 "service_name": appt.service_name or "Consultation Service",
                 "appointment_date": appt.appointment_date.isoformat() if appt.appointment_date else ""
             }
+    else:
+        appt_data = {
+            "customer_name": org.name if org else "Client Account",
+            "customer_phone": getattr(org, "phone", "N/A"),
+            "service_name": f"{txn.transaction_type} SaaS Subscription Fee",
+            "appointment_date": ""
+        }
 
     txn_dict = {
         "id": txn.id,

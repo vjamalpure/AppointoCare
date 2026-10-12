@@ -1069,12 +1069,21 @@
               Production-grade longitudinal patient encounters, doctor attribution, real-time waitlists, conflict-free room scheduling, diagnostic orders, ABDM consent artifacts, reusable task escalation, and 8-industry vertical deepening.
             </p>
           </div>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button mat-stroked-button style="color: #ffffff; border-color: rgba(255, 255, 255, 0.2);" (click)="loadClinicalCommandCenter(); loadTasks(); loadPipelines()">
               <mat-icon>refresh</mat-icon> Sync Live State
             </button>
             <button mat-flat-button color="accent" (click)="loadCustomerUnifiedTimeline(1)">
-              <mat-icon>history_edu</mat-icon> Customer 360 Timeline
+              <mat-icon>history_edu</mat-icon> Customer 360
+            </button>
+            <button mat-stroked-button style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);" (click)="handleGeneratePortalLink(1)">
+              <mat-icon>link</mat-icon> Portal Magic Link
+            </button>
+            <button mat-stroked-button style="color: #4ade80; border-color: rgba(74, 222, 128, 0.4);" (click)="handleDownloadInvoice(1)">
+              <mat-icon>receipt</mat-icon> Tax Invoice PDF
+            </button>
+            <button mat-stroked-button style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.4);" (click)="handleCheckSubscriptionLimits()">
+              <mat-icon>verified_user</mat-icon> Plan Limits
             </button>
           </div>
         </div>
@@ -1129,12 +1138,15 @@
             </div>
           </div>
 
-          <div style="display: flex; gap: 8px; margin-top: auto;">
-            <button mat-flat-button color="primary" (click)="handleCreateEncounter()" style="flex: 1;">
-              <mat-icon>note_add</mat-icon> Log Clinical Encounter
+          <div style="display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap;">
+            <button mat-flat-button color="primary" (click)="handleCreateEncounter()" style="flex: 1; min-width: 130px;">
+              <mat-icon>note_add</mat-icon> Log Encounter
             </button>
-            <button mat-stroked-button (click)="handleSignOffEncounter(1)" style="flex: 1;">
+            <button mat-stroked-button (click)="handleSignOffEncounter(1)" style="flex: 1; min-width: 130px;">
               <mat-icon>verified</mat-icon> Doctor Sign-Off
+            </button>
+            <button mat-stroked-button color="accent" (click)="handleDownloadPrescription(1)" style="flex: 1; min-width: 130px;">
+              <mat-icon>download</mat-icon> Download Rx PDF
             </button>
           </div>
         </div>

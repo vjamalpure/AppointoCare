@@ -586,6 +586,26 @@ export class IndustryService {
   public getProjectProfitability(projectId: string): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/prof-services/projects/${projectId}/profitability`);
   }
+
+  public downloadEncounterPrescriptionPdf(encounterId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/api/v1/healthcare/encounters/${encounterId}/prescription-pdf`, {
+      responseType: 'blob'
+    });
+  }
+
+  public downloadTransactionInvoicePdf(txnId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/api/v1/transactions/${txnId}/invoice-pdf`, {
+      responseType: 'blob'
+    });
+  }
+
+  public generateCustomerPortalLink(customerId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/customers/${customerId}/portal-link`, {});
+  }
+
+  public getSubscriptionLimits(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/platform/organization/subscription-limits`);
+  }
 }
 
 

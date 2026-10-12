@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from app.models import (
     db, ClinicalEncounter, AppointmentWaitlist, ResourceRoomSchedule,
     DiagnosticLabOrder, ABDMConsentArtifact, Appointment, Customer,
-    AuditLog, User
+    AuditLog, User, Organization
 )
 from datetime import datetime, timedelta
 
@@ -634,3 +634,86 @@ def create_abdm_consent():
             "fhir_bundle_id": consent.fhir_bundle_id
         }
     }), 201
+
+
+@healthcare_bp.route("/encounters/<int:encounter_id>/prescription-pdf", methods=["GET"])
+@jwt_required()
+def download_encounter_prescription_pdf(encounter_id):
+    """Generates official branded E-Prescription (Rx) PDF with Doctor MCI attribution and vitals."""
+    claims = get_jwt()
+    if claims.get("role") not in CLINICAL_ROLES:
+        return jsonify({"msg": "Unauthorized: Clinical credentials required"}), 403
+
+    org_id = _get_org_id()
+    encounter = ClinicalEncounter.query.filter_by(id=encounter_id, organization_id=org_id).first_or_404()
+    org = Organization.query.get(encounter.organization_id)
+    patient = Customer.query.get(encounter.patient_id)
+
+    org_data = {
+        "name": org.name if org else "Healthcare Medical Center",
+        "code": org.code if org else "HEALTH",
+        "sector": org.sector if org else "Healthcare",
+        "phone": getattr(org, "phone", "") or "+91 800-456-7890",
+        "email": getattr(org, "email", "") or "appointments@citycarehealth.com",
+        "address": getattr(org, "address", "") or "Main Clinic Campus, Sector 4"
+    }
+
+    diag_summary = "General Medical Review"
+    if encounter.diagnosis:
+        if isinstance(encounter.diagnosis, list):
+            diag_summary = ", ".join([d.get("description", d.get("code", "Clinical Evaluation")) for d in encounter.diagnosis])
+        else:
+            diag_summary = str(encounter.diagnosis)
+
+    meds = []
+    advice_text = "Adequate rest, hydration, and follow-up as advised."
+    rx_num = f"RX-{encounter.id:05d}"
+    if encounter.prescription_data and isinstance(encounter.prescription_data, dict):
+        meds = encounter.prescription_data.get("medications", [])
+        advice_text = encounter.prescription_data.get("advice", advice_text)
+        rx_num = encounter.prescription_data.get("rx_number", rx_num)
+
+    record_data = {
+        "title": f"Consultation: {encounter.chief_complaints or 'Outpatient'}",
+        "data": {
+            "prescriber": f"{encounter.practitioner_name} (Reg: {encounter.practitioner_reg_no})",
+            "rx_number": rx_num,
+            "diagnosis": diag_summary,
+            "vitals": encounter.vitals or {},
+            "medications": meds,
+            "advice": advice_text,
+            "follow_up": encounter.follow_up_date.strftime("%d %b %Y") if encounter.follow_up_date else "As needed",
+            "signed_at": encounter.signed_at.strftime("%d %b %Y, %I:%M %p") if encounter.signed_at else "Draft"
+        }
+    }
+
+    appt_data = {
+        "customer_name": patient.name if patient else f"Patient #{encounter.patient_id}",
+        "customer_phone": patient.phone if patient else "N/A",
+        "staff_name": encounter.practitioner_name
+    }
+
+    from app.services.pdf_service import generate_prescription_pdf
+    pdf_bytes = generate_prescription_pdf(org_data, record_data, appt_data)
+
+    try:
+        audit = AuditLog(
+            organization_id=org_id,
+            action=f"DOWNLOAD_PRESCRIPTION_PDF: Encounter {encounter.id}",
+            details=f"Downloaded branded E-Prescription for patient {patient.name if patient else encounter.patient_id}",
+            user_role=claims.get("role") or "Doctor",
+            ip_address=request.remote_addr or "127.0.0.1"
+        )
+        db.session.add(audit)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    filename = f"prescription_rx_{rx_num}.pdf"
+    from flask import Response
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+

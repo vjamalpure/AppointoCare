@@ -1291,6 +1291,56 @@ export class IndustrySuiteComponent implements OnInit {
     });
   }
 
+  public subscriptionLimitsData: any = null;
+
+  public handleDownloadPrescription(encounterId: number = 1): void {
+    this.industryService.downloadEncounterPrescriptionPdf(encounterId).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Prescription_Rx_Encounter_${encounterId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open('E-Prescription PDF downloaded successfully', 'OK', { duration: 3000 });
+      },
+      error: () => this.snackBar.open('Could not download prescription PDF', 'Close', { duration: 3000 })
+    });
+  }
+
+  public handleDownloadInvoice(txnId: number = 1): void {
+    this.industryService.downloadTransactionInvoicePdf(txnId).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Tax_Invoice_${txnId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open('Tax Invoice PDF downloaded successfully', 'OK', { duration: 3000 });
+      },
+      error: () => this.snackBar.open('Could not download invoice PDF', 'Close', { duration: 3000 })
+    });
+  }
+
+  public handleGeneratePortalLink(customerId: number = 1): void {
+    this.industryService.generateCustomerPortalLink(customerId).subscribe({
+      next: (res: any) => {
+        this.snackBar.open(`Portal Magic Link: ${res.portal_url} (Code: ${res.auth_code})`, 'Copy', { duration: 6000 });
+      },
+      error: () => this.snackBar.open('Could not generate portal magic link', 'Close', { duration: 3000 })
+    });
+  }
+
+  public handleCheckSubscriptionLimits(): void {
+    this.industryService.getSubscriptionLimits().subscribe({
+      next: (res: any) => {
+        this.subscriptionLimitsData = res;
+        this.snackBar.open(`Plan: ${res.subscription_plan} | Staff: ${res.staff?.current}/${res.staff?.max} | Branches: ${res.branches?.current}/${res.branches?.max}`, 'OK', { duration: 5000 });
+      }
+    });
+  }
+
   public closeFeatureModal(): void {
     this.activeFeatureModal = null;
   }

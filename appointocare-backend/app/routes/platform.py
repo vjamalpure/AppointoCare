@@ -331,10 +331,32 @@ def get_staff():
 @platform_bp.route("/organization/staff", methods=["POST"])
 @require_roles("Admin", "Organization", "Manager")
 def create_staff():
-    from app.models import User
+    from app.models import User, Organization
     from app.utils.hash_helper import hash_password
     data = request.json or {}
     org_id = get_organization_id() if get_jwt().get("role") != "Admin" else int(data.get("organization_id") or 1)
+
+    org = Organization.query.get(org_id)
+    if org and org.subscription_status in ["Suspended", "Stopped"]:
+        return jsonify({
+            "error": "SUBSCRIPTION_SUSPENDED",
+            "msg": f"Organization subscription is {org.subscription_status}. Administrative modifications blocked."
+        }), 403
+
+    # Enforce plan tier staff limits
+    plan = (org.subscription_plan if org else "Basic") or "Basic"
+    tier_limits = {"Basic": 5, "Standard": 10, "Premium": 25, "Enterprise": 999}
+    max_staff = tier_limits.get(plan, 5)
+
+    current_staff_count = User.query.filter_by(organization_id=org_id).count()
+    if current_staff_count >= max_staff:
+        return jsonify({
+            "error": "STAFF_LIMIT_EXCEEDED",
+            "msg": f"Staff seat limit reached for {plan} plan ({current_staff_count}/{max_staff}). Upgrade your plan to invite more team members.",
+            "current_count": current_staff_count,
+            "max_allowed": max_staff,
+            "plan": plan
+        }), 403
 
     username = data.get("username")
     if not username:
@@ -354,6 +376,46 @@ def create_staff():
     db.session.add(user)
     db.session.commit()
     return jsonify({"msg": "Staff member created", "id": user.id}), 201
+
+
+@platform_bp.route("/organization/subscription-limits", methods=["GET"])
+@require_roles("Admin", *ORG_ROLES)
+def get_subscription_limits():
+    """Returns real-time tenant subscription entitlements and staff/branch limits."""
+    from app.models import Organization, User, Branch
+    org_id = get_organization_id() if get_jwt().get("role") != "Admin" else int(request.args.get("organization_id") or 1)
+    org = Organization.query.get(org_id)
+
+    plan = (org.subscription_plan if org else "Basic") or "Basic"
+    tier_staff_limits = {"Basic": 5, "Standard": 10, "Premium": 25, "Enterprise": 999}
+    tier_branch_limits = {"Basic": 1, "Standard": 2, "Premium": 5, "Enterprise": 999}
+
+    staff_count = User.query.filter_by(organization_id=org_id).count()
+    branch_count = Branch.query.filter_by(organization_id=org_id).count()
+
+    max_staff = tier_staff_limits.get(plan, 5)
+    max_branches = tier_branch_limits.get(plan, 1)
+
+    return jsonify({
+        "organization_id": org_id,
+        "organization_name": org.name if org else "Organization",
+        "subscription_plan": plan,
+        "subscription_status": org.subscription_status if org else "Active",
+        "staff": {
+            "current": staff_count,
+            "max": max_staff,
+            "remaining": max(0, max_staff - staff_count)
+        },
+        "branches": {
+            "current": branch_count,
+            "max": max_branches,
+            "remaining": max(0, max_branches - branch_count)
+        },
+        "is_suspended": (org.subscription_status if org else "") in ["Suspended", "Stopped"],
+        "can_add_staff": staff_count < max_staff and (org.subscription_status if org else "") not in ["Suspended", "Stopped"],
+        "can_add_branch": branch_count < max_branches and (org.subscription_status if org else "") not in ["Suspended", "Stopped"]
+    }), 200
+
 
 
 @platform_bp.route("/organization/staff/<int:staff_id>", methods=["PUT"])

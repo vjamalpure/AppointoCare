@@ -6,6 +6,16 @@ from app.models import db, Customer, Organization, Appointment, MessageLog, Appo
 customer_bp = Blueprint("customer_bp", __name__)
 
 
+def _sanitize_cell(val) -> str:
+    """Neutralizes formula injection (CWE-1236) in CSV and spreadsheet exports."""
+    if val is None:
+        return ""
+    text = str(val).strip()
+    if text and text[0] in ("=", "+", "-", "@", "\t", "\r", "%"):
+        return f"'{text}"
+    return text
+
+
 @customer_bp.route("", methods=["GET"])
 @customer_bp.route("/all", methods=["GET"])
 @jwt_required()
@@ -363,7 +373,7 @@ def export_customers():
 
     customers = query.order_by(Customer.created_at.desc()).all()
 
-    export_format = (request.args.get("format") or "json").lower()
+    export_format = (request.args.get("format") or request.args.get("export_format") or "json").lower()
     if export_format not in ["json", "csv", "xlsx"]:
         return jsonify({"msg": f"Unsupported export format '{export_format}'. Allowed: json, csv, xlsx"}), 400
 
@@ -711,8 +721,9 @@ def bulk_import_customers():
     # Log audit
     audit = AuditLog(
         organization_id=org_id,
-        user_name=claims.get("sub") or "Staff",
         action=f"BULK_CUSTOMER_IMPORT: {imported_count} records",
+        details=f"Bulk imported by {claims.get('sub') or 'Staff'}",
+        user_role=claims.get("role") or "Staff",
         ip_address=request.remote_addr or "127.0.0.1"
     )
     db.session.add(audit)
@@ -722,5 +733,53 @@ def bulk_import_customers():
         "msg": f"Successfully imported {imported_count} customer records",
         "imported_count": imported_count
     }), 201
+
+
+@customer_bp.route("/<int:customer_id>/portal-link", methods=["POST"])
+@jwt_required()
+def generate_customer_portal_link(customer_id):
+    """Generates a secure, 72-hour customer self-service portal magic link."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = int(claims.get("organization_id") or 0) if role not in ["Admin", "SuperAdmin"] else None
+
+    query = Customer.query.filter_by(id=customer_id)
+    if org_id:
+        query = query.filter_by(organization_id=org_id)
+    customer = query.first_or_404()
+
+    import secrets
+    from datetime import timedelta
+    token = secrets.token_hex(32)
+    auth_code = f"{secrets.randbelow(900000) + 100000}"
+    expires = datetime.utcnow() + timedelta(hours=72)
+
+    from app.models import CustomerPortalSession
+    # Invalidate previous sessions
+    CustomerPortalSession.query.filter_by(customer_id=customer.id, is_active=True).update({"is_active": False})
+
+    session = CustomerPortalSession(
+        customer_id=customer.id,
+        organization_id=customer.organization_id,
+        session_token=token,
+        auth_code=auth_code,
+        expires_at=expires,
+        is_active=True,
+        communication_preferences={"whatsapp": True, "email": True}
+    )
+    db.session.add(session)
+    db.session.commit()
+
+    portal_url = f"/portal/login?token={token}&org={customer.organization_id}"
+    return jsonify({
+        "msg": "Customer portal magic link generated",
+        "customer_id": customer.id,
+        "customer_name": customer.name,
+        "session_token": token,
+        "auth_code": auth_code,
+        "portal_url": portal_url,
+        "expires_at": expires.isoformat()
+    }), 200
+
 
 
