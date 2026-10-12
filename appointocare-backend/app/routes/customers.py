@@ -496,3 +496,231 @@ def export_customers():
         ]
     })
 
+
+# -----------------------------------------------------------------------------
+# Customer 360 Unified Communication Feed
+# -----------------------------------------------------------------------------
+@customer_bp.route("/<int:customer_id>/unified-timeline", methods=["GET"])
+@jwt_required()
+def get_customer_unified_timeline(customer_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    customer = Customer.query.get_or_404(customer_id)
+
+    if role not in ["Admin", "SuperAdmin"]:
+        org_id = int(claims.get("organization_id") or 0)
+        if customer.organization_id != org_id:
+            return jsonify({"msg": "Unauthorized"}), 403
+
+    from app.models import ClinicalEncounter, CustomerDocument, TaskItem, FinancialLedgerEntry
+
+    events = []
+
+    # 1. Appointments
+    appts = Appointment.query.filter_by(customer_id=customer.id, organization_id=customer.organization_id).all()
+    for a in appts:
+        events.append({
+            "type": "APPOINTMENT",
+            "title": f"Appointment: {a.service_name or 'General Visit'}",
+            "description": f"Status: {a.status} with {a.staff_name or 'Staff'}. Notes: {a.notes or 'None'}",
+            "timestamp": a.appointment_date.isoformat(),
+            "badge_color": "blue" if a.status == "Booked" else ("green" if a.status == "Completed" else "red")
+        })
+
+    # 2. Messages (WhatsApp, SMS, Email)
+    msgs = MessageLog.query.filter(
+        MessageLog.organization_id == customer.organization_id,
+        MessageLog.recipient_number.like(f"%{customer.phone[-10:]}%")
+    ).all()
+    for m in msgs:
+        events.append({
+            "type": "COMMUNICATION",
+            "title": f"{m.message_type} ({m.direction})",
+            "description": m.message_content[:150] + "..." if len(m.message_content) > 150 else m.message_content,
+            "timestamp": m.sent_at.isoformat() if m.sent_at else (m.created_at.isoformat() if m.created_at else datetime.utcnow().isoformat()),
+            "badge_color": "green" if m.status == "Sent" else "amber"
+        })
+
+    # 3. Clinical Encounters
+    encounters = ClinicalEncounter.query.filter_by(patient_id=customer.id, organization_id=customer.organization_id).all()
+    for e in encounters:
+        events.append({
+            "type": "CLINICAL_ENCOUNTER",
+            "title": f"Encounter: {e.encounter_type} (Dr. {e.practitioner_name})",
+            "description": f"Chief Complaints: {e.chief_complaints}. Diagnosis: {e.diagnosis}",
+            "timestamp": e.encounter_date.isoformat(),
+            "badge_color": "purple"
+        })
+
+    # 4. Uploaded Documents
+    docs = CustomerDocument.query.filter_by(customer_id=customer.id, organization_id=customer.organization_id).all()
+    for d in docs:
+        events.append({
+            "type": "DOCUMENT",
+            "title": f"Document: {d.title} ({d.file_name})",
+            "description": f"Uploaded by {d.uploaded_by}. Status: {d.status}",
+            "timestamp": d.created_at.isoformat() if d.created_at else datetime.utcnow().isoformat(),
+            "badge_color": "teal"
+        })
+
+    # 5. Financial Ledger & Transactions
+    ledgers = FinancialLedgerEntry.query.filter_by(customer_id=customer.id, organization_id=customer.organization_id).all()
+    for l in ledgers:
+        events.append({
+            "type": "FINANCIAL",
+            "title": f"Ledger: {l.entry_type}",
+            "description": f"Delta: {l.units_delta} {l.currency_or_unit}. Balance: {l.balance_after}. {l.description or ''}",
+            "timestamp": l.created_at.isoformat() if l.created_at else datetime.utcnow().isoformat(),
+            "badge_color": "indigo"
+        })
+
+    # 6. Assigned Tasks
+    tasks = TaskItem.query.filter_by(customer_id=customer.id, organization_id=customer.organization_id).all()
+    for t in tasks:
+        events.append({
+            "type": "TASK",
+            "title": f"Task: {t.title} ({t.priority})",
+            "description": f"Assigned to: {t.assigned_to_name or 'Staff'}. Status: {t.status}",
+            "timestamp": t.created_at.isoformat() if t.created_at else datetime.utcnow().isoformat(),
+            "badge_color": "amber" if t.status != "Completed" else "green"
+        })
+
+    # Sort descending by timestamp
+    events.sort(key=lambda x: x["timestamp"], reverse=True)
+
+    return jsonify({
+        "customer": {
+            "id": customer.id,
+            "name": customer.name,
+            "phone": customer.phone,
+            "email": customer.email,
+            "tags": customer.tags
+        },
+        "total_events": len(events),
+        "events": events
+    }), 200
+
+
+# -----------------------------------------------------------------------------
+# Batch CSV/XLSX Import Validation & Duplicate Detection
+# -----------------------------------------------------------------------------
+@customer_bp.route("/import-validate", methods=["POST"])
+@jwt_required()
+def validate_customer_import():
+    claims = get_jwt()
+    role = claims.get("role")
+    data = request.json or {}
+
+    if role in ["Admin", "SuperAdmin"]:
+        org_id = int(data.get("organization_id") or claims.get("organization_id") or 1)
+    else:
+        org_id = int(claims.get("organization_id") or 0)
+
+    rows = data.get("rows", [])
+    if not rows or not isinstance(rows, list):
+        return jsonify({"msg": "rows must be a non-empty list of client records"}), 400
+
+    existing_customers = Customer.query.filter_by(organization_id=org_id).all()
+    existing_phones = {c.phone.strip() for c in existing_customers if c.phone}
+    existing_emails = {c.email.strip().lower() for c in existing_customers if c.email}
+
+    valid_records = []
+    duplicate_records = []
+    error_records = []
+
+    seen_batch_phones = set()
+
+    for idx, row in enumerate(rows, start=1):
+        name = str(row.get("name", "")).strip()
+        phone = str(row.get("phone", "")).strip()
+        email = str(row.get("email", "")).strip().lower()
+
+        if not name:
+            error_records.append({"row": idx, "reason": "Missing required field 'name'", "data": row})
+            continue
+
+        if not phone or len(phone) < 7:
+            error_records.append({"row": idx, "reason": "Invalid or missing 'phone'", "data": row})
+            continue
+
+        # Check existing in org DB or duplicate in batch
+        if phone in existing_phones or (email and email in existing_emails):
+            duplicate_records.append({"row": idx, "reason": "Already exists in database", "data": row})
+            continue
+
+        if phone in seen_batch_phones:
+            duplicate_records.append({"row": idx, "reason": "Duplicate phone within uploaded file", "data": row})
+            continue
+
+        seen_batch_phones.add(phone)
+        valid_records.append({
+            "name": name,
+            "phone": phone,
+            "email": email or None,
+            "gender": row.get("gender", "Female"),
+            "tags": row.get("tags", "Imported Client"),
+            "notes": row.get("notes", "Batch CSV/XLSX intake"),
+            "source": row.get("source", "Spreadsheet Import")
+        })
+
+    return jsonify({
+        "summary": {
+            "total_rows_scanned": len(rows),
+            "valid_count": len(valid_records),
+            "duplicate_count": len(duplicate_records),
+            "error_count": len(error_records),
+            "ready_for_import": len(valid_records) > 0
+        },
+        "valid_preview": valid_records[:10],
+        "duplicates": duplicate_records,
+        "errors": error_records
+    }), 200
+
+
+@customer_bp.route("/bulk-import", methods=["POST"])
+@jwt_required()
+def bulk_import_customers():
+    claims = get_jwt()
+    role = claims.get("role")
+    data = request.json or {}
+
+    if role in ["Admin", "SuperAdmin"]:
+        org_id = int(data.get("organization_id") or claims.get("organization_id") or 1)
+    else:
+        org_id = int(claims.get("organization_id") or 0)
+
+    records = data.get("records", [])
+    if not records:
+        return jsonify({"msg": "No records supplied for import"}), 400
+
+    imported_count = 0
+    for r in records:
+        cust = Customer(
+            organization_id=org_id,
+            name=r["name"],
+            phone=r["phone"],
+            email=r.get("email"),
+            gender=r.get("gender", "Female"),
+            tags=r.get("tags", "Imported"),
+            notes=r.get("notes"),
+            source=r.get("source", "Batch Import")
+        )
+        db.session.add(cust)
+        imported_count += 1
+
+    # Log audit
+    audit = AuditLog(
+        organization_id=org_id,
+        user_name=claims.get("sub") or "Staff",
+        action=f"BULK_CUSTOMER_IMPORT: {imported_count} records",
+        ip_address=request.remote_addr or "127.0.0.1"
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Successfully imported {imported_count} customer records",
+        "imported_count": imported_count
+    }), 201
+
+

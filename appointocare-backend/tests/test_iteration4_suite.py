@@ -62,8 +62,13 @@ class Iteration4SuiteTestCase(unittest.TestCase):
         self.assertIn("transitions", wf_data)
 
         # 2. Setup record
-        rec = IndustryRecord.query.filter_by(organization_id=1).first()
+        rec = IndustryRecord.query.filter_by(organization_id=1, sector="Healthcare").first()
+        if not rec:
+            rec = IndustryRecord.query.filter_by(organization_id=1).first()
+            if rec:
+                rec.sector = "Healthcare"
         self.assertIsNotNone(rec)
+        rec.sector = "Healthcare"
         rec.status = "Triage_Pending"
         rec_data = dict(rec.data or {})
         rec_data["triage_priority"] = "Urgent Level 2"

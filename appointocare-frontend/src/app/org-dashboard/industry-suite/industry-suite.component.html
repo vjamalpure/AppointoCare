@@ -95,6 +95,14 @@
       <mat-icon>auto_awesome</mat-icon>
       <span>Industry Feature Packs & Gateways</span>
     </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'command_center'"
+      (click)="activeTab = 'command_center'; loadTasks(); loadPipelines(); loadClinicalCommandCenter()">
+      <mat-icon>dashboard_customize</mat-icon>
+      <span>Clinical & Commercial Command Center</span>
+    </button>
   </div>
 
   <!-- ========================================== -->
@@ -1041,6 +1049,359 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+    <!-- ============================================================== -->
+    <!-- Tab 7: Clinical Command Center & Commercial Workbench (Iter 5)  -->
+    <!-- ============================================================== -->
+    <div class="tab-pane" *ngIf="activeTab === 'command_center'">
+      <!-- Hero Banner Strip -->
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 8px;">
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px;">verified</mat-icon>
+              Iteration 5: Commercial Workflow Engine & Clinical Hub
+            </div>
+            <h2 style="margin: 0 0 6px; font-size: 20px; font-weight: 700; color: #f8fafc;">Enterprise Clinical Command Center & Commercial Workbench</h2>
+            <p style="margin: 0; font-size: 13px; color: #94a3b8; max-width: 750px;">
+              Production-grade longitudinal patient encounters, doctor attribution, real-time waitlists, conflict-free room scheduling, diagnostic orders, ABDM consent artifacts, reusable task escalation, and 8-industry vertical deepening.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button mat-stroked-button style="color: #ffffff; border-color: rgba(255, 255, 255, 0.2);" (click)="loadClinicalCommandCenter(); loadTasks(); loadPipelines()">
+              <mat-icon>refresh</mat-icon> Sync Live State
+            </button>
+            <button mat-flat-button color="accent" (click)="loadCustomerUnifiedTimeline(1)">
+              <mat-icon>history_edu</mat-icon> Customer 360 Timeline
+            </button>
+          </div>
+        </div>
+
+        <!-- Clinic Operational Real-Time Counters Strip -->
+        <div *ngIf="clinicDashboardData?.clinic_metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+            <span style="font-size: 11px; color: #94a3b8; display: block;">Avg Wait Time</span>
+            <span style="font-size: 20px; font-weight: 800; color: #38bdf8;">{{ clinicDashboardData.clinic_metrics.average_patient_wait_time_minutes }} mins</span>
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+            <span style="font-size: 11px; color: #94a3b8; display: block;">Room Occupancy</span>
+            <span style="font-size: 20px; font-weight: 800; color: #4ade80;">{{ clinicDashboardData.clinic_metrics.room_occupancy_percentage }}%</span>
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+            <span style="font-size: 11px; color: #94a3b8; display: block;">Active Waitlist</span>
+            <span style="font-size: 20px; font-weight: 800; color: #fbbf24;">{{ clinicDashboardData.clinic_metrics.waitlist_active_count }} Patients</span>
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+            <span style="font-size: 11px; color: #94a3b8; display: block;">Documentation Rate</span>
+            <span style="font-size: 20px; font-weight: 800; color: #a78bfa;">{{ clinicDashboardData.clinic_metrics.clinical_documentation_compliance_rate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: HEALTHCARE CLINICAL COMMAND CENTER -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <!-- Card 1: Clinical Encounter Documentation -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="margin: 0; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <mat-icon color="primary">clinical_notes</mat-icon> Patient Clinical Journey & Encounter
+            </h3>
+            <span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 12px; font-weight: 600;">Practo & Epic Parity</span>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin: 0 0 14px;">
+            Structured clinical documentation with standardized vitals, chief complaints, differential diagnosis, and doctor sign-off attribution (MCI-2018-9410).
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: #475569;">Chief Complaints</label>
+              <input type="text" [(ngModel)]="newEncounterChiefComplaint" class="custom-input" style="width: 100%;" />
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: #475569;">Structured Clinical Notes (SOAP)</label>
+              <textarea [(ngModel)]="newEncounterNotes" rows="2" class="custom-input" style="width: 100%;"></textarea>
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: #475569;">Prescribed Pharmacopeia (Rx)</label>
+              <input type="text" [(ngModel)]="newEncounterRx" class="custom-input" style="width: 100%;" />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: auto;">
+            <button mat-flat-button color="primary" (click)="handleCreateEncounter()" style="flex: 1;">
+              <mat-icon>note_add</mat-icon> Log Clinical Encounter
+            </button>
+            <button mat-stroked-button (click)="handleSignOffEncounter(1)" style="flex: 1;">
+              <mat-icon>verified</mat-icon> Doctor Sign-Off
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: Appointment Waitlist & Collision-Free Room Scheduling -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="margin: 0; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <mat-icon color="accent">event_available</mat-icon> Waitlist & Room Scheduling
+            </h3>
+            <span style="font-size: 11px; background: #fef3c7; color: #b45309; padding: 3px 8px; border-radius: 12px; font-weight: 600;">Zero-Collision</span>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin: 0 0 14px;">
+            Manage urgent waitlisted patients with automatic slot promotion. Reserve consultation rooms and surgical suites with collision prevention.
+          </p>
+
+          <!-- Waitlist List -->
+          <div style="max-height: 140px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 6px; padding: 8px; margin-bottom: 14px;">
+            <div *ngIf="waitlistItems.length === 0" style="font-size: 12px; color: #94a3b8; text-align: center; padding: 12px;">
+              No waitlisted patients. Click below to add.
+            </div>
+            <div *ngFor="let w of waitlistItems" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f8fafc;">
+              <div>
+                <strong style="font-size: 12px; color: #0f172a;">{{ w.customer_name }}</strong>
+                <span style="font-size: 10px; margin-left: 6px; padding: 2px 6px; border-radius: 4px; font-weight: 700; background: #fee2e2; color: #b91c1c;">
+                  {{ w.urgency }}
+                </span>
+                <div style="font-size: 11px; color: #64748b;">{{ w.preferred_practitioner }}</div>
+              </div>
+              <button mat-button color="primary" style="font-size: 11px; height: 28px; line-height: 28px;" (click)="handlePromoteWaitlist(w.id)">
+                Promote to Booked
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: auto;">
+            <button mat-stroked-button (click)="handleAddToWaitlist()" style="flex: 1;">
+              <mat-icon>person_add</mat-icon> Add to Waitlist
+            </button>
+            <button mat-stroked-button color="accent" (click)="handleReserveRoom()" style="flex: 1;">
+              <mat-icon>meeting_room</mat-icon> Schedule Room
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3: Diagnostic Lab Orders & ABDM Consent -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="margin: 0; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <mat-icon color="primary">biotech</mat-icon> Lab Orders & ABDM Consent
+            </h3>
+            <span style="font-size: 11px; background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 12px; font-weight: 600;">ABDM M1 Ready</span>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin: 0 0 14px;">
+            Physician diagnostic lab orders (Pathology, Biochemistry) with specimen tracking, doctor review, and ABDM Patient Consent artifacts.
+          </p>
+
+          <div style="max-height: 140px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 6px; padding: 8px; margin-bottom: 14px;">
+            <div *ngIf="labOrdersList.length === 0" style="font-size: 12px; color: #94a3b8; text-align: center; padding: 12px;">
+              No active diagnostic orders. Issue a new lab panel below.
+            </div>
+            <div *ngFor="let ord of labOrdersList" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f8fafc;">
+              <div>
+                <strong style="font-size: 12px; color: #0f172a;">{{ ord.test_name }}</strong>
+                <span style="font-size: 10px; margin-left: 6px; padding: 2px 6px; border-radius: 4px; font-weight: 700; background: #e0f2fe; color: #0369a1;">
+                  {{ ord.status }}
+                </span>
+                <div style="font-size: 11px; color: #64748b;">Doc: {{ ord.ordering_doctor }} • {{ ord.order_number }}</div>
+              </div>
+              <button mat-button color="accent" style="font-size: 11px; height: 28px; line-height: 28px;" (click)="handleReviewLabOrder(ord.id)">
+                Review Results
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: auto;">
+            <button mat-stroked-button (click)="handleCreateLabOrder()" style="flex: 1;">
+              <mat-icon>biotech</mat-icon> Issue Lab Order
+            </button>
+            <button mat-flat-button color="accent" (click)="handleIssueAbdmConsent()" style="flex: 1;">
+              <mat-icon>security</mat-icon> Issue ABDM Consent
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: SHARED COMMERCIAL WORKBENCH -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <!-- Card 4: Enterprise Task Management -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="margin: 0; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <mat-icon color="primary">task_alt</mat-icon> Reusable Task Manager & Escalations
+            </h3>
+            <span style="font-size: 11px; background: #f1f5f9; color: #334155; padding: 3px 8px; border-radius: 12px; font-weight: 600;" *ngIf="taskSummary">
+              {{ taskSummary.pending }} Pending • {{ taskSummary.urgent }} Urgent
+            </span>
+          </div>
+
+          <!-- Add Task Inline -->
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input type="text" [(ngModel)]="newTaskTitle" placeholder="Task title..." class="custom-input" style="flex: 2;" />
+            <select [(ngModel)]="newTaskPriority" class="custom-input" style="flex: 1;">
+              <option value="Urgent">Urgent</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <button mat-flat-button color="primary" (click)="handleCreateTask()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <!-- Tasks List -->
+          <div style="max-height: 180px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 6px; padding: 8px; margin-bottom: 12px;">
+            <div *ngIf="tasksList.length === 0" style="font-size: 12px; color: #94a3b8; text-align: center; padding: 12px;">
+              No pending tasks. Create one above.
+            </div>
+            <div *ngFor="let t of tasksList" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8fafc;">
+              <div>
+                <strong style="font-size: 12px; color: #0f172a;">{{ t.title }}</strong>
+                <span [style.background]="t.priority === 'Urgent' ? '#fee2e2' : '#f1f5f9'"
+                      [style.color]="t.priority === 'Urgent' ? '#b91c1c' : '#334155'"
+                      style="font-size: 10px; margin-left: 6px; padding: 2px 6px; border-radius: 4px; font-weight: 700;">
+                  {{ t.priority }}
+                </span>
+                <span *ngIf="t.status === 'Overdue'" style="font-size: 10px; margin-left: 4px; padding: 2px 6px; border-radius: 4px; font-weight: 700; background: #fef2f2; color: #ef4444;">
+                  OVERDUE
+                </span>
+                <div style="font-size: 11px; color: #64748b;">Assignee: {{ t.assigned_to_name }}</div>
+              </div>
+              <div style="display: flex; gap: 4px;">
+                <button mat-icon-button color="warn" title="Escalate Priority" (click)="handleEscalateTask(t.id)">
+                  <mat-icon style="font-size: 18px;">warning</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" title="Complete Task" (click)="handleCompleteTask(t.id)">
+                  <mat-icon style="font-size: 18px;">check_circle</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Configurable Business Pipelines & Safe Import Validation -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="margin: 0; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <mat-icon color="accent">view_kanban</mat-icon> Sector Deal Pipelines & Import Guard
+            </h3>
+            <span style="font-size: 11px; background: #ede9fe; color: #6d28d9; padding: 3px 8px; border-radius: 12px; font-weight: 600;">Pipelines</span>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin: 0 0 14px;">
+            Multi-stage pipelines with stage probability and deal transitions. Safe batch import with duplicate phone/email detection.
+          </p>
+
+          <div *ngIf="pipelinesList.length > 0" style="margin-bottom: 12px; border: 1px solid #f1f5f9; border-radius: 6px; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="font-size: 13px; color: #0f172a;">{{ pipelinesList[0].name }}</strong>
+              <span style="font-size: 12px; color: #16a34a; font-weight: 700;">Value: ₹{{ pipelinesList[0].pipeline_value | number }}</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span *ngFor="let stg of pipelinesList[0].stages" style="font-size: 11px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 4px;">
+                {{ stg.name }} ({{ stg.probability }}%)
+              </span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: auto;">
+            <button mat-stroked-button (click)="handleValidateCustomerImport()" style="flex: 1;">
+              <mat-icon>file_upload</mat-icon> Validate CSV Import
+            </button>
+            <button mat-stroked-button color="primary" (click)="loadPipelines()" style="flex: 1;">
+              <mat-icon>refresh</mat-icon> Refresh Pipeline
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: 8-INDUSTRY DOMAIN DEEPENING QUICK-ACTION MATRIX -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+        <h3 style="margin: 0 0 16px; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <mat-icon color="primary">hub</mat-icon> Domain Deepening Workflows Across All Verticals
+        </h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+          <!-- Salon -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Salon & Wellness</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">Membership renewals & loyalty redemption</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleRenewSalonMembership('MEM-GOLD-01')">Renew 12 Mo</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleRedeemLoyalty()">Redeem 250 Pts</button>
+            </div>
+          </div>
+
+          <!-- Finance -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Finance & Wealth</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">Investor suitability & fee schedule</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleReviewFinanceSuitability()">Suitability Audit</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleCalcAumFee()">AUM Fee Calc</button>
+            </div>
+          </div>
+
+          <!-- Insurance -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Insurance Brokerage</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">Quote binding & claims verification</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleConvertQuoteToPolicy()">Bind Policy</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleVerifyClaimDocs('CLM-2026-99')">Verify TPA Docs</button>
+            </div>
+          </div>
+
+          <!-- Retail -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Retail & Luxury</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">Sales orders & multi-branch stock</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleCreateRetailOrder()">Create Order</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="loadRetailCatalog()">Stock Visibility</button>
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Education & Study Abroad</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">Lead enrollment & counselor workload</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleConvertEducationLead()">Convert Lead</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleCounselorWorkload()">Workload Matrix</button>
+            </div>
+          </div>
+
+          <!-- Legal -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Legal & Consultancy</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">Court deadlines & partner time signoff</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleLegalLimitationDeadlines()">Court Dates</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleLegalTimeSignoff('TIME-101')">Time Sign-off</button>
+            </div>
+          </div>
+
+          <!-- Real Estate -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Real Estate</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">VIP site visits & property matching</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleScheduleSiteVisit()">Schedule Visit</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="loadRealEstateProperties()">Property Match</button>
+            </div>
+          </div>
+
+          <!-- Professional Services -->
+          <div style="border: 1px solid #f1f5f9; border-radius: 8px; padding: 14px; background: #fafafa;">
+            <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 4px;">Professional Services</strong>
+            <p style="font-size: 11px; color: #64748b; margin: 0 0 10px;">Timesheets & project budget margin</p>
+            <div style="display: flex; gap: 6px;">
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleTimesheetApproval('TS-401')">Approve Timesheet</button>
+              <button mat-stroked-button style="font-size: 11px;" (click)="handleProjectProfitability()">Gross Margin</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Active Feature Result Modal Overlays -->
     <div class="modal-backdrop" *ngIf="activeFeatureModal" (click)="closeFeatureModal()">
@@ -1180,7 +1541,6 @@
         </div>
       </div>
     </div>
-  </div>
 
   <!-- Modal: Issue New Token -->
   <div class="modal-backdrop" *ngIf="showTokenModal" (click)="showTokenModal = false">
@@ -1569,4 +1929,3 @@
       </div>
     </div>
   </div>
-</div>

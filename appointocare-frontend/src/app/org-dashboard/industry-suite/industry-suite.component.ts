@@ -16,7 +16,7 @@ export class IndustrySuiteComponent implements OnInit {
   records: IndustryRecordItem[] = [];
   benchmarks: any = null;
 
-  activeTab: 'tool' | 'queue' | 'addons' | 'records' | 'analytics' | 'workflows' | 'intelligence' = 'tool';
+  activeTab: 'tool' | 'queue' | 'addons' | 'records' | 'analytics' | 'workflows' | 'intelligence' | 'command_center' = 'tool';
   loading = false;
   savingRecord = false;
 
@@ -956,6 +956,338 @@ export class IndustrySuiteComponent implements OnInit {
         this.integrationList = Object.values(res.integrations || {});
         this.activeFeatureModal = 'integrations_status';
       }
+    });
+  }
+
+  // =========================================================================
+  // ITERATION 5: CLINICAL COMMAND CENTER & COMMERCIAL WORKBENCH
+  // =========================================================================
+  public tasksList: any[] = [];
+  public taskSummary: any = null;
+  public newTaskTitle = '';
+  public newTaskPriority = 'Medium';
+  public pipelinesList: any[] = [];
+  public waitlistItems: any[] = [];
+  public labOrdersList: any[] = [];
+  public clinicDashboardData: any = null;
+  public customerTimelineData: any = null;
+  public clinicalEncountersList: any[] = [];
+  public roomReservations: any[] = [];
+  public importValidationSummary: any = null;
+  public newEncounterChiefComplaint = 'Episodic chest tightness and breathlessness on exertion';
+  public newEncounterNotes = 'Patient alert, oriented. Vitals stable. Systemic examination normal.';
+  public newEncounterRx = 'Telmisartan 40mg OD, Atorvastatin 20mg HS';
+
+  public loadTasks(): void {
+    this.industryService.getTasks().subscribe({
+      next: (res) => {
+        this.tasksList = res || [];
+      }
+    });
+    this.industryService.getTaskSummary().subscribe({
+      next: (res) => {
+        this.taskSummary = res;
+      }
+    });
+  }
+
+  public handleCreateTask(): void {
+    if (!this.newTaskTitle.trim()) {
+      this.snackBar.open('Please enter a task title', 'Dismiss', { duration: 3000 });
+      return;
+    }
+    this.industryService.createTask({
+      title: this.newTaskTitle,
+      priority: this.newTaskPriority,
+      assigned_to_name: 'Lead Specialist'
+    }).subscribe({
+      next: () => {
+        this.snackBar.open('Task created successfully', 'OK', { duration: 3000 });
+        this.newTaskTitle = '';
+        this.loadTasks();
+      }
+    });
+  }
+
+  public handleEscalateTask(taskId: number): void {
+    this.industryService.escalateTask(taskId).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadTasks();
+      }
+    });
+  }
+
+  public handleCompleteTask(taskId: number): void {
+    this.industryService.updateTask(taskId, { status: 'Completed' }).subscribe({
+      next: () => {
+        this.snackBar.open('Task marked completed', 'OK', { duration: 3000 });
+        this.loadTasks();
+      }
+    });
+  }
+
+  public loadPipelines(): void {
+    this.industryService.getPipelines(this.sector).subscribe({
+      next: (res) => {
+        this.pipelinesList = res || [];
+      }
+    });
+  }
+
+  public handleMoveDeal(pipelineId: number, dealId: string, stageId: string): void {
+    this.industryService.movePipelineDeal(pipelineId, dealId, stageId).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadPipelines();
+      }
+    });
+  }
+
+  public loadClinicalCommandCenter(): void {
+    this.industryService.getHealthcareWaitlist().subscribe({
+      next: (res) => {
+        this.waitlistItems = res || [];
+      }
+    });
+    this.industryService.getLabOrders().subscribe({
+      next: (res) => {
+        this.labOrdersList = res || [];
+      }
+    });
+    this.industryService.getClinicOperationalDashboard().subscribe({
+      next: (res) => {
+        this.clinicDashboardData = res;
+      }
+    });
+    this.industryService.getResourceAvailability().subscribe({
+      next: (res) => {
+        this.roomReservations = res.active_reservations || [];
+      }
+    });
+    const patientId = this.records.length && this.records[0].customer_id ? this.records[0].customer_id : 1;
+    this.industryService.getPatientEncounters(patientId).subscribe({
+      next: (res) => {
+        this.clinicalEncountersList = res || [];
+      }
+    });
+  }
+
+  public handleCreateEncounter(): void {
+    const patientId = this.records.length && this.records[0].customer_id ? this.records[0].customer_id : 1;
+    this.industryService.createClinicalEncounter({
+      patient_id: patientId,
+      encounter_type: 'Outpatient Consultation',
+      practitioner_name: 'Dr. Sarah Jenkins',
+      practitioner_reg_no: 'MCI-2018-9410',
+      chief_complaints: this.newEncounterChiefComplaint,
+      clinical_notes: this.newEncounterNotes,
+      vitals: { bp_systolic: 128, bp_diastolic: 82, pulse: 76, temp_f: 98.6, spo2: 99, bmi: 22.8 },
+      prescription_data: { rx_number: `RX-${Date.now()}`, medications: [{ name: this.newEncounterRx, dose: 'OD' }] }
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open('Clinical encounter created & vitals logged', 'OK', { duration: 4000 });
+        this.loadClinicalCommandCenter();
+      }
+    });
+  }
+
+  public handleSignOffEncounter(encounterId: number): void {
+    this.industryService.signOffClinicalEncounter(encounterId, { practitioner_reg_no: 'MCI-2018-9410' }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 4000 });
+        this.loadClinicalCommandCenter();
+      }
+    });
+  }
+
+  public handleAddToWaitlist(): void {
+    this.industryService.addToHealthcareWaitlist({
+      customer_name: 'Aditi Deshmukh',
+      customer_phone: '9822334455',
+      urgency: 'Urgent',
+      preferred_practitioner: 'Dr. Sarah Jenkins',
+      notes: 'Request earlier slot on cancellation for cardiac follow-up'
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 4000 });
+        this.loadClinicalCommandCenter();
+      }
+    });
+  }
+
+  public handlePromoteWaitlist(waitlistId: number): void {
+    this.industryService.promoteHealthcareWaitlist(waitlistId).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 4000 });
+        this.loadClinicalCommandCenter();
+      }
+    });
+  }
+
+  public handleReserveRoom(): void {
+    const start = new Date(Date.now() + 3600000).toISOString();
+    const end = new Date(Date.now() + 7200000).toISOString();
+    this.industryService.scheduleResourceRoom({
+      resource_name: `Consultation Suite ${Math.floor(Math.random() * 5) + 101}`,
+      start_time: start,
+      end_time: end,
+      assigned_practitioner: 'Dr. Sarah Jenkins'
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadClinicalCommandCenter();
+      },
+      error: (err) => {
+        this.snackBar.open(err.error?.msg || 'Resource collision detected', 'Dismiss', { duration: 4000 });
+      }
+    });
+  }
+
+  public handleCreateLabOrder(): void {
+    const patientId = this.records.length && this.records[0].customer_id ? this.records[0].customer_id : 1;
+    this.industryService.createLabOrder({
+      customer_id: patientId,
+      test_name: 'Complete Metabolic & Lipid Panel',
+      category: 'Biochemistry',
+      ordering_doctor: 'Dr. Sarah Jenkins'
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadClinicalCommandCenter();
+      }
+    });
+  }
+
+  public handleReviewLabOrder(orderId: number): void {
+    this.industryService.reviewLabOrder(orderId, {
+      doctor_review_notes: 'Biological markers within acceptable clinical parameters.'
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadClinicalCommandCenter();
+      }
+    });
+  }
+
+  public handleIssueAbdmConsent(): void {
+    const patientId = this.records.length && this.records[0].customer_id ? this.records[0].customer_id : 1;
+    this.industryService.issueAbdmConsent({ patient_id: patientId }).subscribe({
+      next: (res) => {
+        this.snackBar.open(`ABDM Consent Artifact Issued (Req: ${res.consent.consent_request_id})`, 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  public loadCustomerUnifiedTimeline(customerId = 1): void {
+    this.industryService.getCustomerUnifiedTimeline(customerId).subscribe({
+      next: (res) => {
+        this.customerTimelineData = res;
+        this.activeFeatureModal = 'customer_timeline';
+      }
+    });
+  }
+
+  public handleValidateCustomerImport(): void {
+    const sampleRows = [
+      { name: 'Dr. Alistair Finch', phone: '9871122334', email: 'alistair@finch.org', tags: 'VIP Client' },
+      { name: 'Meera Nambiar', phone: '9845566778', email: 'meera@nambiar.io', tags: 'Corporate' },
+      { name: '', phone: '123' } // Intentional invalid test row
+    ];
+    this.industryService.validateCustomerImport(sampleRows).subscribe({
+      next: (res) => {
+        this.importValidationSummary = res.summary;
+        this.snackBar.open(`Import validation: ${res.summary.valid_count} valid, ${res.summary.error_count} errors`, 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  public handleRenewSalonMembership(membershipId: string): void {
+    this.industryService.renewSalonMembership(membershipId, { renewal_months: 12, fee_amount: 14999 }).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 3000 })
+    });
+  }
+
+  public handleRedeemLoyalty(): void {
+    this.industryService.redeemSalonLoyalty({ customer_id: 1, points: 250 }).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 3000 })
+    });
+  }
+
+  public handleReviewFinanceSuitability(): void {
+    this.industryService.reviewFinanceSuitability({ customer_id: 1, risk_score: 75 }).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleConvertQuoteToPolicy(): void {
+    this.industryService.convertQuoteToPolicy({ quote_id: 'Q-PREMIUM-101', carrier: 'Star Health', annual_premium: 26500 }).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleVerifyClaimDocs(claimId: string): void {
+    this.industryService.verifyClaimDocs(claimId, { claimed_amount: 120000 }).subscribe({
+      next: (res) => this.snackBar.open(`TPA Verdict: ${res.underwriting_verdict}`, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleCreateRetailOrder(): void {
+    this.industryService.createRetailOrder({ customer_name: 'VIP Client' }).subscribe({
+      next: (res) => this.snackBar.open(`Sales Order ${res.order_number} created (Total: ₹${res.total_inr.toLocaleString()})`, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleConvertEducationLead(): void {
+    this.industryService.convertEducationLead({ student_name: 'Aarav Sharma' }).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleLegalLimitationDeadlines(): void {
+    this.industryService.getLegalLimitationDeadlines().subscribe({
+      next: (res) => {
+        const count = res.critical_court_deadlines?.length || 0;
+        this.snackBar.open(`Court Deadlines: ${count} active matters tracked`, 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  public handleScheduleSiteVisit(): void {
+    this.industryService.scheduleRealEstateSiteVisit({ property_id: 'PROP-SEA-PENTHOUSE' }).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleTimesheetApproval(tsId: string): void {
+    this.industryService.approveTimesheet(tsId).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 3000 })
+    });
+  }
+
+  public handleProjectProfitability(): void {
+    this.industryService.getProjectProfitability('PRJ-CLOUD-ENTERPRISE').subscribe({
+      next: (res) => {
+        this.snackBar.open(`Project Gross Margin: ₹${res.gross_profit_inr.toLocaleString()} (${res.profit_margin_percentage}%)`, 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  public handleCalcAumFee(): void {
+    this.industryService.calculateAdvisoryFees({ aum_inr: 50000000, portfolio_type: 'Growth Equity' }).subscribe({
+      next: (res: any) => this.snackBar.open(`Annual AUM Fee: ₹${res.annual_advisory_fee_inr?.toLocaleString()} (${res.effective_fee_percentage}%)`, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleCounselorWorkload(): void {
+    this.industryService.getCounselorWorkload().subscribe({
+      next: (res) => this.snackBar.open(`Counselor Matrix: ${res.total_counselors} counselors managing ${res.active_students_managed} students`, 'OK', { duration: 4000 })
+    });
+  }
+
+  public handleLegalTimeSignoff(timeId: string): void {
+    this.industryService.approveLegalTimeEntry(timeId).subscribe({
+      next: (res) => this.snackBar.open(res.msg, 'OK', { duration: 3000 })
     });
   }
 

@@ -374,6 +374,218 @@ export class IndustryService {
   public getPlatformIntegrationsStatus(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/platform/integrations/status`);
   }
+
+  // =========================================================================
+  // ITERATION 5: SHARED COMMERCIAL WORKBENCH & HEALTHCARE CLINICAL ENGINE
+  // =========================================================================
+
+  // Tasks Management
+  public getTasks(params?: any): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/v1/tasks`, { params });
+  }
+
+  public createTask(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/tasks`, payload);
+  }
+
+  public updateTask(taskId: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/api/v1/tasks/${taskId}`, payload);
+  }
+
+  public escalateTask(taskId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/tasks/${taskId}/escalate`, {});
+  }
+
+  public getTaskSummary(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/tasks/summary`);
+  }
+
+  // Business Pipelines
+  public getPipelines(sector?: string): Observable<any[]> {
+    const url = sector ? `${this.baseUrl}/api/v1/pipelines?sector=${encodeURIComponent(sector)}` : `${this.baseUrl}/api/v1/pipelines`;
+    return this.http.get<any[]>(url);
+  }
+
+  public addPipelineDeal(pipelineId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/pipelines/${pipelineId}/deals`, payload);
+  }
+
+  public movePipelineDeal(pipelineId: number, dealId: string, stageId: string): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/api/v1/pipelines/${pipelineId}/deals/${dealId}/move`, { stage_id: stageId });
+  }
+
+  // Documents & Electronic Approvals
+  public getDocumentVersions(docId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/v1/documents/${docId}/versions`);
+  }
+
+  public addDocumentVersion(docId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/documents/${docId}/versions`, payload);
+  }
+
+  public auditDocumentDownload(docId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/documents/${docId}/audit-download`, {});
+  }
+
+  public createApproval(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/documents/approvals`, payload);
+  }
+
+  public getApprovals(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/v1/documents/approvals`);
+  }
+
+  // Healthcare Clinical Command Center
+  public createClinicalEncounter(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/encounters`, payload);
+  }
+
+  public getClinicalEncounter(encounterId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/healthcare/encounters/${encounterId}`);
+  }
+
+  public signOffClinicalEncounter(encounterId: number, payload?: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/encounters/${encounterId}/sign-off`, payload || {});
+  }
+
+  public getPatientEncounters(patientId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/v1/healthcare/encounters/patient/${patientId}`);
+  }
+
+  public addToHealthcareWaitlist(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/waitlist`, payload);
+  }
+
+  public getHealthcareWaitlist(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/v1/healthcare/waitlist`);
+  }
+
+  public promoteHealthcareWaitlist(waitlistId: number, payload?: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/waitlist/${waitlistId}/promote`, payload || {});
+  }
+
+  public scheduleResourceRoom(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/resources/schedule`, payload);
+  }
+
+  public getResourceAvailability(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/healthcare/resources/availability`);
+  }
+
+  public createLabOrder(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/lab-orders`, payload);
+  }
+
+  public reviewLabOrder(orderId: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/api/v1/healthcare/lab-orders/${orderId}/review`, payload);
+  }
+
+  public getLabOrders(status?: string): Observable<any[]> {
+    const url = status ? `${this.baseUrl}/api/v1/healthcare/lab-orders?status=${status}` : `${this.baseUrl}/api/v1/healthcare/lab-orders`;
+    return this.http.get<any[]>(url);
+  }
+
+  public getClinicOperationalDashboard(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/healthcare/operational-dashboard`);
+  }
+
+  public issueAbdmConsent(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/abdm/consent`, payload);
+  }
+
+  // Customer 360 Timeline & Batch Import
+  public getCustomerUnifiedTimeline(customerId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/customers/${customerId}/unified-timeline`);
+  }
+
+  public validateCustomerImport(rows: any[]): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/customers/import-validate`, { rows });
+  }
+
+  public bulkImportCustomers(records: any[]): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/customers/bulk-import`, { records });
+  }
+
+  // Eight Industry Domain Deepening Actions
+  public renewSalonMembership(membershipId: string, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/salon/memberships/${membershipId}/renew`, payload);
+  }
+
+  public redeemSalonLoyalty(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/salon/loyalty/redeem`, payload);
+  }
+
+  public getLowStockConsumables(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/salon/consumables/low-stock`);
+  }
+
+  public reviewFinanceSuitability(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/finance/suitability-review`, payload);
+  }
+
+  public calculateAdvisoryFees(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/finance/fees/calculate`, payload);
+  }
+
+  public convertQuoteToPolicy(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/insurance/quote-to-policy`, payload);
+  }
+
+  public verifyClaimDocs(claimId: string, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/insurance/claims/${claimId}/verify-docs`, payload);
+  }
+
+  public createRetailOrder(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/retail/orders`, payload);
+  }
+
+  public getRetailClienteling(customerId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/retail/clienteling/${customerId}`);
+  }
+
+  public getRetailStockVisibility(sku: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/retail/stock-visibility?sku=${encodeURIComponent(sku)}`);
+  }
+
+  public convertEducationLead(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/education/lead-conversion`, payload);
+  }
+
+  public getCounselorWorkload(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/education/counselor-workload`);
+  }
+
+  public setupTuitionSchedule(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/education/tuition-schedule`, payload);
+  }
+
+  public getLegalLimitationDeadlines(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/legal/limitation-deadlines`);
+  }
+
+  public approveLegalTimeEntry(entryId: any, payload: any = {}): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/legal/time-entries/${entryId}/approve`, payload);
+  }
+
+  public scheduleRealEstateSiteVisit(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/real-estate/site-visits`, payload);
+  }
+
+  public matchBuyerProperties(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/real-estate/property-match`, payload);
+  }
+
+  public submitTimesheet(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/prof-services/timesheets/submit`, payload);
+  }
+
+  public approveTimesheet(timesheetId: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/prof-services/timesheets/${timesheetId}/approve`, {});
+  }
+
+  public getProjectProfitability(projectId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/prof-services/projects/${projectId}/profitability`);
+  }
 }
 
 

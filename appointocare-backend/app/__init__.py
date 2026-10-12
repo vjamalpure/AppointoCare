@@ -64,6 +64,10 @@ def create_app():
     from .routes.customer_portal import customer_portal_bp
     from .routes.analytics import analytics_bp
     from .routes.automation import automation_bp
+    from .routes.tasks import tasks_bp
+    from .routes.pipelines import pipelines_bp
+    from .routes.documents import documents_bp
+    from .routes.healthcare import healthcare_bp
 
     # Auth & Admin & Core
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -104,4 +108,11 @@ def create_app():
     app.register_blueprint(analytics_bp, url_prefix="/api/v1/analytics")
     app.register_blueprint(automation_bp, url_prefix="/api/v1/automations")
 
+    # Iteration 5: Tasks, Pipelines, Documents & Healthcare Clinical Engine
+    app.register_blueprint(tasks_bp, url_prefix="/api/v1/tasks")
+    app.register_blueprint(pipelines_bp, url_prefix="/api/v1/pipelines")
+    app.register_blueprint(documents_bp, url_prefix="/api/v1/documents")
+    app.register_blueprint(healthcare_bp, url_prefix="/api/v1/healthcare")
+
     return app
+

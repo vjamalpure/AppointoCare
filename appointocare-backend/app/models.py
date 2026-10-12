@@ -592,6 +592,213 @@ class CustomerDocument(db.Model):
     status = db.Column(db.String(50), default="Verified")  # Pending_Review, Verified, Rejected
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    versions = db.relationship("DocumentVersion", backref="document", lazy=True, cascade="all, delete-orphan")
+
+
+# -----------------------------------------------------------------------------
+# Iteration 5: Enterprise Task Management, Pipelines & Shared Capabilities
+# -----------------------------------------------------------------------------
+class TaskItem(db.Model):
+    __tablename__ = "task_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    priority = db.Column(db.String(30), default="Medium")  # Urgent, High, Medium, Low
+    status = db.Column(db.String(30), default="Pending")    # Pending, In_Progress, Completed, Overdue, Cancelled
+    assigned_to_user_id = db.Column(db.Integer, nullable=True)
+    assigned_to_name = db.Column(db.String(100), nullable=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="SET NULL"), nullable=True, index=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey("appointments.id", ondelete="SET NULL"), nullable=True)
+    due_date = db.Column(db.DateTime, nullable=True)
+    reminder_at = db.Column(db.DateTime, nullable=True)
+    escalation_level = db.Column(db.Integer, default=0)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    tags = db.Column(db.String(150), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_task_org_status", "organization_id", "status"),
+    )
+
+
+class BusinessPipeline(db.Model):
+    __tablename__ = "business_pipelines"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    sector = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    stages = db.Column(db.JSON, default=list)  # [{id: "lead", name: "New Lead", order: 1, probability: 20}]
+    deals = db.Column(db.JSON, default=list)   # [{id: "deal-1", title: "Acme Deal", stage_id: "lead", value: 15000}]
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_pipeline_org_sector", "organization_id", "sector"),
+    )
+
+
+class DocumentVersion(db.Model):
+    __tablename__ = "document_versions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_document_id = db.Column(db.Integer, db.ForeignKey("customer_documents.id", ondelete="CASCADE"), nullable=False, index=True)
+    version_number = db.Column(db.Integer, nullable=False, default=1)
+    file_name = db.Column(db.String(255), nullable=False)
+    file_size = db.Column(db.Integer, default=0)
+    storage_url_or_content = db.Column(db.Text, nullable=True)
+    access_level = db.Column(db.String(50), default="Customer_Facing")  # Public, Customer_Facing, Internal_Staff, Practitioner_Only
+    expiry_date = db.Column(db.DateTime, nullable=True)
+    uploaded_by = db.Column(db.String(100), default="Staff")
+    download_count = db.Column(db.Integer, default=0)
+    change_notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ApprovalRecord(db.Model):
+    __tablename__ = "approval_records"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    entity_type = db.Column(db.String(60), nullable=False)  # treatment_plan, estimate, quote, engagement_letter, timesheet
+    entity_id = db.Column(db.Integer, nullable=False)
+    signee_name = db.Column(db.String(150), nullable=False)
+    signee_email = db.Column(db.String(150), nullable=True)
+    signee_role = db.Column(db.String(50), default="Customer")  # Customer, Doctor, Manager, Client
+    status = db.Column(db.String(30), default="Approved")       # Pending, Approved, Rejected
+    signature_hash = db.Column(db.String(255), nullable=True)
+    ip_address = db.Column(db.String(50), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    signed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# -----------------------------------------------------------------------------
+# Iteration 5: Healthcare Clinical Architecture & ABDM Standards Foundations
+# -----------------------------------------------------------------------------
+class ClinicalEncounter(db.Model):
+    __tablename__ = "clinical_encounters"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey("appointments.id", ondelete="SET NULL"), nullable=True, index=True)
+    practitioner_id = db.Column(db.Integer, nullable=True)
+    practitioner_name = db.Column(db.String(150), nullable=False)
+    practitioner_reg_no = db.Column(db.String(100), nullable=True)
+    encounter_date = db.Column(db.DateTime, default=datetime.utcnow)
+    encounter_type = db.Column(db.String(50), default="Outpatient")  # Outpatient, Teleconsult, Emergency, Follow_Up
+    chief_complaints = db.Column(db.Text, nullable=True)
+    vitals = db.Column(db.JSON, default=dict)  # bp_systolic, bp_diastolic, pulse, temp, spo2, weight, height, bmi
+    allergies = db.Column(db.JSON, default=list)  # [{allergen: "Penicillin", severity: "High"}]
+    medication_history = db.Column(db.JSON, default=list)
+    clinical_notes = db.Column(db.Text, nullable=True)  # Structured SOAP notes
+    diagnosis = db.Column(db.JSON, default=list)  # [{code: "ICD-10", description: "Essential Hypertension"}]
+    treatment_plan = db.Column(db.Text, nullable=True)
+    prescription_data = db.Column(db.JSON, default=dict)  # {rx_number, medications: [...], advice: "..."}
+    follow_up_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(30), default="In_Progress")  # Draft, In_Progress, Signed_Off
+    revision_number = db.Column(db.Integer, default=1)
+    signed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_encounter_patient_org", "patient_id", "organization_id"),
+    )
+
+
+class AppointmentWaitlist(db.Model):
+    __tablename__ = "appointment_waitlists"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_name = db.Column(db.String(150), nullable=False)
+    customer_phone = db.Column(db.String(20), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey("services.id", ondelete="SET NULL"), nullable=True)
+    service_name = db.Column(db.String(150), nullable=True)
+    preferred_practitioner = db.Column(db.String(150), nullable=True)
+    preferred_date_start = db.Column(db.DateTime, nullable=True)
+    preferred_date_end = db.Column(db.DateTime, nullable=True)
+    urgency = db.Column(db.String(30), default="Routine")  # Routine, Urgent, Critical
+    status = db.Column(db.String(30), default="Waiting")    # Waiting, Offered, Booked, Expired, Cancelled
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_waitlist_org_status", "organization_id", "status"),
+    )
+
+
+class ResourceRoomSchedule(db.Model):
+    __tablename__ = "resource_room_schedules"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    branch_id = db.Column(db.Integer, nullable=True)
+    resource_name = db.Column(db.String(150), nullable=False)  # e.g. "Consultation Room 102", "OT Suite 1"
+    resource_type = db.Column(db.String(50), default="Room")   # Room, Chair, OT, Machine, Cabin
+    assigned_practitioner = db.Column(db.String(150), nullable=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey("appointments.id", ondelete="SET NULL"), nullable=True)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(30), default="Reserved")  # Reserved, Occupied, Cleaned, Maintenance
+    notes = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_resource_org_time", "organization_id", "start_time", "end_time"),
+    )
+
+
+class DiagnosticLabOrder(db.Model):
+    __tablename__ = "diagnostic_lab_orders"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True)
+    encounter_id = db.Column(db.Integer, db.ForeignKey("clinical_encounters.id", ondelete="SET NULL"), nullable=True)
+    order_number = db.Column(db.String(80), nullable=False)
+    test_name = db.Column(db.String(150), nullable=False)
+    category = db.Column(db.String(50), default="Pathology")  # Pathology, Radiology, Biochemistry, Hematology
+    ordering_doctor = db.Column(db.String(150), nullable=True)
+    status = db.Column(db.String(40), default="Ordered")  # Ordered, Sample_Collected, Result_Uploaded, Reviewed_By_Doctor
+    results_data = db.Column(db.JSON, default=dict)
+    attachment_url = db.Column(db.String(255), nullable=True)
+    doctor_review_notes = db.Column(db.Text, nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_lab_order_org_status", "organization_id", "status"),
+    )
+
+
+class ABDMConsentArtifact(db.Model):
+    __tablename__ = "abdm_consent_artifacts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True)
+    consent_request_id = db.Column(db.String(100), nullable=False, unique=True)
+    hiu_id = db.Column(db.String(100), nullable=True)
+    hip_id = db.Column(db.String(100), nullable=True)
+    purpose_code = db.Column(db.String(50), default="CAREMGT")  # CAREMGT, BTG, PUBHLTH
+    status = db.Column(db.String(30), default="GRANTED")       # REQUESTED, GRANTED, REVOKED, EXPIRED
+    granted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    fhir_bundle_id = db.Column(db.String(100), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 
 
 
