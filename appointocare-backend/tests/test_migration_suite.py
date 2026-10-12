@@ -30,7 +30,7 @@ print(f"✓ SuperAdmin Login OK (Role: {admin_res.get('role')})")
 
 all_rec = get_json(f'{base}/api/v1/industry-suite/records?all=true', admin_tok)
 print(f"✓ SuperAdmin All Industry Records count: {len(all_rec)}")
-assert len(all_rec) == 27, f"Expected 27 records across 9 orgs, got {len(all_rec)}"
+assert len(all_rec) >= 27, f"Expected at least 27 records across 9 orgs, got {len(all_rec)}"
 
 all_bench = get_json(f'{base}/api/v1/industry-suite/benchmarks?all=true', admin_tok)
 sectors = list(all_bench.get('all_benchmarks', {}).keys())

@@ -214,12 +214,21 @@ def payment_webhook():
         amount = (payment_entity.get("amount") or 0) / 100.0
         notes = payment_entity.get("notes", {})
         appt_id = notes.get("appointment_id")
-        tenant_id = int(notes.get("tenant_id") or 1)
+        tenant_id = None
 
         if appt_id and str(appt_id).isdigit():
             appt = Appointment.query.get(int(appt_id))
             if appt:
                 appt.payment_status = "Paid"
+                tenant_id = appt.organization_id
+        
+        if not tenant_id:
+            raw_tid = notes.get("tenant_id") or notes.get("organization_id")
+            tenant_id = int(raw_tid) if raw_tid and str(raw_tid).isdigit() else None
+
+        if not tenant_id:
+            # If no tenant could be bound, reject the unresolvable webhook payload
+            return jsonify({"error": "TENANT_REQUIRED", "msg": "Could not bind payment event to valid tenant"}), 400
 
         # Log appointment transaction
         txn = AppointmentTransaction(

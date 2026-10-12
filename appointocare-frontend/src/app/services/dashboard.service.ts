@@ -66,4 +66,10 @@ export class DashboardService {
   getOrganizationTransactions(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/transactions/all`);
   }
+
+  downloadTransactionPdf(txnId: number): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/transactions/${txnId}/download-pdf`, {
+      responseType: 'blob'
+    });
+  }
 }

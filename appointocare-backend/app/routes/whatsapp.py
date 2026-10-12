@@ -241,7 +241,14 @@ def whatsapp_webhook():
 @jwt_required()
 def get_conversations():
     claims = get_jwt()
-    org_id = int(claims.get("organization_id") or 1)
+    role = claims.get("role")
+    if role in ["Admin", "SuperAdmin"]:
+        org_id = int(request.args.get("organization_id") or claims.get("organization_id") or 1)
+    else:
+        tenant_id = claims.get("organization_id")
+        if not tenant_id:
+            return jsonify({"msg": "Tenant organization context required"}), 400
+        org_id = int(tenant_id)
     logs = MessageLog.query.filter_by(organization_id=org_id).order_by(MessageLog.created_at.desc()).limit(20).all()
     return jsonify([
         {
@@ -274,7 +281,13 @@ def meta_embedded_signup_callback():
     encrypts the system user access token, and activates the tenant's WhatsApp service.
     """
     claims = get_jwt()
-    tenant_id = int(claims.get("organization_id") or claims.get("sub") or 1)
+    tenant_id = claims.get("organization_id")
+    if not tenant_id and claims.get("role") in ["Admin", "SuperAdmin"]:
+        data_json = request.json or {}
+        tenant_id = data_json.get("tenant_id") or data_json.get("organization_id")
+    if not tenant_id:
+        return jsonify({"msg": "Tenant organization context required"}), 400
+    tenant_id = int(tenant_id)
     data = request.json or {}
 
     auth_code = data.get("code")
@@ -394,7 +407,12 @@ def send_tenant_whatsapp_template(tenant_id: int, recipient_phone: str, template
 @check_whatsapp_active
 def send_template_endpoint():
     claims = get_jwt()
-    tenant_id = int(claims.get("organization_id") or claims.get("sub") or 1)
+    tenant_id = claims.get("organization_id")
+    if not tenant_id and claims.get("role") in ["Admin", "SuperAdmin"]:
+        tenant_id = (request.json or {}).get("tenant_id") or (request.json or {}).get("organization_id")
+    if not tenant_id:
+        return jsonify({"msg": "Tenant organization context required"}), 400
+    tenant_id = int(tenant_id)
     data = request.json or {}
 
     recipient_phone = data.get("recipient_phone") or data.get("phone") or data.get("to")

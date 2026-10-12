@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
-from app.models import db, OrganizationTransaction, AppointmentTransaction, Appointment
+from app.models import db, OrganizationTransaction, AppointmentTransaction, Appointment, AuditLog
 
 transaction_bp = Blueprint("transaction_bp", __name__)
 
@@ -157,3 +157,76 @@ def get_transactions():
         ]
 
     return jsonify(results)
+
+
+@transaction_bp.route("/<int:txn_id>/download-pdf", methods=["GET"])
+@transaction_bp.route("/appointment/<int:txn_id>/download-pdf", methods=["GET"])
+@jwt_required()
+def download_transaction_pdf(txn_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    txn = AppointmentTransaction.query.get_or_404(txn_id)
+    user_org_id = int(claims.get("organization_id") or 0)
+    if role not in ["Admin", "SuperAdmin"] and txn.organization_id != user_org_id:
+        return jsonify({"msg": "Unauthorized: Cross-tenant access denied"}), 403
+
+    from app.services.pdf_service import generate_invoice_pdf
+    from app.models import Organization
+    from flask import Response
+
+    org = Organization.query.get(txn.organization_id)
+    org_data = {
+        "name": org.name if org else "Service Provider",
+        "code": org.code if org else "ORG",
+        "sector": org.sector if org else "Commercial",
+        "phone": getattr(org, "phone", "") or "+1 555-0100",
+        "email": getattr(org, "email", "") or "billing@appointocare.com",
+        "address": getattr(org, "address", "") or "Commercial City Center"
+    }
+
+    appt_data = {}
+    if txn.appointment_id:
+        appt = Appointment.query.get(txn.appointment_id)
+        if appt:
+            appt_data = {
+                "customer_name": appt.customer_name,
+                "customer_phone": appt.customer_phone,
+                "service_name": appt.service_name or "Consultation Service",
+                "appointment_date": appt.appointment_date.isoformat() if appt.appointment_date else ""
+            }
+
+    txn_dict = {
+        "id": txn.id,
+        "amount": txn.amount,
+        "payment_method": txn.payment_method,
+        "transaction_type": txn.transaction_type,
+        "status": txn.status,
+        "created_at": txn.created_at.strftime("%d %b %Y, %I:%M %p") if txn.created_at else ""
+    }
+
+    pdf_bytes = generate_invoice_pdf(org_data, txn_dict, appt_data)
+    filename = f"invoice_{txn.id}.pdf"
+
+    try:
+        user_id_val = claims.get("sub")
+        audit = AuditLog(
+            organization_id=txn.organization_id,
+            user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+            user_role=role,
+            action="DOWNLOAD_PDF",
+            entity="AppointmentTransaction",
+            entity_id=txn.id,
+            details=f"Downloaded invoice PDF for transaction #{txn.id} (amount: {txn.amount})",
+            ip_address=request.remote_addr
+        )
+        db.session.add(audit)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+

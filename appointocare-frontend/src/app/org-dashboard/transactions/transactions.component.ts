@@ -14,7 +14,7 @@ export class OrgTransactionsComponent implements OnInit {
   transactions: any[] = [];
   searchTerm: string = '';
   selectedStatus: string = 'ALL';
-  displayedColumns: string[] = ['date', 'amount', 'type', 'status'];
+  displayedColumns: string[] = ['date', 'amount', 'type', 'status', 'actions'];
 
   // Razorpay Quick Collection Modal
   showRazorpayModal = false;
@@ -175,5 +175,25 @@ export class OrgTransactionsComponent implements OnInit {
 
   get pendingCount(): number {
     return this.transactions.filter(t => (t.status || '').toLowerCase() === 'pending').length;
+  }
+
+  downloadInvoicePdf(txn: any): void {
+    if (!txn?.id) return;
+    this.dashboardService.downloadTransactionPdf(txn.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice_${txn.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open('Invoice PDF downloaded successfully', 'OK', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('Failed to generate invoice PDF', 'Dismiss', { duration: 3000 });
+      }
+    });
   }
 }

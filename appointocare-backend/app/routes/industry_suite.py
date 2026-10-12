@@ -554,6 +554,80 @@ def delete_record(record_id):
     return jsonify({"msg": "Record deleted"})
 
 
+@industry_suite_bp.route("/records/<int:record_id>/download-pdf", methods=["GET"])
+@require_roles(*ORG_ROLES)
+def download_record_pdf(record_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    record = IndustryRecord.query.get_or_404(record_id)
+    if role not in ["Admin", "SuperAdmin"] and record.organization_id != get_organization_id():
+        return jsonify({"msg": "Unauthorized: Cross-tenant access denied"}), 403
+
+    from app.services.pdf_service import generate_prescription_pdf
+    from flask import Response
+
+    org = Organization.query.get(record.organization_id)
+    org_data = {
+        "name": org.name if org else "Healthcare Center",
+        "code": org.code if org else "ORG",
+        "sector": org.sector if org else "Healthcare",
+        "phone": getattr(org, "phone", "") or "+1 555-0100",
+        "email": getattr(org, "email", "") or "care@appointocare.com",
+        "address": getattr(org, "address", "") or "100 Medical Center Blvd"
+    }
+
+    appt_data = {}
+    if record.appointment_id:
+        appt = Appointment.query.get(record.appointment_id)
+        if appt:
+            appt_data = {
+                "customer_name": appt.customer_name,
+                "customer_phone": appt.customer_phone,
+                "appointment_date": appt.appointment_date.isoformat() if appt.appointment_date else "",
+                "staff_name": appt.staff_name or record.created_by_user
+            }
+    elif record.customer_id:
+        cust = Customer.query.get(record.customer_id)
+        if cust:
+            appt_data = {
+                "customer_name": cust.name,
+                "customer_phone": cust.phone,
+                "staff_name": record.created_by_user
+            }
+
+    record_dict = {
+        "title": record.title,
+        "record_type": record.record_type,
+        "data": record.data or {}
+    }
+
+    pdf_bytes = generate_prescription_pdf(org_data, record_dict, appt_data)
+    filename = f"prescription_{record.id}.pdf"
+
+    try:
+        user_id_val = claims.get("sub")
+        audit = AuditLog(
+            organization_id=record.organization_id,
+            user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+            user_role=role,
+            action="DOWNLOAD_PDF",
+            entity="IndustryRecord",
+            entity_id=record.id,
+            details=f"Downloaded PDF for clinical record '{record.title}' (type: {record.record_type})",
+            ip_address=request.remote_addr
+        )
+        db.session.add(audit)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
 @industry_suite_bp.route("/queue", methods=["GET"])
 @require_roles(*ORG_ROLES)
 def get_queue():

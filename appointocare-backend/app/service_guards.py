@@ -40,7 +40,8 @@ def _resolve_tenant_id():
         if val and str(val).isdigit():
             return int(val)
 
-    return 1  # Default fallback if unauthenticated public webhook
+    # Reject missing or ambiguous tenant context - do not default to tenant 1
+    return None
 
 
 def check_whatsapp_active(f):

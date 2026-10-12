@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from .models import db
 from .config import Config
@@ -10,6 +11,18 @@ from sqlalchemy import text
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Production Secret Hygiene Guard (SEC-02)
+    app_env = os.getenv("APP_ENV", app.config.get("APP_ENV", "development"))
+    secret = os.getenv("SECRET_KEY", app.config.get("SECRET_KEY", ""))
+    jwt_secret = os.getenv("JWT_SECRET_KEY", app.config.get("JWT_SECRET_KEY", ""))
+
+    if app_env == "production":
+        insecure_keys = {"supersecretkey", "jwtsecretkey", "secret", "changeme", "dev", "appointocare-secret-jwt-key-2026"}
+        if not secret or secret in insecure_keys or len(secret) < 32:
+            raise RuntimeError("FATAL: Insecure or default SECRET_KEY in production environment. A strong key (>= 32 chars) is required.")
+        if not jwt_secret or jwt_secret in insecure_keys or len(jwt_secret) < 32:
+            raise RuntimeError("FATAL: Insecure or default JWT_SECRET_KEY in production environment. A strong key (>= 32 chars) is required.")
 
     # Initialize extensions
     db.init_app(app)

@@ -405,4 +405,24 @@ export class IndustrySuiteComponent implements OnInit {
   removeTourStop(index: number): void {
     this.toolForm.tour_stops.splice(index, 1);
   }
+
+  downloadRecordPdf(rec: any): void {
+    if (!rec?.id) return;
+    this.industryService.downloadRecordPdf(rec.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${rec.record_type || 'record'}_${rec.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open('PDF downloaded successfully', 'OK', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open('Failed to generate PDF document', 'Dismiss', { duration: 3000 });
+      }
+    });
+  }
 }

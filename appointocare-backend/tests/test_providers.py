@@ -4,9 +4,14 @@ import json
 import os
 import unittest
 
-os.environ["DATABASE_URL"] = "sqlite:///provider-test.db"
-os.environ["SECRET_KEY"] = "test-secret"
-os.environ["JWT_SECRET_KEY"] = "test-jwt-secret"
+_IS_LOCAL_SQLITE = False
+if "DATABASE_URL" not in os.environ:
+    os.environ["DATABASE_URL"] = "sqlite:///provider-test.db"
+    _IS_LOCAL_SQLITE = True
+if "SECRET_KEY" not in os.environ:
+    os.environ["SECRET_KEY"] = "test-secret"
+if "JWT_SECRET_KEY" not in os.environ:
+    os.environ["JWT_SECRET_KEY"] = "test-jwt-secret"
 os.environ["RAZORPAY_WEBHOOK_SECRET"] = "webhook-secret"
 os.environ["WHATSAPP_WEBHOOK_VERIFY_TOKEN"] = "verify-token"
 
@@ -28,16 +33,18 @@ class ProviderTestCase(unittest.TestCase):
             WHATSAPP_WEBHOOK_VERIFY_TOKEN="verify-token",
         )
         self.client = self.app.test_client()
-        with self.app.app_context():
-            db.create_all()
+        if _IS_LOCAL_SQLITE:
+            with self.app.app_context():
+                db.create_all()
 
     def tearDown(self):
-        with self.app.app_context():
-            db.drop_all()
-        try:
-            os.remove("provider-test.db")
-        except FileNotFoundError:
-            pass
+        if _IS_LOCAL_SQLITE:
+            with self.app.app_context():
+                db.drop_all()
+            try:
+                os.remove("provider-test.db")
+            except FileNotFoundError:
+                pass
 
     def test_mock_payment_provider_is_available_without_credentials(self):
         with self.app.app_context():
@@ -45,7 +52,9 @@ class ProviderTestCase(unittest.TestCase):
             self.assertEqual(get_payment_provider().name, "mock")
 
     def test_razorpay_webhook_is_idempotent(self):
-        payload = {"id": "evt_1", "event": "payment.captured", "payload": {}}
+        import uuid
+        event_id = f"evt_{uuid.uuid4().hex[:8]}"
+        payload = {"id": event_id, "event": "payment.captured", "payload": {}}
         raw = json.dumps(payload).encode()
         signature = hmac.new(b"webhook-secret", raw, hashlib.sha256).hexdigest()
         first = self.client.post("/api/v1/providers/webhooks/razorpay", data=raw, content_type="application/json", headers={"X-Razorpay-Signature": signature})
@@ -53,7 +62,7 @@ class ProviderTestCase(unittest.TestCase):
         self.assertEqual(first.json["status"], "processed")
         self.assertEqual(second.json["status"], "duplicate")
         with self.app.app_context():
-            self.assertEqual(ProviderEvent.query.count(), 1)
+            self.assertEqual(ProviderEvent.query.filter_by(event_id=event_id).count(), 1)
 
     def test_whatsapp_verification(self):
         response = self.client.get("/api/v1/providers/webhooks/whatsapp?hub.verify_token=verify-token&hub.challenge=challenge")

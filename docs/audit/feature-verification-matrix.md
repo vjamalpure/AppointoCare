@@ -1,0 +1,29 @@
+# AppointoCare — Feature Verification Matrix
+
+**Audit Baseline:** October 12, 2026  
+**Coverage:** 9 Industry Verticals & Platform Core  
+
+---
+
+## 1. Multi-Industry & Core Feature Verification
+
+| Feature & Industry | Frontend Files | Backend Routes & Services | Database Models & Migrations | External Dependencies | Existing Tests | Verified Status | Missing Acceptance Criteria | Security & Integrity Risks | Recommended Priority |
+| :--- | :--- | :--- | :--- | :--- | :--- | :---: | :--- | :--- | :---: |
+| **Authentication & RBAC** (Core) | `auth/login/`, `auth.service.ts` | `routes/auth.py`, `security.py` | `admins`, `organizations`, `users` | None | `test_audit.py`, `full_industry_verification.py` | **VERIFIED** | MFA (TOTP), custom permission matrix editor UI | Insecure secret configuration if default keys used in production | **P0** |
+| **Tenant Onboarding & Settings** (Core) | `org-dashboard/profile/`, `admin/` | `routes/organization.py`, `routes/admin.py` | `organizations`, `branches` | None | `test_audit.py`, `full_industry_verification.py` | **VERIFIED** | Automated tenant offboarding / GDPR data archive download | Unrestricted admin role privilege separation | **P1** |
+| **Appointment Lifecycle** (Core) | `org-dashboard/bookings/` | `routes/appointments.py` | `appointments`, `appointment_transactions`, `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Concurrency locking under race-condition bookings | Cross-tenant deletion prevented; cascade integrity verified | **P0** |
+| **Customer / Patient CRM** (Core) | `org-dashboard/customers/` | `routes/customers.py` | `customers`, `patients` | None | `test_audit.py`, `full_industry_verification.py` | **VERIFIED** | Lead $\to$ Deal pipeline stages | Unmasked PII in debug logs | **P1** |
+| **Multi-Industry Service Catalog** (Core) | `org-dashboard/services/` | `routes/services.py` | `services`, `sector_templates` | None | `test_audit.py`, `full_industry_verification.py` | **VERIFIED** | Staff skill-to-service mapping constraint | Low | **P2** |
+| **Sector Addons & Token Queue** (Core/Suite) | `org-dashboard/industry-suite/` | `routes/industry_suite.py` | `industry_records`, `organizations` | None | `test_audit.py`, `full_industry_verification.py` | **VERIFIED** | Fullscreen public waiting-room TV display mode (`/queue/display`) | Low | **P1** |
+| **Financial Ledger & Split Payments** (Core) | `org-dashboard/transactions/`, `subscription/` | `routes/transactions.py`, `routes/payments.py` | `appointment_transactions`, `payment_orders`, `payment_configs` | Razorpay Route API | `test_audit.py`, `full_industry_verification.py` | **VERIFIED** | Deterministic CGST/SGST/IGST tax engine with multi-rate support | Razorpay webhook signature validation | **P0** |
+| **WhatsApp Business Messaging** (Core) | `org-dashboard/whatsapp/` | `routes/whatsapp.py`, `service_guards.py` | `whatsapp_configs`, `message_logs` | Meta Cloud API | `test_audit.py`, `test_providers.py` | **VERIFIED** | Interactive Quick-Reply / List messages | Fallback to tenant ID 1 in `service_guards.py:43` | **P0** |
+| **Clinical E-Prescription & Vitals** (Healthcare) | `industry-suite.component.ts` (Healthcare mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Branded downloadable PDF with clinic letterhead & doctor registration | Clinical record modification audit trail | **P1** |
+| **ABDM / ABHA Health ID** (Healthcare) | None | None | None | ABDM NHA Gateway | None | **MISSING** | ABHA ID creation, verification, and consent artifact flow | Unverified health record transmission | **P2** |
+| **Treatment Suite & Upsell** (Salon & Wellness) | `industry-suite.component.ts` (Salon mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Suite double-booking conflict validation | Low | **P2** |
+| **Investor KYC & Asset Allocation** (Finance) | `industry-suite.component.ts` (Finance mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Real-time PAN / Aadhaar offline verification integration | Sensitive investor financial data exposure | **P1** |
+| **Premium Estimator & Claims FNOL** (Insurance) | `industry-suite.component.ts` (Insurance mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Multi-insurer rate cards comparison table | Low | **P2** |
+| **VIP Lookbook & Alterations** (Retail) | `industry-suite.component.ts` (Retail mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Public shareable Lookbook link for VIP clients | Low | **P2** |
+| **University Shortlist & Essay Rubric** (Education) | `industry-suite.component.ts` (Education mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | iCal / Google Calendar synchronization of application deadlines | Low | **P2** |
+| **Conflict Check & Billable Retainer** (Consultancy) | `industry-suite.component.ts` (Consultancy mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Automated cross-entity adverse party conflict check | Privileged contract access controls | **P1** |
+| **Property Itinerary & Cap Rate NOI** (Real Estate) | `industry-suite.component.ts` (Real Estate mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Exportable branded 1-page commercial yield PDF | Low | **P2** |
+| **SOW Milestones & Architecture Form** (Professional Services) | `industry-suite.component.ts` (Prof Services mode) | `routes/industry_suite.py` | `industry_records` | None | `full_industry_verification.py` | **VERIFIED** | Canvas digital signature capture for deliverable sign-offs | Low | **P2** |

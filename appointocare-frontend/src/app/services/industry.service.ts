@@ -135,6 +135,12 @@ export class IndustryService {
     return this.http.delete<any>(`${this.baseUrl}/api/v1/industry-suite/records/${id}`);
   }
 
+  public downloadRecordPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/api/v1/industry-suite/records/${id}/download-pdf`, {
+      responseType: 'blob'
+    });
+  }
+
   public getBenchmarks(all = false, sector?: string): Observable<any> {
     let params = new HttpParams();
     if (all) params = params.set('all', 'true');

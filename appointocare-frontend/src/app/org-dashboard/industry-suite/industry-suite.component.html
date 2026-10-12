@@ -643,6 +643,9 @@
             <button mat-stroked-button class="inspect-chip-btn" (click)="inspectRecord(rec)">
               <mat-icon>visibility</mat-icon> Inspect
             </button>
+            <button mat-stroked-button color="primary" class="inspect-chip-btn" (click)="downloadRecordPdf(rec)" title="Download PDF">
+              <mat-icon>download</mat-icon> PDF
+            </button>
             <button mat-icon-button class="delete-btn" (click)="deleteRecord(rec.id)">
               <mat-icon>delete_outline</mat-icon>
             </button>
@@ -789,10 +792,13 @@
       </div>
 
       <div class="record-modal-footer">
+        <button mat-flat-button color="primary" (click)="downloadRecordPdf(selectedRecord)">
+          <mat-icon>download</mat-icon> Download Official PDF
+        </button>
         <button mat-stroked-button (click)="printDossier()">
           <mat-icon>print</mat-icon> Print Official Dossier
         </button>
-        <button mat-flat-button color="primary" (click)="closeInspection()">
+        <button mat-stroked-button (click)="closeInspection()">
           Close
         </button>
       </div>

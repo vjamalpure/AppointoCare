@@ -1,9 +1,14 @@
 import os
 import unittest
 
-os.environ["DATABASE_URL"] = "sqlite:///app-test.db"
-os.environ["SECRET_KEY"] = "test-secret"
-os.environ["JWT_SECRET_KEY"] = "test-jwt-secret"
+_IS_LOCAL_SQLITE = False
+if "DATABASE_URL" not in os.environ:
+    os.environ["DATABASE_URL"] = "sqlite:///app-test.db"
+    _IS_LOCAL_SQLITE = True
+if "SECRET_KEY" not in os.environ:
+    os.environ["SECRET_KEY"] = "test-secret"
+if "JWT_SECRET_KEY" not in os.environ:
+    os.environ["JWT_SECRET_KEY"] = "test-jwt-secret"
 
 from app import create_app, db
 
@@ -16,16 +21,18 @@ class AppTestCase(unittest.TestCase):
 
     def setUp(self):
         self.client = self.app.test_client()
-        with self.app.app_context():
-            db.create_all()
+        if _IS_LOCAL_SQLITE:
+            with self.app.app_context():
+                db.create_all()
 
     def tearDown(self):
-        with self.app.app_context():
-            db.drop_all()
-        try:
-            os.remove("app-test.db")
-        except FileNotFoundError:
-            pass
+        if _IS_LOCAL_SQLITE:
+            with self.app.app_context():
+                db.drop_all()
+            try:
+                os.remove("app-test.db")
+            except FileNotFoundError:
+                pass
 
     def test_health_endpoint(self):
         response = self.client.get("/health")
