@@ -112,17 +112,8 @@
           <p>Please enter your access credentials or select a 1-click industry demo account below.</p>
         </div>
 
-        <!-- 3-Tier Role Selector Tabs -->
+        <!-- 2-Tier Tenant Role Selector Tabs -->
         <div class="role-tabs-nav" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            class="role-pill-btn"
-            [class.active]="selectedRole === 'admin'"
-            (click)="setRole('admin')">
-            <mat-icon>admin_panel_settings</mat-icon>
-            <span>Super Admin</span>
-          </button>
           <button
             type="button"
             role="tab"
@@ -130,7 +121,7 @@
             [class.active]="selectedRole === 'organization'"
             (click)="setRole('organization')">
             <mat-icon>corporate_fare</mat-icon>
-            <span>Org Admin</span>
+            <span>Organization Admin</span>
           </button>
           <button
             type="button"
@@ -152,12 +143,11 @@
 
         <!-- Login Form -->
         <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="login-form" novalidate>
-          <!-- Organization Code (Permanently rendered for rock-solid zero-shift layout) -->
-          <div class="form-group" [class.is-disabled-group]="selectedRole === 'admin'">
+          <!-- Organization Code -->
+          <div class="form-group">
             <label for="orgCode">
               <span>Organization Code</span>
-              <span class="field-badge admin-badge" *ngIf="selectedRole === 'admin'">Not needed for SuperAdmin</span>
-              <span class="field-badge req-badge" *ngIf="selectedRole !== 'admin'">Required</span>
+              <span class="field-badge req-badge">Required</span>
             </label>
             <div class="input-with-icon">
               <mat-icon class="field-icon">domain</mat-icon>
@@ -167,15 +157,13 @@
                 name="organization_code"
                 [(ngModel)]="organization_code"
                 #orgCodeInput="ngModel"
-                [required]="selectedRole !== 'admin'"
-                [disabled]="selectedRole === 'admin'"
+                required
                 autocomplete="organization"
-                [placeholder]="selectedRole === 'admin' ? 'Not applicable for SuperAdmin' : 'e.g. ORG1, ORG2... ORG9'"
+                placeholder="e.g. ORG1, ORG2... ORG9"
                 class="std-input"
-                [class.is-disabled]="selectedRole === 'admin'"
-                [class.has-error]="selectedRole !== 'admin' && orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
+                [class.has-error]="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
             </div>
-            <div class="field-error" *ngIf="selectedRole !== 'admin' && orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
+            <div class="field-error" *ngIf="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
               Organization code is required for tenant isolation.
             </div>
           </div>
@@ -286,55 +274,40 @@
                 (click)="setDemoFilter('staff')">
                 👥 Staff (3)
               </button>
+              </div>
+            </div>
+
+            <div class="demo-grid">
               <button
+                *ngFor="let preset of filteredPresets"
                 type="button"
-                class="filter-pill"
-                [class.active]="demoFilter === 'admin'"
-                (click)="setDemoFilter('admin')">
-                👑 SuperAdmin
+                class="demo-card-chip"
+                [class.chip-active]="selectedRole === preset.role && username === preset.user && organization_code === preset.code"
+                (click)="selectPreset(preset)"
+                [title]="preset.org">
+                <div class="chip-info">
+                  <span class="chip-title">{{ preset.label }}</span>
+                  <span class="chip-user">{{ preset.user }} · {{ preset.code }}</span>
+                </div>
+                <span class="chip-select-mark" *ngIf="selectedRole === preset.role && username === preset.user && organization_code === preset.code">✓ Active</span>
               </button>
             </div>
           </div>
 
-          <div class="demo-grid">
-            <button
-              *ngIf="showAdminPreset"
-              type="button"
-              class="demo-card-chip admin"
-              [class.chip-active]="selectedRole === 'admin' && username === 'superadmin'"
-              (click)="fillAdminDemo()">
-              <mat-icon>admin_panel_settings</mat-icon>
-              <div class="chip-info">
-                <span class="chip-title">SuperAdmin Portal</span>
-                <span class="chip-user">superadmin · Global Admin</span>
-              </div>
-              <span class="chip-select-mark" *ngIf="selectedRole === 'admin' && username === 'superadmin'">✓ Active</span>
-            </button>
-
-            <button
-              *ngFor="let preset of filteredPresets"
-              type="button"
-              class="demo-card-chip"
-              [class.chip-active]="selectedRole === preset.role && username === preset.user && organization_code === preset.code"
-              (click)="selectPreset(preset)"
-              [title]="preset.org">
-              <div class="chip-info">
-                <span class="chip-title">{{ preset.label }}</span>
-                <span class="chip-user">{{ preset.user }} · {{ preset.code }}</span>
-              </div>
-              <span class="chip-select-mark" *ngIf="selectedRole === preset.role && username === preset.user && organization_code === preset.code">✓ Active</span>
-            </button>
+          <!-- Security & Legal Footer -->
+          <div class="auth-footer">
+            <div class="secure-badge">
+              <mat-icon>lock</mat-icon>
+              <span>256-Bit SSL Encrypted Session</span>
+            </div>
+            <div class="admin-portal-link-wrap" style="margin: 8px 0;">
+              <a routerLink="/admin/login" class="admin-portal-shortcut" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; text-decoration: none; padding: 4px 10px; border-radius: 6px; background: rgba(241, 245, 249, 0.6); transition: all 0.2s ease;">
+                <mat-icon style="font-size: 15px; width: 15px; height: 15px; color: #4f46e5;">admin_panel_settings</mat-icon>
+                <span>Administrative Access (SuperAdmin Console)</span>
+              </a>
+            </div>
+            <p class="copyright">© {{ currentYear }} AppointoCare. All Rights Reserved.</p>
           </div>
-        </div>
-
-        <!-- Security & Legal Footer -->
-        <div class="auth-footer">
-          <div class="secure-badge">
-            <mat-icon>lock</mat-icon>
-            <span>256-Bit SSL Encrypted Session</span>
-          </div>
-          <p class="copyright">© {{ currentYear }} AppointoCare. All Rights Reserved.</p>
-        </div>
       </div>
     </div>
   </div>

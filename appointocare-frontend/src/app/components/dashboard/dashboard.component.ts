@@ -3,6 +3,7 @@ import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../auth/auth.service';
 import { AppointmentService } from '../../services/appointments.service';
 import { IndustryService } from '../../services/industry.service';
+import { ChartConfiguration, ChartDataset } from 'chart.js';
 
 export interface Appointment {
   id: number;
@@ -40,8 +41,12 @@ export class DashboardComponent implements OnInit {
     transactions: []
   };
 
+  serverMetrics: any = null;
+  operationalKpis: any = null;
   loading = true;
   role: string | null = null;
+  sector = 'Healthcare';
+  terms: any = null;
 
   showModal = false;
   editAppointment: Appointment | null = null;
@@ -53,6 +58,52 @@ export class DashboardComponent implements OnInit {
   sectorIcon = 'domain';
   sectorLabel = 'Operations';
 
+  // 30-Day Trend Chart
+  trendChartLabels: string[] = [];
+  trendChartData: ChartDataset<'line'>[] = [
+    {
+      data: [],
+      label: 'Scheduled Volume',
+      borderColor: '#4f46e5',
+      backgroundColor: 'rgba(79, 70, 229, 0.12)',
+      fill: true,
+      tension: 0.35,
+      pointRadius: 3,
+      pointBackgroundColor: '#4f46e5'
+    }
+  ];
+  trendChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#0f172a',
+        padding: 10,
+        cornerRadius: 6
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: '#64748b', font: { family: 'Inter', size: 10 } }
+      },
+      y: {
+        grid: { color: 'rgba(226, 232, 240, 0.6)' },
+        ticks: { color: '#64748b', font: { family: 'Inter', size: 10 }, stepSize: 1 }
+      }
+    }
+  };
+
+  editDate: Date = new Date();
+  editTime: string = '10:00 AM';
+  timeSlots: string[] = [
+    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
+    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+    '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
+    '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM'
+  ];
+
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
@@ -62,12 +113,15 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.role = this.authService.getUserRole();
+    this.sector = this.authService.getSector() || 'Healthcare';
+    this.terms = this.industryService.getTerms(this.sector);
     this.loadDashboard();
     this.loadSectorStats();
+    this.loadOperationalKpis();
   }
 
   loadSectorStats(): void {
-    const sector = this.industryService.getSector();
+    const sector = this.industryService.getSector() || this.sector;
     const config = this.industryService.getConfig(sector);
     this.sectorIcon = config?.icon || 'domain';
     this.sectorLabel = sector || 'Operations';
@@ -82,7 +136,16 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  loadDashboard() {
+  loadOperationalKpis(): void {
+    this.industryService.getOperationalKpis().subscribe({
+      next: (res) => {
+        this.operationalKpis = res;
+      },
+      error: () => {}
+    });
+  }
+
+  loadDashboard(): void {
     this.loading = true;
     const effectiveRole = this.role || 'Organization';
     this.dashboardService.getDashboard(effectiveRole).subscribe({
@@ -92,16 +155,29 @@ export class DashboardComponent implements OnInit {
         if (Array.isArray(data?.appointments)) {
           appts = data.appointments;
           count = data.appointments_count || appts.length;
-        } else if (data?.appointments && typeof data.appointments === 'object') {
-          count = data.appointments.total || 0;
         }
 
+        this.serverMetrics = data?.metrics || null;
         this.dashboardData = {
           organization: data?.organization || { name: '', sector: '', subscription_status: '' },
           appointments: appts,
-          appointments_count: count,
+          appointments_count: this.serverMetrics?.total_appointments || count,
           transactions: Array.isArray(data?.transactions) ? data.transactions : []
         };
+
+        if (this.dashboardData.organization?.sector) {
+          this.sector = this.dashboardData.organization.sector;
+          this.terms = this.industryService.getTerms(this.sector);
+        }
+
+        // Populate 30d Trend Chart
+        if (Array.isArray(this.serverMetrics?.trend_30d)) {
+          this.trendChartLabels = this.serverMetrics.trend_30d.map((r: any) => {
+            const dt = new Date(r.date);
+            return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          });
+          this.trendChartData[0].data = this.serverMetrics.trend_30d.map((r: any) => r.count);
+        }
 
         const orgName = this.dashboardData.organization?.name?.trim();
         if (orgName) this.organizationNameChange.emit(orgName);
@@ -121,7 +197,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  closeModal() {
+  closeModal(): void {
     this.showModal = false;
     this.editAppointment = null;
     this.editAppointmentDateTime = '';
@@ -133,16 +209,7 @@ export class DashboardComponent implements OnInit {
     return d.toLocaleString();
   }
 
-  editDate: Date = new Date();
-  editTime: string = '10:00 AM';
-  timeSlots: string[] = [
-    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
-    '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
-    '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM'
-  ];
-
-  openEditModal(appt: Appointment) {
+  openEditModal(appt: Appointment): void {
     this.editAppointment = { ...appt };
     this.editAppointment.payment_status = this.editAppointment.payment_status || 'Pending';
     if (appt.appointment_date) {
@@ -178,7 +245,7 @@ export class DashboardComponent implements OnInit {
     return d.toISOString();
   }
 
-  saveEdit() {
+  saveEdit(): void {
     if (!this.editAppointment) return;
 
     this.appointmentService.updateAppointment(this.editAppointment.id, {
@@ -194,28 +261,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  updateAppointment(apptId: number, status?: string, paymentStatus?: string, appointmentDate?: string) {
-  if (!apptId) return;
-
-  const updateData: any = {};
-  if (status) updateData.status = status;
-  if (paymentStatus) updateData.payment_status = paymentStatus;
-  if (appointmentDate) updateData.appointment_date = appointmentDate;
-
-  this.appointmentService.updateAppointment(apptId, updateData).subscribe({
-    next: () => {
-      alert('Appointment updated successfully!');
-      this.loadDashboard(); // Refresh dashboard to reflect changes
-    },
-    error: (err) => {
-      console.error('Failed to update appointment:', err);
-      alert('Failed to update appointment. Please try again.');
-    }
-  });
-}
-
-
-  updateAppointmentStatus(apptId: number, status: string) {
+  updateAppointmentStatus(apptId: number, status: string): void {
     if (!status) return;
     this.appointmentService.updateAppointment(apptId, { status }).subscribe({
       next: () => this.loadDashboard(),
@@ -223,16 +269,33 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  // Stats getters
-  getTotalAppointments(): number { return this.dashboardData?.appointments_count || 0; }
-  getBookedCount(): number { return (this.dashboardData?.appointments || []).filter(a => a?.status === 'Booked').length; }
-  getCompletedCount(): number { return (this.dashboardData?.appointments || []).filter(a => a?.status === 'Completed').length; }
-  getCancelledCount(): number { return (this.dashboardData?.appointments || []).filter(a => a?.status === 'Cancelled').length; }
-  getTotalPaid(): number { return (this.dashboardData?.appointments || []).filter(a => a?.payment_status === 'Paid').length; }
-  getTotalUnpaid(): number { return (this.dashboardData?.appointments || []).filter(a => a?.payment_status === 'Pending' || a?.payment_status === 'Unpaid').length; }
+  // Stats getters using server-side SQL metrics with safe fallbacks
+  getTotalAppointments(): number {
+    return this.serverMetrics?.total_appointments ?? this.dashboardData?.appointments_count ?? 0;
+  }
+
+  getBookedCount(): number {
+    return this.serverMetrics?.booked_count ?? (this.dashboardData?.appointments || []).filter(a => a?.status === 'Booked').length;
+  }
+
+  getCompletedCount(): number {
+    return this.serverMetrics?.completed_count ?? (this.dashboardData?.appointments || []).filter(a => a?.status === 'Completed').length;
+  }
+
+  getCancelledCount(): number {
+    return this.serverMetrics?.cancelled_count ?? (this.dashboardData?.appointments || []).filter(a => a?.status === 'Cancelled').length;
+  }
+
+  getTotalPaid(): number {
+    return this.serverMetrics?.total_paid ?? 0;
+  }
+
+  getTotalUnpaid(): number {
+    return this.serverMetrics?.total_unpaid ?? 0;
+  }
 
   getApptStatusColor(status: string): string {
-    switch (status.toLowerCase()) {
+    switch ((status || '').toLowerCase()) {
       case 'booked': return '#f9d77f';
       case 'completed': return '#68d391';
       case 'cancelled': return '#fc8181';

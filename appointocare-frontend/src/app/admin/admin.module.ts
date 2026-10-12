@@ -4,6 +4,7 @@ import { AdminRoutingModule } from './admin-routing.module';
 import { MaterialModule } from '../material.module';
 import { SharedModule } from '../components/shared/shared.module';
 import { FormsModule } from '@angular/forms';
+import { BaseChartDirective } from 'ng2-charts';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -47,7 +48,8 @@ import { AuditLogsComponent } from './components/audit-logs/audit-logs.component
     MatButtonModule,
     MatIconModule,
     MatDividerModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    BaseChartDirective
   ]
 })
 export class AdminModule { }

@@ -10,6 +10,7 @@ import { MaterialModule } from './material.module';
 import { SharedModule } from './components/shared/shared.module';
 
 import { LoginComponent } from './auth/login/login.component';
+import { AdminLoginComponent } from './auth/admin-login/admin-login.component';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { ClientPortalComponent } from './client-portal/client-portal.component';
@@ -19,6 +20,7 @@ import { AuthInterceptor } from './auth/auth-interceptor.service';
   declarations: [
     AppComponent,
     LoginComponent,
+    AdminLoginComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
     ClientPortalComponent

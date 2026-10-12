@@ -18,8 +18,8 @@ export class LoginComponent {
   errorMsg = '';
   showPassword = false;
 
-  selectedRole: 'admin' | 'organization' | 'staff' = 'organization';
-  demoFilter: 'all' | 'organization' | 'staff' | 'admin' = 'all';
+  selectedRole: 'organization' | 'staff' = 'organization';
+  demoFilter: 'all' | 'organization' | 'staff' = 'all';
   currentYear: number = new Date().getFullYear();
 
   industryPresets = [
@@ -50,23 +50,15 @@ export class LoginComponent {
     return this.industryPresets.filter(p => p.role === this.demoFilter);
   }
 
-  get showAdminPreset(): boolean {
-    return this.demoFilter === 'all' || this.demoFilter === 'admin';
-  }
-
-  setDemoFilter(filter: 'all' | 'organization' | 'staff' | 'admin'): void {
+  setDemoFilter(filter: 'all' | 'organization' | 'staff'): void {
     this.demoFilter = filter;
   }
 
-  setRole(role: 'admin' | 'organization' | 'staff'): void {
+  setRole(role: 'organization' | 'staff'): void {
     this.selectedRole = role;
     this.errorMsg = '';
     this.demoFilter = role;
-    if (role === 'admin') {
-      this.username = 'superadmin';
-      this.password = 'Admin@12345';
-      this.organization_code = '';
-    } else if (role === 'organization') {
+    if (role === 'organization') {
       this.username = 'org1';
       this.password = 'Org@12345';
       this.organization_code = 'ORG1';
@@ -102,7 +94,7 @@ export class LoginComponent {
     this.loading = true;
     this.errorMsg = '';
 
-    const orgCode = this.selectedRole !== 'admin' ? this.organization_code?.trim() : '';
+    const orgCode = this.organization_code?.trim();
     const cleanUsername = this.username?.trim();
     const cleanPassword = this.password;
 
@@ -139,10 +131,6 @@ export class LoginComponent {
           this.loading = false;
         }
       });
-  }
-
-  fillAdminDemo(): void {
-    this.setRole('admin');
   }
 
   fillOrgDemo(): void {

@@ -1,0 +1,160 @@
+<div class="admin-login-wrapper">
+  <!-- Ambient Obsidian Mesh Lighting -->
+  <div class="ambient-mesh-admin ambient-glow-top"></div>
+  <div class="ambient-mesh-admin ambient-glow-bottom"></div>
+
+  <div class="admin-login-container">
+    <div class="admin-glass-card liquid-glass-obsidian">
+      <!-- Header & Security Shield -->
+      <div class="admin-card-header">
+        <div class="admin-shield-icon">
+          <mat-icon>shield</mat-icon>
+        </div>
+        <div class="admin-header-titles">
+          <h2>Super Admin Command Gateway</h2>
+          <span class="security-badge">
+            <span class="pulse-dot"></span> Zero-Trust Control Plane
+          </span>
+        </div>
+        <p class="admin-card-desc">
+          Restricted administrative access for cross-tenant operations, subscription lifecycles, and cryptographic audit monitoring.
+        </p>
+      </div>
+
+      <!-- Error Alert Banner -->
+      <div class="admin-alert-banner" *ngIf="errorMsg" role="alert">
+        <mat-icon>gpp_maybe</mat-icon>
+        <div class="alert-content">
+          <strong>Authentication Denied</strong>
+          <span>{{ errorMsg }}</span>
+        </div>
+        <button type="button" class="alert-close-btn" (click)="clearError()" aria-label="Dismiss error">×</button>
+      </div>
+
+      <!-- Administrative Login Form -->
+      <form #adminForm="ngForm" (ngSubmit)="onSubmit(adminForm)" class="admin-form" novalidate>
+        <!-- Username -->
+        <div class="form-field-group">
+          <label for="adminUsername">
+            <span>Administrative Identifier / Email</span>
+            <span class="req-indicator">Required</span>
+          </label>
+          <div class="input-shell">
+            <mat-icon class="input-icon">admin_panel_settings</mat-icon>
+            <input
+              type="text"
+              id="adminUsername"
+              name="username"
+              [(ngModel)]="username"
+              #usernameRef="ngModel"
+              required
+              autocomplete="username"
+              placeholder="e.g. superadmin or security officer"
+              class="admin-text-input"
+              [class.has-error]="usernameRef.invalid && (usernameRef.dirty || usernameRef.touched)">
+          </div>
+          <div class="validation-msg" *ngIf="usernameRef.invalid && (usernameRef.dirty || usernameRef.touched)">
+            Administrative identifier is required.
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-field-group">
+          <label for="adminPassword">
+            <span>Security Passphrase</span>
+            <span class="req-indicator">Required</span>
+          </label>
+          <div class="input-shell">
+            <mat-icon class="input-icon">lock</mat-icon>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="adminPassword"
+              name="password"
+              [(ngModel)]="password"
+              #passwordRef="ngModel"
+              required
+              autocomplete="current-password"
+              placeholder="Enter cryptographic passphrase"
+              class="admin-text-input"
+              [class.has-error]="passwordRef.invalid && (passwordRef.dirty || passwordRef.touched)">
+            <button
+              type="button"
+              class="password-toggle-btn"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword ? 'Hide passphrase' : 'Show passphrase'">
+              <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <div class="validation-msg" *ngIf="passwordRef.invalid && (passwordRef.dirty || passwordRef.touched)">
+            Security passphrase is required.
+          </div>
+        </div>
+
+        <!-- MFA Hardware Key / Security Note -->
+        <div class="mfa-placeholder-row">
+          <div class="mfa-indicator">
+            <mat-icon>enhanced_encryption</mat-icon>
+            <span>Hardware Token & PBKDF2 Encrypted</span>
+          </div>
+          <label class="remember-checkbox">
+            <input type="checkbox" name="rememberMe" [(ngModel)]="rememberMe">
+            <span>Keep session active</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="admin-submit-btn"
+          [disabled]="loading || !adminForm.valid">
+          <span *ngIf="!loading">
+            <mat-icon>login</mat-icon> Authenticate to Platform
+          </span>
+          <span *ngIf="loading" class="btn-loading-state">
+            <mat-icon class="spinning-icon">hourglass_top</mat-icon> Verifying Credentials...
+          </span>
+        </button>
+      </form>
+
+      <!-- 1-Click SuperAdmin Demo Access -->
+      <div class="admin-demo-section">
+        <div class="demo-divider">
+          <span>1-Click SuperAdmin Access</span>
+        </div>
+        <div class="admin-demo-grid">
+          <button
+            type="button"
+            class="admin-demo-chip"
+            [class.chip-active]="username === adminPresets[0].user && password === adminPresets[0].pass"
+            (click)="selectPreset(adminPresets[0])"
+            title="Auto-fill SuperAdmin Credentials">
+            <div class="chip-icon">
+              <mat-icon>shield</mat-icon>
+            </div>
+            <div class="chip-details">
+              <span class="chip-name">{{ adminPresets[0].label }}</span>
+              <span class="chip-creds">{{ adminPresets[0].user }} · {{ adminPresets[0].pass }}</span>
+            </div>
+            <span class="chip-active-badge" *ngIf="username === adminPresets[0].user && password === adminPresets[0].pass">
+              ✓ Ready
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Security Audit Footer -->
+      <div class="admin-card-footer">
+        <div class="security-meta-strip">
+          <span class="meta-item"><mat-icon>fingerprint</mat-icon> TLS 1.3 Audit Logged</span>
+          <span class="meta-dot">·</span>
+          <span class="meta-item"><mat-icon>vpn_lock</mat-icon> IP & User-Agent Monitored</span>
+        </div>
+        <div class="tenant-portal-link-wrap">
+          <a routerLink="/login" class="tenant-portal-link">
+            <mat-icon>arrow_back</mat-icon> Return to Tenant & Staff Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

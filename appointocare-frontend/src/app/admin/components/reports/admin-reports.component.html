@@ -2,11 +2,11 @@
   <div class="page-header">
     <div class="page-header-text">
       <h1>Platform Analytics & Financial Reports</h1>
-      <p>Cross-tenant macro metrics, completion rates, gross billing velocity, and monthly volume</p>
+      <p>Cross-tenant macro metrics, settlement rates, SaaS billing velocity, and monthly volume</p>
     </div>
     <div class="page-actions">
       <button mat-stroked-button (click)="loadReports()">
-        <mat-icon>refresh</mat-icon> Refresh Data
+        <mat-icon>refresh</mat-icon> Refresh Live Data
       </button>
       <button mat-stroked-button routerLink="/admin-dashboard">
         <mat-icon>arrow_back</mat-icon> Dashboard
@@ -14,46 +14,48 @@
     </div>
   </div>
 
-  <!-- Metric Stat Cards -->
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="mb-3"></mat-progress-bar>
+
+  <!-- Metric Stat Cards (Liquid Glass) -->
   <div class="stat-card-grid">
-    <div class="stat-card">
+    <div class="glass-stat-card">
       <div class="stat-info">
-        <span class="stat-label">Gross Platform Revenue</span>
-        <span class="stat-value">₹{{ summary.total_revenue | number }}</span>
-        <span class="stat-subtext positive">+{{ summary.monthly_growth }}% MoM Growth</span>
+        <span class="stat-label">SaaS Subscription Revenue</span>
+        <span class="stat-value">₹{{ (analyticsData?.summary?.saas_revenue || 0) | number }}</span>
+        <span class="stat-subtext positive"><mat-icon>verified</mat-icon> Verified Platform Ledger</span>
       </div>
       <div class="stat-icon-wrapper success">
         <mat-icon>payments</mat-icon>
       </div>
     </div>
 
-    <div class="stat-card">
+    <div class="glass-stat-card">
       <div class="stat-info">
         <span class="stat-label">Active Tenants</span>
-        <span class="stat-value">{{ summary.active_tenants }}</span>
-        <span class="stat-subtext positive">Across Healthcare & Wellness</span>
+        <span class="stat-value">{{ analyticsData?.summary?.active_organizations || 0 }}</span>
+        <span class="stat-subtext positive"><mat-icon>domain</mat-icon> Across 9 Industry Sectors</span>
       </div>
       <div class="stat-icon-wrapper primary">
         <mat-icon>domain</mat-icon>
       </div>
     </div>
 
-    <div class="stat-card">
+    <div class="glass-stat-card">
       <div class="stat-info">
-        <span class="stat-label">Monthly Bookings</span>
-        <span class="stat-value">{{ summary.total_appointments_this_month }}</span>
-        <span class="stat-subtext">Consolidated Volume</span>
+        <span class="stat-label">Consolidated Bookings</span>
+        <span class="stat-value">{{ analyticsData?.summary?.total_appointments || 0 }}</span>
+        <span class="stat-subtext neutral"><mat-icon>calendar_month</mat-icon> Platform-Wide Volume</span>
       </div>
       <div class="stat-icon-wrapper info">
         <mat-icon>calendar_month</mat-icon>
       </div>
     </div>
 
-    <div class="stat-card">
+    <div class="glass-stat-card">
       <div class="stat-info">
-        <span class="stat-label">Completion Rate</span>
-        <span class="stat-value">{{ summary.completion_rate }}%</span>
-        <span class="stat-subtext positive">Low Patient No-Show Rate</span>
+        <span class="stat-label">Settlement Success Rate</span>
+        <span class="stat-value">{{ analyticsData?.payment_health?.success_rate_pct || 100 }}%</span>
+        <span class="stat-subtext positive"><mat-icon>price_check</mat-icon> Payment Settlement Health</span>
       </div>
       <div class="stat-icon-wrapper success">
         <mat-icon>verified</mat-icon>
@@ -61,33 +63,33 @@
     </div>
   </div>
 
-  <!-- Monthly Revenue Chart -->
-  <div class="table-surface-card chart-card">
-    <div class="table-header-bar">
-      <div>
-        <h3>Monthly Revenue Velocity</h3>
-        <p class="section-desc">Consolidated ledger records aggregated by billing calendar</p>
+  <!-- Real Monthly Revenue Chart (Chart.js / ng2-charts) -->
+  <div class="glass-chart-card">
+    <div class="chart-header-row">
+      <div class="chart-titles">
+        <h3>Monthly Revenue Velocity & Segregation</h3>
+        <p>Verified ledger records separating SaaS Subscription Billings from Tenant Appointment GMV</p>
       </div>
-      <span class="verified-tag"><mat-icon>verified_user</mat-icon> Real-Time Ledger</span>
+      <span class="liquid-glass-pill" style="font-size: 11px;">
+        <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #10b981;">verified_user</mat-icon> Real-Time Ledger
+      </span>
     </div>
 
-    <div class="chart-content" *ngIf="monthlyData?.length; else emptyMonthly">
-      <div class="bar-chart-flex">
-        <div class="chart-bar-unit" *ngFor="let item of monthlyData">
-          <div class="unit-val">₹{{ item.total | number }}</div>
-          <div class="unit-track">
-            <div class="unit-bar" [style.height.%]="(item.total / maxMonthlyVal) * 100"></div>
-          </div>
-          <div class="unit-label">{{ getMonthName(item.month) }}</div>
-        </div>
-      </div>
+    <div class="chart-canvas-container" *ngIf="monthlyChartLabels?.length; else emptyMonthly">
+      <canvas
+        baseChart
+        [datasets]="monthlyChartData"
+        [labels]="monthlyChartLabels"
+        [options]="monthlyChartOptions"
+        [type]="'bar'">
+      </canvas>
     </div>
 
     <ng-template #emptyMonthly>
       <div class="empty-state-box">
         <div class="empty-icon"><mat-icon>bar_chart</mat-icon></div>
         <h4>No Monthly Trends Available</h4>
-        <p>Monthly financial statistics will appear as clinic bookings are processed.</p>
+        <p>Monthly financial statistics will appear as clinic bookings and subscription payments are processed.</p>
       </div>
     </ng-template>
   </div>

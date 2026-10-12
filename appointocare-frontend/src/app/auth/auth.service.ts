@@ -96,12 +96,29 @@ export class AuthService {
     }
   }
 
+  getToken(): string | null {
+    return this.getAccessToken();
+  }
+
   getAccessToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
   }
 
   getRefreshToken(): string | null {
     return localStorage.getItem(this.REFRESH_KEY) || sessionStorage.getItem(this.REFRESH_KEY);
+  }
+
+  refreshToken(): Observable<any> {
+    const refresh = this.getRefreshToken();
+    return this.http.post<any>(`${this.apiUrl}/auth/refresh`, {}, {
+      headers: { Authorization: `Bearer ${refresh}` }
+    }).pipe(
+      tap((res) => {
+        if (res && res.access_token) {
+          localStorage.setItem(this.TOKEN_KEY, res.access_token);
+        }
+      })
+    );
   }
 
   getDecodedToken(): DecodedToken | null {

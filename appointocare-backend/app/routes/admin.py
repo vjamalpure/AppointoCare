@@ -636,3 +636,179 @@ def get_tenant_services_status(tenant_id):
     })
 
 
+# -----------------------------------------------------------------------------
+# Super Admin Executive Analytics (Consolidated Cross-Tenant Platform Intel)
+# -----------------------------------------------------------------------------
+@admin_bp.route("/dashboard-analytics", methods=["GET"])
+@jwt_required()
+def get_superadmin_dashboard_analytics():
+    claims = get_jwt()
+    if claims.get("role") not in ["Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Unauthorized. Administrative privilege required."}), 403
+
+    from app.models import WhatsAppConfig, PaymentConfig, AuditLog, Customer
+    current_year = datetime.utcnow().year
+
+    # 1. Platform Summary & Financial Segmentation
+    total_orgs = Organization.query.count()
+    active_orgs = Organization.query.filter_by(subscription_status='Active').count()
+    paused_orgs = Organization.query.filter_by(subscription_status='Paused').count()
+    suspended_orgs = Organization.query.filter_by(subscription_status='Suspended').count()
+
+    total_appts = Appointment.query.count()
+    total_customers = Customer.query.count()
+
+    # Financial Integrity: Segregate SaaS Subscription Fees, Tenant GMV, and Commission
+    saas_revenue = float(db.session.query(db.func.coalesce(db.func.sum(OrganizationTransaction.amount), 0)).scalar() or 0)
+    tenant_gmv = float(db.session.query(db.func.coalesce(db.func.sum(AppointmentTransaction.amount), 0)).scalar() or 0)
+    platform_commission = round(tenant_gmv * 0.05, 2)  # 5% platform split realized from Route transactions
+
+    refunds_total = float(db.session.query(db.func.coalesce(db.func.sum(AppointmentTransaction.amount), 0)).filter(
+        AppointmentTransaction.status.in_(['refunded', 'Refunded'])
+    ).scalar() or 0)
+
+    # 2. Sector Distribution across the 9 Verticals
+    orgs = Organization.query.all()
+    sector_counts = {}
+    for o in orgs:
+        s = o.sector or "Other"
+        sector_counts[s] = sector_counts.get(s, 0) + 1
+
+    sector_distribution = [
+        {"sector": sec, "organizations_count": cnt}
+        for sec, cnt in sorted(sector_counts.items(), key=lambda x: x[1], reverse=True)
+    ]
+
+    # 3. Subscription Plan Breakdown
+    plan_counts = {"Basic": 0, "Premium": 0, "Enterprise": 0}
+    for o in orgs:
+        p = (o.subscription_plan or "Basic").capitalize()
+        if p in plan_counts:
+            plan_counts[p] += 1
+        else:
+            plan_counts["Basic"] += 1
+
+    # 4. Monthly Platform Revenue History (Current Year)
+    months_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    monthly_history = []
+
+    org_txns = db.session.query(
+        extract('month', OrganizationTransaction.created_at).label('m'),
+        db.func.sum(OrganizationTransaction.amount).label('total')
+    ).filter(
+        extract('year', OrganizationTransaction.created_at) == current_year
+    ).group_by('m').all()
+    org_m_map = {int(m): float(tot or 0) for m, tot in org_txns if m is not None}
+
+    appt_txns = db.session.query(
+        extract('month', AppointmentTransaction.created_at).label('m'),
+        db.func.sum(AppointmentTransaction.amount).label('total'),
+        db.func.count(AppointmentTransaction.id).label('cnt')
+    ).filter(
+        extract('year', AppointmentTransaction.created_at) == current_year
+    ).group_by('m').all()
+    appt_m_map = {int(m): (float(tot or 0), int(cnt or 0)) for m, tot, cnt in appt_txns if m is not None}
+
+    for idx, name in enumerate(months_labels, 1):
+        saas_val = org_m_map.get(idx, 0.0)
+        gmv_val, count_val = appt_m_map.get(idx, (0.0, 0))
+        monthly_history.append({
+            "month": idx,
+            "month_label": name,
+            "saas_revenue": saas_val,
+            "tenant_gmv": gmv_val,
+            "booking_volume": count_val
+        })
+
+    # 5. Payment Health & Settlements
+    total_txns = AppointmentTransaction.query.count()
+    settled_txns = AppointmentTransaction.query.filter(
+        AppointmentTransaction.status.in_(['success', 'paid', 'Success', 'Paid', 'Completed'])
+    ).count()
+    pending_txns = AppointmentTransaction.query.filter(
+        AppointmentTransaction.status.in_(['pending', 'Pending'])
+    ).count()
+    failed_txns = AppointmentTransaction.query.filter(
+        AppointmentTransaction.status.in_(['failed', 'Failed'])
+    ).count()
+
+    payment_health = {
+        "total_transactions": total_txns,
+        "successful_transactions": settled_txns,
+        "pending_transactions": pending_txns,
+        "failed_transactions": failed_txns,
+        "success_rate_pct": round((settled_txns / total_txns * 100), 1) if total_txns > 0 else 100.0
+    }
+
+    # 6. Integration Health
+    wa_configs = WhatsAppConfig.query.all()
+    wa_active = sum(1 for c in wa_configs if c.service_status == "ACTIVE")
+    wa_suspended = sum(1 for c in wa_configs if c.service_status == "SUSPENDED")
+
+    pay_configs = PaymentConfig.query.all()
+    pay_active = sum(1 for c in pay_configs if c.service_status == "ACTIVE")
+    pay_suspended = sum(1 for c in pay_configs if c.service_status == "SUSPENDED")
+
+    integration_health = {
+        "whatsapp_waba": {
+            "total_configured": len(wa_configs),
+            "active": wa_active,
+            "suspended": wa_suspended,
+            "operational_rate_pct": round((wa_active / len(wa_configs) * 100), 1) if wa_configs else 100.0
+        },
+        "razorpay_route": {
+            "total_configured": len(pay_configs),
+            "active": pay_active,
+            "suspended": pay_suspended,
+            "operational_rate_pct": round((pay_active / len(pay_configs) * 100), 1) if pay_configs else 100.0
+        }
+    }
+
+    # 7. Recent Security & Audit Activity
+    recent_audits = (
+        AuditLog.query.order_by(AuditLog.created_at.desc())
+        .limit(10)
+        .all()
+    )
+    audit_list = []
+    for a in recent_audits:
+        audit_list.append({
+            "id": a.id,
+            "organization_id": a.organization_id,
+            "user_role": a.user_role,
+            "action": a.action,
+            "details": a.details,
+            "client_ip": a.ip_address,
+            "created_at": a.created_at.isoformat() if a.created_at else None
+        })
+
+    return jsonify({
+        "summary": {
+            "total_organizations": total_orgs,
+            "active_organizations": active_orgs,
+            "paused_organizations": paused_orgs,
+            "suspended_organizations": suspended_orgs,
+            "total_appointments": total_appts,
+            "total_customers": total_customers,
+            "saas_revenue": saas_revenue,
+            "tenant_gmv": tenant_gmv,
+            "platform_commission": platform_commission,
+            "refunds_total": refunds_total
+        },
+        "sector_distribution": sector_distribution,
+        "subscription_breakdown": {
+            "plans": plan_counts,
+            "statuses": {
+                "Active": active_orgs,
+                "Paused": paused_orgs,
+                "Suspended": suspended_orgs
+            }
+        },
+        "monthly_revenue_history": monthly_history,
+        "payment_health": payment_health,
+        "integration_health": integration_health,
+        "recent_activity": audit_list,
+        "generated_at": datetime.utcnow().isoformat()
+    }), 200
+
+

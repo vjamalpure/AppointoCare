@@ -1,0 +1,341 @@
+/* ==========================================================================
+   APPOINTOCORE LIQUID GLASS DESIGN SYSTEM (V3.0 ENTERPRISE SUITE)
+   State-of-the-Art Layered Translucent Surfaces, Micro-Highlights & Tokens
+   ========================================================================== */
+
+:root {
+  /* --- Liquid Glass Surfaces (Light Mode / Tenant Shell) --- */
+  --glass-surface-base: rgba(255, 255, 255, 0.76);
+  --glass-surface-elevated: rgba(255, 255, 255, 0.88);
+  --glass-surface-hover: rgba(255, 255, 255, 0.94);
+  --glass-surface-subtle: rgba(248, 250, 252, 0.65);
+  --glass-surface-border: rgba(226, 232, 240, 0.75);
+  --glass-surface-border-subtle: rgba(241, 245, 249, 0.6);
+  --glass-surface-highlight: rgba(255, 255, 255, 0.9);
+
+  /* --- Obsidian Liquid Glass Surfaces (Dark Mode / Super Admin Shell) --- */
+  --glass-dark-base: rgba(15, 23, 42, 0.82);
+  --glass-dark-elevated: rgba(30, 41, 59, 0.88);
+  --glass-dark-hover: rgba(30, 41, 59, 0.96);
+  --glass-dark-subtle: rgba(15, 23, 42, 0.6);
+  --glass-dark-border: rgba(255, 255, 255, 0.12);
+  --glass-dark-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-dark-highlight: rgba(255, 255, 255, 0.16);
+
+  /* --- Selective Backdrop Blur Scales --- */
+  --glass-blur-sm: blur(8px);
+  --glass-blur-md: blur(14px);
+  --glass-blur-lg: blur(22px);
+  --glass-blur-xl: blur(32px);
+
+  /* --- Ambient Mesh Glows --- */
+  --glass-ambient-primary: radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.12) 0%, transparent 45%);
+  --glass-ambient-secondary: radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 45%);
+  --glass-ambient-emerald: radial-gradient(circle at 50% 10%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+  --glass-ambient-admin: radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                         radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.15) 0%, transparent 50%);
+
+  /* --- Glass Elevations & Shadows --- */
+  --glass-shadow-xs: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+  --glass-shadow-sm: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+  --glass-shadow-md: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+  --glass-shadow-lg: 0 20px 35px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+  --glass-shadow-glow: 0 0 24px rgba(79, 70, 229, 0.28);
+  --glass-shadow-glow-cyan: 0 0 24px rgba(6, 182, 212, 0.25);
+  --glass-shadow-dark: 0 16px 40px -8px rgba(0, 0, 0, 0.45);
+
+  /* --- Curated Data Visualization Chart Palette --- */
+  --chart-indigo: #4f46e5;
+  --chart-indigo-bg: rgba(79, 70, 229, 0.16);
+  --chart-cyan: #06b6d4;
+  --chart-cyan-bg: rgba(6, 182, 212, 0.16);
+  --chart-emerald: #10b981;
+  --chart-emerald-bg: rgba(16, 185, 129, 0.16);
+  --chart-amber: #f59e0b;
+  --chart-amber-bg: rgba(245, 158, 11, 0.16);
+  --chart-rose: #f43f5e;
+  --chart-rose-bg: rgba(244, 63, 94, 0.16);
+  --chart-violet: #8b5cf6;
+  --chart-violet-bg: rgba(139, 92, 246, 0.16);
+  --chart-slate: #64748b;
+  --chart-slate-bg: rgba(100, 116, 139, 0.16);
+
+  /* --- Transitions --- */
+  --transition-smooth: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: all 0.15s ease-out;
+}
+
+/* ==========================================================================
+   Utility Classes & Liquid Glass Component Surfaces
+   ========================================================================== */
+
+/* 1. Light Liquid Glass Card */
+.liquid-glass-card {
+  background: var(--glass-surface-base);
+  backdrop-filter: var(--glass-blur-md);
+  -webkit-backdrop-filter: var(--glass-blur-md);
+  border: 1px solid var(--glass-surface-border);
+  box-shadow: var(--glass-shadow-sm);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-surface-highlight), transparent);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: var(--glass-surface-elevated);
+    box-shadow: var(--glass-shadow-md);
+    border-color: rgba(99, 102, 241, 0.35);
+    transform: translateY(-2px);
+  }
+}
+
+/* 2. Obsidian Liquid Glass Card (Super Admin / Security) */
+.liquid-glass-obsidian {
+  background: var(--glass-dark-base);
+  backdrop-filter: var(--glass-blur-lg);
+  -webkit-backdrop-filter: var(--glass-blur-lg);
+  border: 1px solid var(--glass-dark-border);
+  box-shadow: var(--glass-shadow-dark);
+  border-radius: var(--radius-xl);
+  color: #f8fafc;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: var(--glass-dark-elevated);
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: var(--glass-shadow-dark), 0 0 20px rgba(79, 70, 229, 0.2);
+  }
+}
+
+/* 3. Frosted Floating Header / Toolbar */
+.liquid-glass-toolbar {
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: var(--glass-blur-md) !important;
+  -webkit-backdrop-filter: var(--glass-blur-md) !important;
+  border-bottom: 1px solid var(--glass-surface-border) !important;
+  box-shadow: var(--glass-shadow-xs) !important;
+}
+
+/* 4. Frosted Pill / Segment / Filter Box */
+.liquid-glass-pill {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  border: 1px solid var(--glass-surface-border);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition-smooth);
+
+  &:hover {
+    background: #ffffff;
+    border-color: var(--primary-400);
+    box-shadow: var(--glass-shadow-xs);
+  }
+}
+
+/* 5. Liquid Glass Stat Card (Auto-Adjusting Grid) */
+.glass-stat-card {
+  background: var(--glass-surface-base);
+  backdrop-filter: var(--glass-blur-md);
+  -webkit-backdrop-filter: var(--glass-blur-md);
+  border: 1px solid var(--glass-surface-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--glass-shadow-sm);
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-brand);
+    opacity: 0.85;
+  }
+
+  &:hover {
+    background: var(--glass-surface-elevated);
+    box-shadow: var(--glass-shadow-md);
+    transform: translateY(-3px);
+    border-color: var(--primary-300);
+  }
+
+  .stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    &.primary { background: #eef2ff; color: #4f46e5; }
+    &.success { background: #ecfdf5; color: #059669; }
+    &.warning { background: #fffbeb; color: #d97706; }
+    &.danger  { background: #fef2f2; color: #dc2626; }
+    &.info    { background: #f0f9ff; color: #0284c7; }
+    &.violet  { background: #f5f3ff; color: #7c3aed; }
+  }
+
+  &:hover .stat-icon-wrapper {
+    transform: scale(1.08);
+  }
+
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+
+    .stat-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate-500);
+    }
+
+    .stat-value {
+      font-size: clamp(22px, 2vw, 28px);
+      font-weight: 800;
+      color: var(--slate-900);
+      font-family: var(--font-display);
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .stat-subtext {
+      font-size: 12px;
+      color: var(--slate-400);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      &.positive { color: var(--success-text); font-weight: 600; }
+      &.negative { color: var(--danger-text); font-weight: 600; }
+      &.neutral  { color: var(--slate-500); }
+    }
+  }
+}
+
+/* 6. Chart Canvas Wrap in Liquid Glass Card */
+.glass-chart-card {
+  background: var(--glass-surface-base);
+  backdrop-filter: var(--glass-blur-md);
+  -webkit-backdrop-filter: var(--glass-blur-md);
+  border: 1px solid var(--glass-surface-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--glass-shadow-sm);
+  transition: var(--transition-smooth);
+
+  &:hover {
+    box-shadow: var(--glass-shadow-md);
+  }
+
+  .chart-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .chart-titles {
+      h3 {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--slate-900);
+        margin: 0 0 4px;
+      }
+      p {
+        font-size: 12.5px;
+        color: var(--slate-500);
+        margin: 0;
+      }
+    }
+
+    .chart-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .chart-canvas-container {
+    height: 300px;
+    position: relative;
+    width: 100%;
+  }
+}
+
+/* 7. Accessible Degradation Fallback */
+@supports not (backdrop-filter: blur(10px)) {
+  .liquid-glass-card,
+  .liquid-glass-toolbar,
+  .liquid-glass-pill,
+  .glass-stat-card,
+  .glass-chart-card {
+    background: #ffffff !important;
+  }
+
+  .liquid-glass-obsidian {
+    background: #0f172a !important;
+  }
+}
+
+/* 8. Accessibility: Respect User's Reduced-Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-glass-card,
+  .liquid-glass-obsidian,
+  .glass-stat-card,
+  .glass-chart-card,
+  .liquid-glass-pill {
+    transition: none !important;
+    transform: none !important;
+  }
+}

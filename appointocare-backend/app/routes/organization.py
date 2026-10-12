@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt
 from app.models import db, Organization, Appointment, AppointmentTransaction, OrganizationTransaction, MessageLog
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import extract
 
 organization_bp = Blueprint("organization_bp", __name__)
@@ -53,7 +53,8 @@ def org_transactions_summary():
 def org_dashboard():
     claims = get_jwt()
 
-    if claims.get("role") not in ["Organization", "Manager", "Staff"]:
+    valid_roles = ["Organization", "Manager", "Staff", "Doctor", "Agent", "Advisor", "Instructor", "Lawyer", "Consultant", "Specialist"]
+    if claims.get("role") not in valid_roles:
         return jsonify({"msg": "Unauthorized"}), 403
 
     org_id = int(claims.get("organization_id") or claims.get("sub"))
@@ -62,11 +63,49 @@ def org_dashboard():
         return jsonify({"msg": "Organization not found"}), 404
 
     # ------------------------------------------
-    # Fetch appointments for this organization
+    # Server-Side SQL Aggregates (Scalable & Bounded)
+    # ------------------------------------------
+    total_appointments = Appointment.query.filter_by(organization_id=org_id).count()
+    booked_count = Appointment.query.filter_by(organization_id=org_id, status="Booked").count()
+    completed_count = Appointment.query.filter(
+        Appointment.organization_id == org_id,
+        Appointment.status.in_(["Completed", "Paid_Closed", "Encounter_Closed"])
+    ).count()
+    cancelled_count = Appointment.query.filter(
+        Appointment.organization_id == org_id,
+        Appointment.status.in_(["Cancelled", "No_Show"])
+    ).count()
+
+    total_paid = float(db.session.query(db.func.coalesce(db.func.sum(AppointmentTransaction.amount), 0)).filter(
+        AppointmentTransaction.organization_id == org_id,
+        AppointmentTransaction.status.in_(["success", "paid", "Success", "Paid"])
+    ).scalar() or 0)
+
+    total_unpaid = float(db.session.query(db.func.coalesce(db.func.sum(AppointmentTransaction.amount), 0)).filter(
+        AppointmentTransaction.organization_id == org_id,
+        AppointmentTransaction.status.in_(["pending", "Pending", "unpaid"])
+    ).scalar() or 0)
+
+    # 30-Day Trend (Daily Volume Aggregation)
+    now = datetime.utcnow()
+    thirty_days_ago = now - timedelta(days=30)
+    trend_rows = db.session.query(
+        db.func.date(Appointment.appointment_date).label('day'),
+        db.func.count(Appointment.id).label('count')
+    ).filter(
+        Appointment.organization_id == org_id,
+        Appointment.appointment_date >= thirty_days_ago
+    ).group_by('day').order_by('day').all()
+
+    trend_30d = [{"date": str(r.day), "count": int(r.count)} for r in trend_rows if r.day]
+
+    # ------------------------------------------
+    # Fetch Bounded Recent Appointments (Limit 15)
     # ------------------------------------------
     appointments = (
         Appointment.query.filter_by(organization_id=org_id)
         .order_by(Appointment.appointment_date.desc())
+        .limit(15)
         .all()
     )
 
@@ -79,6 +118,7 @@ def org_dashboard():
             "appointment_date": appt.appointment_date.isoformat(),
             "status": appt.status,
             "payment_status": appt.payment_status,
+            "amount": float(appt.amount) if getattr(appt, "amount", None) is not None else 0.0,
             "created_at": appt.created_at.isoformat() if appt.created_at else None,
             "updated_at": appt.updated_at.isoformat() if appt.updated_at else None,
         })
@@ -107,7 +147,7 @@ def org_dashboard():
         })
 
     # ------------------------------------------
-    # Fetch recent appointment transactions (optional display)
+    # Fetch recent appointment transactions
     # ------------------------------------------
     appt_transactions = (
         AppointmentTransaction.query.filter_by(organization_id=org_id)
@@ -134,7 +174,9 @@ def org_dashboard():
     # ------------------------------------------
     return jsonify({
         "organization": {
+            "id": org.id,
             "name": org.name,
+            "code": org.code,
             "sector": org.sector,
             "subscription": {
                 "status": org.subscription_status,
@@ -144,7 +186,16 @@ def org_dashboard():
                 "next_billing_date": org.next_billing_date.isoformat() if org.next_billing_date else None,
             },
         },
-        "appointments_count": len(appointments_list),
+        "metrics": {
+            "total_appointments": total_appointments,
+            "booked_count": booked_count,
+            "completed_count": completed_count,
+            "cancelled_count": cancelled_count,
+            "total_paid": total_paid,
+            "total_unpaid": total_unpaid,
+            "trend_30d": trend_30d
+        },
+        "appointments_count": total_appointments,
         "appointments": appointments_list,
         "organization_transactions": org_txn_list,
         "appointment_transactions": appt_txn_list,

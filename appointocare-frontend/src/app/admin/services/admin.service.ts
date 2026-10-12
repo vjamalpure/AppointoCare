@@ -72,6 +72,10 @@ export class AdminService {
     return this.http.get<any>(`${this.apiUrl}/admin/dashboard`);
   }
 
+  getExecutiveDashboardAnalytics(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/api/v1/admin/dashboard-analytics`);
+  }
+
   getReportsSummary(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/api/v1/platform/reports/summary`);
   }
