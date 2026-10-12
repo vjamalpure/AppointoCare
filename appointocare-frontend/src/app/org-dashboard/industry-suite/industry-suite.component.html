@@ -70,6 +70,23 @@
       <span>Sector Records Vault</span>
       <span class="badge-count">{{ records.length }}</span>
     </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'analytics'"
+      (click)="activeTab = 'analytics'; loadOperationalKpis()">
+      <mat-icon>insights</mat-icon>
+      <span>Operational KPIs & Analytics</span>
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'workflows'"
+      (click)="activeTab = 'workflows'; loadWorkflowDefinitions(); loadAutomationRules()">
+      <mat-icon>schema</mat-icon>
+      <span>Workflow State & Automations</span>
+      <span class="badge-count" *ngIf="automationRules.length">{{ automationRules.length }}</span>
+    </button>
   </div>
 
   <!-- ========================================== -->
@@ -663,6 +680,147 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- Tab 5: Operational KPIs & Analytics        -->
+  <!-- ========================================== -->
+  <div class="tab-pane" *ngIf="activeTab === 'analytics'">
+    <div class="records-vault-card">
+      <div class="vault-header">
+        <div>
+          <h2>{{ sector }} Operational Analytics & Intelligence</h2>
+          <p>Real-time sector KPIs, conversion funnel velocity, and staff productivity benchmarks.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button mat-raised-button color="primary" (click)="downloadAnalyticsReport('xlsx')">
+            <mat-icon>table_view</mat-icon> Export Excel (.xlsx)
+          </button>
+          <button mat-stroked-button (click)="downloadAnalyticsReport('csv')">
+            <mat-icon>file_download</mat-icon> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-time Sector KPIs -->
+      <div class="benchmarks-strip" *ngIf="operationalKpis" style="margin-bottom: 24px;">
+        <div class="kpi-card">
+          <span class="kpi-label">{{ operationalKpis.sector_kpis?.primary_metric_label || 'Primary Volume' }}</span>
+          <span class="kpi-val highlight">{{ operationalKpis.sector_kpis?.primary_metric_value }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">{{ operationalKpis.sector_kpis?.secondary_metric_label || 'Secondary Ratio' }}</span>
+          <span class="kpi-val">{{ operationalKpis.sector_kpis?.secondary_metric_value }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Adherence / Quality Rate</span>
+          <span class="kpi-val highlight">{{ operationalKpis.sector_kpis?.adherence_rate }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Average Turnaround Cycle</span>
+          <span class="kpi-val">{{ operationalKpis.sector_kpis?.avg_cycle_time }}</span>
+        </div>
+      </div>
+
+      <!-- Conversion Funnel Grid -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;" *ngIf="operationalKpis?.funnel">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #0f172a;">Operational Pipeline & Conversion Funnel</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div *ngFor="let step of operationalKpis.funnel" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px;">
+            <div style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase;">{{ step.stage }}</div>
+            <div style="font-size: 24px; font-weight: 800; color: #1e3a8a; margin: 8px 0;">{{ step.count }}</div>
+            <div style="font-size: 12px; color: #16a34a; font-weight: 600;">{{ step.conversion_pct }}% Conversion</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Productivity Table -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;" *ngIf="operationalKpis?.staff_productivity">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #0f172a;">Specialist Staff Productivity Output</h3>
+        <table class="spec-table" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Staff Member</th>
+              <th>Assigned Encounters</th>
+              <th>Productivity Score</th>
+              <th>Operational Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let staff of operationalKpis.staff_productivity">
+              <td><strong>{{ staff.staff_name }}</strong></td>
+              <td>{{ staff.assigned_encounters }} encounters</td>
+              <td><span style="font-weight: 700; color: #2563eb;">{{ staff.productivity_score }} pts</span></td>
+              <td><span class="rec-status" style="background: #dcfce7; color: #15803d;">Optimal</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Tab 6: Workflow State & Automations       -->
+  <!-- ========================================== -->
+  <div class="tab-pane" *ngIf="activeTab === 'workflows'">
+    <div class="records-vault-card">
+      <div class="vault-header">
+        <div>
+          <h2>{{ sector }} Workflow State Machine & Automation Rules</h2>
+          <p>Configurable lifecycle statuses, role-authorized transitions, and event-triggered background automation.</p>
+        </div>
+        <button mat-stroked-button (click)="loadWorkflowDefinitions(); loadAutomationRules()">
+          <mat-icon>refresh</mat-icon> Refresh Engine
+        </button>
+      </div>
+
+      <!-- State Machine Blueprint -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;" *ngIf="workflowDef">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <mat-icon color="primary">account_tree</mat-icon> Active Workflow: {{ workflowDef.name }}
+        </h3>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+          <div *ngFor="let st of workflowDef.statuses" style="padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; min-width: 150px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span [style.background]="st.color" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></span>
+              <strong>{{ st.label }}</strong>
+            </div>
+            <span style="font-size: 11px; color: #64748b; margin-top: 4px; display: block;">Target SLA: {{ st.sla_hours }}h</span>
+          </div>
+        </div>
+
+        <h4 style="margin-top: 16px; margin-bottom: 8px; font-size: 14px; color: #475569;">Configured Transition Gates:</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;">
+          <div *ngFor="let tr of workflowDef.transitions" style="background: #f1f5f9; border-radius: 6px; padding: 8px 12px; font-size: 12px;">
+            <span><strong>{{ tr.from }}</strong> → <strong>{{ tr.to }}</strong></span>
+            <div style="color: #64748b; margin-top: 2px;">Role Required: <code>{{ tr.required_role || 'Any Staff' }}</code></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Automated Trigger Recipes -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <mat-icon color="accent">bolt</mat-icon> Event-Triggered Automation Rules ({{ automationRules.length }})
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+          <div *ngFor="let rule of automationRules" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; background: #ffffff;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="font-size: 14px; color: #1e3a8a;">{{ rule.name }}</strong>
+              <mat-slide-toggle [checked]="rule.is_active" (change)="toggleAutomation(rule)"></mat-slide-toggle>
+            </div>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 10px;">Trigger: <code>{{ rule.event_trigger }}</code> • Action: <code>{{ rule.action_type }}</code></p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 11px; color: #94a3b8;" *ngIf="rule.last_triggered_at">Fired: {{ rule.last_triggered_at | date:'short' }}</span>
+              <span style="font-size: 11px; color: #94a3b8;" *ngIf="!rule.last_triggered_at">Standby</span>
+              <button mat-stroked-button color="primary" style="height: 30px; font-size: 11px;" (click)="triggerAutomation(rule.id)">
+                <mat-icon style="font-size: 14px; width: 14px; height: 14px;">play_arrow</mat-icon> Simulate Firing
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Issue New Token -->
   <div class="modal-backdrop" *ngIf="showTokenModal" (click)="showTokenModal = false">
     <div class="modal-card" (click)="$event.stopPropagation()">
@@ -787,6 +945,56 @@
           <div class="attr-card" *ngFor="let attr of getFormattedAttributes(selectedRecord.data)">
             <span class="attr-label">{{ attr.label }}</span>
             <span class="attr-value">{{ attr.value }}</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Custom Fields Block -->
+        <div class="specialized-block" *ngIf="customFieldDefinitions.length" style="margin-top: 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px;">
+          <h4 style="display: flex; align-items: center; gap: 8px; color: #1e3a8a; margin-bottom: 8px;">
+            <mat-icon>tune</mat-icon> Configured Sector Custom Fields
+          </h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+            <div *ngFor="let cf of customFieldDefinitions" style="background: #f8fafc; border-radius: 8px; padding: 8px 12px; border: 1px solid #e2e8f0;">
+              <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">{{ cf.field_label }}</span>
+              <span style="font-size: 13px; font-weight: 600; color: #0f172a;">{{ selectedRecord.data?.[cf.field_key] || cf.default_value || 'Not Specified' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workflow State Machine & Transition Gate Block -->
+        <div class="specialized-block" *ngIf="workflowDef" style="margin-top: 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="display: flex; align-items: center; gap: 8px; color: #1e40af; margin: 0;">
+              <mat-icon>schema</mat-icon> Workflow State Machine Gate
+            </h4>
+            <span style="padding: 4px 12px; border-radius: 9999px; font-weight: 700; font-size: 12px; background: #e0f2fe; color: #0369a1;">
+              Status: {{ selectedRecord.status || workflowDef.initial_status }}
+            </span>
+          </div>
+
+          <!-- Permitted Transition Buttons -->
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+            <span style="font-size: 12px; font-weight: 600; color: #475569;">Permitted Transitions:</span>
+            <ng-container *ngFor="let t of workflowDef.transitions">
+              <button *ngIf="t.from === (selectedRecord.status || workflowDef.initial_status)"
+                      mat-flat-button color="accent"
+                      style="height: 32px; font-size: 12px;"
+                      [disabled]="isTransitioning"
+                      (click)="executeTransition(selectedRecord, t.to)">
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">arrow_forward</mat-icon> {{ t.label }}
+              </button>
+            </ng-container>
+          </div>
+
+          <!-- Transition History Timeline -->
+          <div *ngIf="recordHistory.length" style="margin-top: 12px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <span style="font-size: 12px; font-weight: 700; color: #64748b;">Transition Audit Timeline:</span>
+            <div style="max-height: 120px; overflow-y: auto; margin-top: 6px;">
+              <div *ngFor="let h of recordHistory" style="display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px dashed #f1f5f9;">
+                <span><strong>{{ h.from_status }}</strong> → <strong>{{ h.to_status }}</strong> (by {{ h.user_role }})</span>
+                <span style="color: #94a3b8;">{{ h.created_at | date:'short' }}</span>
+              </div>
+            </div>
           </div>
         </div>
 

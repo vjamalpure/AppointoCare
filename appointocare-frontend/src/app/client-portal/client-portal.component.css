@@ -1,0 +1,381 @@
+.portal-root {
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1e293b;
+}
+
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.portal-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.portal-body {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Authentication Card */
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.auth-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 480px;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.icon-circle {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1.25rem;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-circle mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.auth-card-header h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.auth-card-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.auth-submit-btn {
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.code-instruction-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 0.9rem;
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+
+.auth-btn-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Dashboard Banner */
+.welcome-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.75rem 2rem;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  border-radius: 16px;
+  color: #ffffff;
+  margin-bottom: 2rem;
+}
+
+.welcome-content h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.welcome-content p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+.banner-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.sector-tag {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.org-tag {
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Tabs & Content */
+.portal-tabs {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.tab-icon {
+  margin-right: 0.5rem;
+}
+
+.tab-pane {
+  padding: 2rem;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.section-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.appt-card, .record-card, .doc-card {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.detail-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #64748b;
+}
+
+.detail-label mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.status-chip {
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.status-chip.booked, .status-chip.active, .status-chip.paid {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-chip.cancelled, .status-chip.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-chip.pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.record-meta-box {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 3px solid #3b82f6;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.record-action-box {
+  margin-top: 1rem;
+}
+
+.upload-form-box, .approval-form-card, .pref-card {
+  padding: 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.flex-2 { flex: 2; }
+.flex-1 { flex: 1; }
+
+.decision-radios {
+  margin: 1rem 0;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.pref-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.pref-info strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.pref-info p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+}
+
+.empty-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 0.75rem;
+}

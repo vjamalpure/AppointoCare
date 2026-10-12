@@ -60,6 +60,10 @@ def create_app():
     from .routes.organization_v1 import org_v1_bp, ai_bp
     from .routes.industry_suite import industry_suite_bp
     from .routes.notifications import notifications_bp
+    from .routes.workflows import workflows_bp, custom_fields_bp
+    from .routes.customer_portal import customer_portal_bp
+    from .routes.analytics import analytics_bp
+    from .routes.automation import automation_bp
 
     # Auth & Admin & Core
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -92,5 +96,12 @@ def create_app():
     app.register_blueprint(ai_bp, url_prefix="/api/v1/ai")
     app.register_blueprint(industry_suite_bp, url_prefix="/api/v1/industry-suite")
     app.register_blueprint(notifications_bp, url_prefix="/api/v1/notifications")
+
+    # Iteration 4: Workflows, Custom Fields, Client Portal, Analytics & Automation
+    app.register_blueprint(workflows_bp, url_prefix="/api/v1/workflows")
+    app.register_blueprint(custom_fields_bp, url_prefix="/api/v1/custom-fields")
+    app.register_blueprint(customer_portal_bp, url_prefix="/api/v1/portal")
+    app.register_blueprint(analytics_bp, url_prefix="/api/v1/analytics")
+    app.register_blueprint(automation_bp, url_prefix="/api/v1/automations")
 
     return app

@@ -483,4 +483,115 @@ class PaymentConfig(db.Model):
 Tenant = Organization
 
 
+# -----------------------------------------------------------------------------
+# Enterprise Workflow, Custom Fields, Automation & Self-Service Portal Models
+# -----------------------------------------------------------------------------
+class CustomFieldDefinition(db.Model):
+    __tablename__ = "custom_field_definitions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
+    sector = db.Column(db.String(50), nullable=False)
+    entity_type = db.Column(db.String(50), default="record")  # record, customer, appointment
+    field_key = db.Column(db.String(80), nullable=False)
+    field_label = db.Column(db.String(150), nullable=False)
+    field_type = db.Column(db.String(30), default="text")  # text, number, date, select, boolean, file
+    is_required = db.Column(db.Boolean, default=False)
+    options = db.Column(db.JSON, default=list)  # for select dropdowns
+    default_value = db.Column(db.String(255), nullable=True)
+    validation_rules = db.Column(db.JSON, default=dict)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_custom_field_org_sector", "organization_id", "sector", "entity_type"),
+    )
+
+
+class WorkflowDefinition(db.Model):
+    __tablename__ = "workflow_definitions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
+    sector = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    entity_type = db.Column(db.String(50), default="record")
+    initial_status = db.Column(db.String(50), default="Draft")
+    statuses = db.Column(db.JSON, default=list)  # [{id: "draft", label: "Draft", color: "gray", sla_hours: 24}]
+    transitions = db.Column(db.JSON, default=list)  # [{from: "draft", to: "review", label: "Submit", required_role: "Staff", required_fields: []}]
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_workflow_org_sector", "organization_id", "sector"),
+    )
+
+
+class WorkflowTransitionHistory(db.Model):
+    __tablename__ = "workflow_transition_histories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    record_id = db.Column(db.Integer, db.ForeignKey("industry_records.id", ondelete="CASCADE"), nullable=False, index=True)
+    from_status = db.Column(db.String(50), nullable=False)
+    to_status = db.Column(db.String(50), nullable=False)
+    triggered_by_user = db.Column(db.String(100), nullable=True)
+    user_role = db.Column(db.String(50), nullable=True)
+    comment = db.Column(db.Text, nullable=True)
+    transition_metadata = db.Column(db.JSON, default=dict)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_wf_history_rec_org", "record_id", "organization_id"),
+    )
+
+
+class AutomationRule(db.Model):
+    __tablename__ = "automation_rules"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = db.Column(db.String(150), nullable=False)
+    event_trigger = db.Column(db.String(80), nullable=False)  # record.transition, appointment.booked, invoice.overdue, sla.breach
+    conditions = db.Column(db.JSON, default=dict)
+    action_type = db.Column(db.String(50), nullable=False)  # in_app_notification, whatsapp_alert, status_escalation, email_reminder
+    action_payload = db.Column(db.JSON, default=dict)
+    is_active = db.Column(db.Boolean, default=True)
+    last_triggered_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class CustomerPortalSession(db.Model):
+    __tablename__ = "customer_portal_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    session_token = db.Column(db.String(128), unique=True, nullable=False, index=True)
+    auth_code = db.Column(db.String(10), nullable=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    communication_preferences = db.Column(db.JSON, default=lambda: {"whatsapp": True, "email": True, "sms": False})
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class CustomerDocument(db.Model):
+    __tablename__ = "customer_documents"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True)
+    record_id = db.Column(db.Integer, db.ForeignKey("industry_records.id", ondelete="SET NULL"), nullable=True, index=True)
+    title = db.Column(db.String(150), nullable=False)
+    file_name = db.Column(db.String(255), nullable=False)
+    file_type = db.Column(db.String(50), default="application/pdf")
+    file_size = db.Column(db.Integer, default=0)
+    storage_url_or_content = db.Column(db.Text, nullable=True)
+    uploaded_by = db.Column(db.String(50), default="Customer")  # Customer, Staff
+    status = db.Column(db.String(50), default="Verified")  # Pending_Review, Verified, Rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
 

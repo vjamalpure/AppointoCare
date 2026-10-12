@@ -213,5 +213,66 @@ export class IndustryService {
   public generateRebalancePlan(payload: { portfolio_value: number; current_weights: any; target_weights: any; fee_bps?: number }): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/generate-rebalance-plan`, payload);
   }
+
+  public getRecordLedgerAudit(recordId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/records/${recordId}/ledger-audit`);
+  }
+
+  // --- Dynamic Custom Fields APIs ---
+
+  public getCustomFieldDefinitions(orgId?: number): Observable<any> {
+    let params = new HttpParams();
+    if (orgId) params = params.set('organization_id', String(orgId));
+    return this.http.get<any>(`${this.baseUrl}/api/v1/custom-fields/definitions`, { params });
+  }
+
+  public createCustomFieldDefinition(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/custom-fields/definitions`, payload);
+  }
+
+  // --- Configurable Workflow State Machine APIs ---
+
+  public getWorkflowDefinitions(orgId?: number): Observable<any> {
+    let params = new HttpParams();
+    if (orgId) params = params.set('organization_id', String(orgId));
+    return this.http.get<any>(`${this.baseUrl}/api/v1/workflows/definitions`, { params });
+  }
+
+  public executeWorkflowTransition(recordId: number, payload: { target_status: string; comment?: string; additional_data?: any }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/workflows/records/${recordId}/transition`, payload);
+  }
+
+  public getWorkflowHistory(recordId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/workflows/records/${recordId}/history`);
+  }
+
+  // --- Cross-Industry Operational Analytics & Export ---
+
+  public getOperationalKpis(orgId?: number): Observable<any> {
+    let params = new HttpParams();
+    if (orgId) params = params.set('organization_id', String(orgId));
+    return this.http.get<any>(`${this.baseUrl}/api/v1/analytics/operational-kpis`, { params });
+  }
+
+  public getAnalyticsExportUrl(format = 'xlsx', orgId?: number): string {
+    const orgQuery = orgId ? `&organization_id=${orgId}` : '';
+    return `${this.baseUrl}/api/v1/analytics/export?format=${format}${orgQuery}`;
+  }
+
+  // --- Advanced Automation Rules APIs ---
+
+  public getAutomationRules(orgId?: number): Observable<any[]> {
+    let params = new HttpParams();
+    if (orgId) params = params.set('organization_id', String(orgId));
+    return this.http.get<any[]>(`${this.baseUrl}/api/v1/automations/rules`, { params });
+  }
+
+  public createOrToggleAutomationRule(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/automations/rules`, payload);
+  }
+
+  public triggerAutomationRule(ruleId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/automations/rules/${ruleId}/trigger`, {});
+  }
 }
 

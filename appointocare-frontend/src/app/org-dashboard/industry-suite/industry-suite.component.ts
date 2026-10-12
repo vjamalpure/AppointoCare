@@ -16,9 +16,18 @@ export class IndustrySuiteComponent implements OnInit {
   records: IndustryRecordItem[] = [];
   benchmarks: any = null;
 
-  activeTab: 'tool' | 'queue' | 'addons' | 'records' = 'tool';
+  activeTab: 'tool' | 'queue' | 'addons' | 'records' | 'analytics' | 'workflows' = 'tool';
   loading = false;
   savingRecord = false;
+
+  // Enterprise Capabilities (Iteration 4)
+  customFieldDefinitions: any[] = [];
+  workflowDef: any = null;
+  recordHistory: any[] = [];
+  operationalKpis: any = null;
+  automationRules: any[] = [];
+  transitionComment = '';
+  isTransitioning = false;
 
   // Granular Workflow Machine Actions (Workstream 1)
   actionLoading: { [key: string]: boolean } = {};
@@ -240,6 +249,102 @@ export class IndustrySuiteComponent implements OnInit {
         this.benchmarks = b.benchmarks || null;
       }
     });
+
+    this.loadCustomFields();
+    this.loadWorkflowDefinitions();
+    this.loadOperationalKpis();
+    this.loadAutomationRules();
+  }
+
+  loadCustomFields(): void {
+    this.industryService.getCustomFieldDefinitions().subscribe({
+      next: (res) => {
+        this.customFieldDefinitions = res.definitions || [];
+      }
+    });
+  }
+
+  loadWorkflowDefinitions(): void {
+    this.industryService.getWorkflowDefinitions().subscribe({
+      next: (res) => {
+        this.workflowDef = res.workflow || null;
+      }
+    });
+  }
+
+  loadOperationalKpis(): void {
+    this.industryService.getOperationalKpis().subscribe({
+      next: (res) => {
+        this.operationalKpis = res || null;
+      }
+    });
+  }
+
+  loadAutomationRules(): void {
+    this.industryService.getAutomationRules().subscribe({
+      next: (rules) => {
+        this.automationRules = rules || [];
+      }
+    });
+  }
+
+  loadRecordHistory(recordId?: number): void {
+    if (!recordId) return;
+    this.industryService.getWorkflowHistory(recordId).subscribe({
+      next: (res) => {
+        this.recordHistory = res.history || [];
+      }
+    });
+  }
+
+  executeTransition(record: IndustryRecordItem, targetStatus: string): void {
+    if (!record?.id) return;
+    this.isTransitioning = true;
+    this.industryService.executeWorkflowTransition(record.id, {
+      target_status: targetStatus,
+      comment: this.transitionComment
+    }).subscribe({
+      next: (res) => {
+        this.isTransitioning = false;
+        this.transitionComment = '';
+        this.snackBar.open(`Shifted status to '${targetStatus}'`, 'OK', { duration: 3000 });
+        record.status = targetStatus;
+        this.loadRecordHistory(record.id);
+        this.loadData();
+      },
+      error: (err) => {
+        this.isTransitioning = false;
+        const msg = err.error?.msg || 'Transition failed';
+        this.snackBar.open(msg, 'Close', { duration: 4000 });
+      }
+    });
+  }
+
+  triggerAutomation(ruleId: number): void {
+    this.industryService.triggerAutomationRule(ruleId).subscribe({
+      next: (res) => {
+        this.snackBar.open(`Automation simulated: ${res.rule_name}`, 'OK', { duration: 3000 });
+        this.loadAutomationRules();
+      }
+    });
+  }
+
+  toggleAutomation(rule: any): void {
+    this.industryService.createOrToggleAutomationRule({
+      id: rule.id,
+      is_active: !rule.is_active
+    }).subscribe({
+      next: () => {
+        rule.is_active = !rule.is_active;
+        this.snackBar.open(`Rule is now ${rule.is_active ? 'Active' : 'Paused'}`, 'OK', { duration: 2500 });
+      }
+    });
+  }
+
+  downloadAnalyticsReport(fmt = 'xlsx'): void {
+    const url = this.industryService.getAnalyticsExportUrl(fmt);
+    window.open(url, '_blank');
+    this.snackBar.open(`Downloading ${fmt.toUpperCase()} operational analytics report...`, 'OK', { duration: 3000 });
   }
 
   // --- Live Queue Actions ---
@@ -383,6 +488,9 @@ export class IndustrySuiteComponent implements OnInit {
 
   inspectRecord(rec: IndustryRecordItem): void {
     this.selectedRecord = rec;
+    if (rec?.id) {
+      this.loadRecordHistory(rec.id);
+    }
   }
 
   closeInspection(): void {

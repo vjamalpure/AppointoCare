@@ -12,6 +12,7 @@ import { SharedModule } from './components/shared/shared.module';
 import { LoginComponent } from './auth/login/login.component';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+import { ClientPortalComponent } from './client-portal/client-portal.component';
 import { AuthInterceptor } from './auth/auth-interceptor.service';
 
 @NgModule({
@@ -19,7 +20,8 @@ import { AuthInterceptor } from './auth/auth-interceptor.service';
     AppComponent,
     LoginComponent,
     ForgotPasswordComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    ClientPortalComponent
   ],
   imports: [
     BrowserModule,
