@@ -44,10 +44,14 @@ def create_transaction():
             transaction_type=data.get("transaction_type_label", "Payment"),
             payment_method=payment_method,
             processed_by_type=claims.get("role"),
-            processed_by_id=int(user_id),
+            processed_by_id=int(user_id) if str(user_id).isdigit() else None,
             status=status
         )
         db.session.add(transaction)
+        if status.lower() == "success":
+            appointment.payment_status = "Paid"
+        elif status.lower() == "failed":
+            appointment.payment_status = "Failed"
 
     elif transaction_type.lower() == "organization":
         organization_id = int(data.get("organization_id") or org_id or user_id)
@@ -57,7 +61,7 @@ def create_transaction():
             transaction_type=data.get("transaction_type_label", "Subscription"),
             payment_method=payment_method,
             processed_by_type=claims.get("role"),
-            processed_by_id=int(user_id),
+            processed_by_id=int(user_id) if str(user_id).isdigit() else None,
             status=status
         )
         db.session.add(transaction)
@@ -66,6 +70,68 @@ def create_transaction():
 
     db.session.commit()
     return jsonify({"msg": "Transaction recorded", "id": transaction.id}), 201
+
+
+# Refund transaction
+@transaction_bp.route("/<int:txn_id>/refund", methods=["POST"])
+@jwt_required()
+def refund_transaction(txn_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    user_id = get_jwt_identity()
+    txn = AppointmentTransaction.query.get_or_404(txn_id)
+    user_org_id = int(claims.get("organization_id") or 0)
+    if role not in ["Admin", "SuperAdmin"] and txn.organization_id != user_org_id:
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    if txn.transaction_type == "Refund":
+        return jsonify({"msg": "Transaction is already a refund"}), 400
+
+    data = request.json or {}
+    refund_amount = float(data.get("amount") or txn.amount)
+    reason = data.get("reason", "Patient consultation cancellation")
+
+    refund_txn = AppointmentTransaction(
+        appointment_id=txn.appointment_id,
+        organization_id=txn.organization_id,
+        amount=refund_amount,
+        transaction_type="Refund",
+        payment_method=txn.payment_method,
+        processed_by_type=role,
+        processed_by_id=int(user_id) if str(user_id).isdigit() else None,
+        status="Success",
+        remarks=f"Refund for Txn #{txn.id}: {reason}"
+    )
+    db.session.add(refund_txn)
+
+    if txn.appointment_id:
+        appt = Appointment.query.get(txn.appointment_id)
+        if appt:
+            appt.payment_status = "Refunded"
+
+    try:
+        audit = AuditLog(
+            organization_id=txn.organization_id,
+            user_id=int(user_id) if str(user_id).isdigit() else None,
+            user_role=role,
+            action="REFUND_TRANSACTION",
+            entity="AppointmentTransaction",
+            entity_id=txn.id,
+            details=f"Processed refund of ₹{refund_amount} for transaction #{txn.id}. Reason: {reason}",
+            ip_address=request.remote_addr
+        )
+        db.session.add(audit)
+    except Exception:
+        pass
+
+    db.session.commit()
+    return jsonify({
+        "msg": f"Refund of ₹{refund_amount} processed successfully",
+        "refund_transaction_id": refund_txn.id,
+        "original_transaction_id": txn.id,
+        "amount": refund_amount,
+        "status": "Success"
+    }), 201
 
 
 # Get transactions

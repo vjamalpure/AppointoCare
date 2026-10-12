@@ -60,6 +60,47 @@ def create_appointment():
 
     amount = float(data.get("amount") or 0.0)
 
+    staff_name = data.get("staff_name")
+    treatment_room = data.get("treatment_room") or data.get("room") or data.get("resource_id")
+    check_conflict = data.get("check_conflict", False)
+    if check_conflict and not data.get("allow_conflict", False):
+        from datetime import timedelta
+        slot_start = appointment_date - timedelta(minutes=29)
+        slot_end = appointment_date + timedelta(minutes=29)
+        if staff_name:
+            conflict = Appointment.query.filter(
+                Appointment.organization_id == org_id,
+                Appointment.staff_name == staff_name,
+                Appointment.status.notin_(["Cancelled", "Completed", "No-Show"]),
+                Appointment.appointment_date >= slot_start,
+                Appointment.appointment_date <= slot_end
+            ).first()
+            if conflict:
+                return jsonify({
+                    "msg": f"Practitioner '{staff_name}' already has a booking at this time",
+                    "conflict_appointment_id": conflict.id,
+                    "conflict_time": conflict.appointment_date.isoformat()
+                }), 409
+
+        if treatment_room:
+            room_conflict = Appointment.query.filter(
+                Appointment.organization_id == org_id,
+                Appointment.notes.ilike(f"%[room:{treatment_room}]%"),
+                Appointment.status.notin_(["Cancelled", "Completed", "No-Show"]),
+                Appointment.appointment_date >= slot_start,
+                Appointment.appointment_date <= slot_end
+            ).first()
+            if room_conflict:
+                return jsonify({
+                    "msg": f"Treatment room/resource '{treatment_room}' already has a booking at this time",
+                    "conflict_appointment_id": room_conflict.id,
+                    "conflict_time": room_conflict.appointment_date.isoformat()
+                }), 409
+
+    notes_val = data.get("notes") or ""
+    if treatment_room and f"[room:{treatment_room}]" not in notes_val:
+        notes_val = f"{notes_val} [room:{treatment_room}]".strip()
+
     appointment = Appointment(
         customer_name=data["customer_name"],
         customer_phone=data["customer_phone"],
@@ -68,8 +109,8 @@ def create_appointment():
         payment_status=data.get("payment_status", "Pending"),
         organization_id=org_id,
         service_name=data.get("service_name"),
-        staff_name=data.get("staff_name"),
-        notes=data.get("notes")
+        staff_name=staff_name,
+        notes=notes_val or None
     )
     db.session.add(appointment)
     db.session.flush()
@@ -128,7 +169,10 @@ def update_appointment(appointment_id):
         except ValueError:
             return jsonify({"msg": "Invalid date format"}), 400
 
+    VALID_STATUSES = ["Booked", "Confirmed", "Checked-In", "In-Consultation", "Completed", "Cancelled", "No-Show"]
     if "status" in data:
+        if data["status"] not in VALID_STATUSES:
+            return jsonify({"msg": f"Invalid status '{data['status']}'. Must be one of: {', '.join(VALID_STATUSES)}"}), 400
         appointment.status = data["status"]
 
     if "payment_status" in data:
@@ -155,6 +199,99 @@ def update_appointment(appointment_id):
             "payment_status": appointment.payment_status,
             "organization_id": appointment.organization_id
         }
+    })
+
+
+# -------------------------------
+# Check-in Appointment
+# -------------------------------
+@appointment_bp.route("/<int:appointment_id>/check-in", methods=["POST"])
+@jwt_required()
+def check_in_appointment(appointment_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    if not _is_authorized(role, claims):
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    appointment = Appointment.query.get_or_404(appointment_id)
+    if role not in ["Admin", "SuperAdmin"]:
+        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        if int(appointment.organization_id) != org_id:
+            return jsonify({"msg": "Unauthorized"}), 403
+
+    appointment.status = "Checked-In"
+    db.session.commit()
+    return jsonify({
+        "msg": f"Patient {appointment.customer_name} checked in successfully",
+        "appointment_id": appointment.id,
+        "status": appointment.status
+    })
+
+
+# -------------------------------
+# Cancel Appointment
+# -------------------------------
+@appointment_bp.route("/<int:appointment_id>/cancel", methods=["POST"])
+@jwt_required()
+def cancel_appointment(appointment_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    if not _is_authorized(role, claims):
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    appointment = Appointment.query.get_or_404(appointment_id)
+    if role not in ["Admin", "SuperAdmin"]:
+        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        if int(appointment.organization_id) != org_id:
+            return jsonify({"msg": "Unauthorized"}), 403
+
+    data = request.json or {}
+    reason = data.get("reason", "Cancelled by clinic/patient")
+    appointment.status = "Cancelled"
+    appointment.notes = f"{appointment.notes or ''} [Cancelled: {reason}]".strip()
+    db.session.commit()
+    return jsonify({
+        "msg": "Appointment cancelled successfully",
+        "appointment_id": appointment.id,
+        "status": appointment.status
+    })
+
+
+# -------------------------------
+# Reschedule Appointment
+# -------------------------------
+@appointment_bp.route("/<int:appointment_id>/reschedule", methods=["POST"])
+@jwt_required()
+def reschedule_appointment(appointment_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    if not _is_authorized(role, claims):
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    appointment = Appointment.query.get_or_404(appointment_id)
+    if role not in ["Admin", "SuperAdmin"]:
+        org_id = int(claims.get("organization_id") or get_jwt_identity())
+        if int(appointment.organization_id) != org_id:
+            return jsonify({"msg": "Unauthorized"}), 403
+
+    data = request.json or {}
+    new_date_str = data.get("appointment_date")
+    if not new_date_str:
+        return jsonify({"msg": "appointment_date is required"}), 400
+
+    try:
+        new_date = datetime.fromisoformat(new_date_str.replace("Z", "+00:00") if isinstance(new_date_str, str) else str(new_date_str))
+    except Exception:
+        return jsonify({"msg": "Invalid appointment_date format"}), 400
+
+    appointment.appointment_date = new_date
+    appointment.status = "Booked"
+    db.session.commit()
+    return jsonify({
+        "msg": "Appointment rescheduled successfully",
+        "appointment_id": appointment.id,
+        "new_date": appointment.appointment_date.isoformat(),
+        "status": appointment.status
     })
 
 

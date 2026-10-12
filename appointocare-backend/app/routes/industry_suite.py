@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
 from app.models import db, IndustryRecord, Organization, Appointment, Customer, AuditLog
 from app.security import get_organization_id, require_roles
-from datetime import datetime
+from datetime import datetime, timedelta
 
 industry_suite_bp = Blueprint("industry_suite_bp", __name__)
  
@@ -540,6 +540,126 @@ def create_record():
     }), 201
 
 
+def evaluate_abnormal_vitals(vitals):
+    """
+    Clinically reviewed physiological thresholds for adult vitals.
+    Returns non-diagnostic advisory flags for clinical review.
+    Never presents automated notices as clinical diagnoses.
+    """
+    if not isinstance(vitals, dict):
+        return []
+    advisories = []
+    try:
+        bp_sys = vitals.get("bp_systolic")
+        if bp_sys is not None and (float(bp_sys) >= 140 or float(bp_sys) < 90):
+            advisories.append({
+                "parameter": "Blood Pressure (Systolic)",
+                "value": bp_sys,
+                "threshold": "Standard physiological range: 90-139 mmHg",
+                "notice": "Observed value outside standard physiological range. Requires practitioner clinical verification."
+            })
+        bp_dia = vitals.get("bp_diastolic")
+        if bp_dia is not None and (float(bp_dia) >= 90 or float(bp_dia) < 60):
+            advisories.append({
+                "parameter": "Blood Pressure (Diastolic)",
+                "value": bp_dia,
+                "threshold": "Standard physiological range: 60-89 mmHg",
+                "notice": "Observed value outside standard physiological range. Requires practitioner clinical verification."
+            })
+        pulse = vitals.get("pulse") or vitals.get("heart_rate")
+        if pulse is not None and (float(pulse) > 100 or float(pulse) < 55):
+            advisories.append({
+                "parameter": "Heart Rate / Pulse",
+                "value": pulse,
+                "threshold": "Standard resting range: 55-100 bpm",
+                "notice": "Pulse outside normal resting range. Review in context of patient clinical activity."
+            })
+        spo2 = vitals.get("spo2")
+        if spo2 is not None and float(spo2) < 95:
+            advisories.append({
+                "parameter": "SpO2 (Pulse Oximetry)",
+                "value": spo2,
+                "threshold": "Normal room-air baseline: ≥ 95%",
+                "notice": "Oxygen saturation reading is lower than standard room-air baseline."
+            })
+        temp = vitals.get("temperature")
+        if temp is not None and (float(temp) >= 100.4 or float(temp) < 95.0):
+            advisories.append({
+                "parameter": "Body Temperature",
+                "value": temp,
+                "threshold": "Standard normal range: 97.0-99.5 °F",
+                "notice": "Temperature variance detected. Clinical practitioner review advised."
+            })
+    except (ValueError, TypeError):
+        pass
+    return advisories
+
+
+@industry_suite_bp.route("/records/<int:record_id>", methods=["PUT", "PATCH"])
+@require_roles(*ORG_ROLES)
+def update_record(record_id):
+    claims = get_jwt()
+    role = claims.get("role")
+    record = IndustryRecord.query.get_or_404(record_id)
+    if role != "Admin" and record.organization_id != get_organization_id():
+        return jsonify({"msg": "Unauthorized"}), 403
+
+    data = request.json or {}
+    old_data = dict(record.data or {})
+
+    # Prescription amendment revision tracking
+    if record.record_type == "prescription":
+        revisions = list(old_data.get("revisions") or [])
+        revisions.append({
+            "amended_at": datetime.utcnow().isoformat(),
+            "amended_by": claims.get("username") or "clinician",
+            "reason": data.get("amendment_reason") or "Clinical regimen adjustment",
+            "previous_medications": old_data.get("medications", []),
+            "previous_diagnosis": old_data.get("diagnosis", "")
+        })
+        new_data = dict(data.get("data") or old_data)
+        new_data["revisions"] = revisions
+        record.data = new_data
+    elif "data" in data:
+        record.data = data["data"]
+
+    # Check vitals if provided in new data
+    if record.data and isinstance(record.data, dict) and "vitals" in record.data:
+        record.data["vitals_advisory"] = evaluate_abnormal_vitals(record.data["vitals"])
+
+    if "title" in data:
+        record.title = data["title"]
+    if "status" in data:
+        record.status = data["status"]
+
+    record.updated_at = datetime.utcnow()
+
+    try:
+        user_id_val = claims.get("sub")
+        audit = AuditLog(
+            organization_id=record.organization_id,
+            user_id=int(user_id_val) if user_id_val and str(user_id_val).isdigit() else None,
+            user_role=role,
+            action="AMEND_PRESCRIPTION" if record.record_type == "prescription" else "UPDATE_RECORD",
+            entity="IndustryRecord",
+            entity_id=record.id,
+            details=f"Updated record #{record.id} ('{record.title}', type: {record.record_type})",
+            ip_address=request.remote_addr
+        )
+        db.session.add(audit)
+    except Exception:
+        pass
+
+    db.session.commit()
+    return jsonify({
+        "msg": f"Record #{record.id} updated successfully",
+        "id": record.id,
+        "title": record.title,
+        "status": record.status,
+        "record_type": record.record_type
+    })
+
+
 @industry_suite_bp.route("/records/<int:record_id>", methods=["DELETE"])
 @require_roles(*ORG_ROLES)
 def delete_record(record_id):
@@ -601,8 +721,14 @@ def download_record_pdf(record_id):
         "data": record.data or {}
     }
 
-    pdf_bytes = generate_prescription_pdf(org_data, record_dict, appt_data)
-    filename = f"prescription_{record.id}.pdf"
+    if record.record_type == "prescription":
+        from app.services.pdf_service import generate_prescription_pdf
+        pdf_bytes = generate_prescription_pdf(org_data, record_dict, appt_data)
+        filename = f"prescription_{record.id}.pdf"
+    else:
+        from app.services.pdf_service import generate_industry_dossier_pdf
+        pdf_bytes = generate_industry_dossier_pdf(org_data, record_dict, appt_data)
+        filename = f"{org_data.get('sector', 'record').lower()}_dossier_{record.id}.pdf"
 
     try:
         user_id_val = claims.get("sub")
@@ -613,7 +739,7 @@ def download_record_pdf(record_id):
             action="DOWNLOAD_PDF",
             entity="IndustryRecord",
             entity_id=record.id,
-            details=f"Downloaded PDF for clinical record '{record.title}' (type: {record.record_type})",
+            details=f"Downloaded PDF for {record.sector} record '{record.title}' (type: {record.record_type})",
             ip_address=request.remote_addr
         )
         db.session.add(audit)
@@ -660,6 +786,25 @@ def create_queue_token():
     org_id = get_organization_id() if role != "Admin" else int(request.json.get("organization_id") or 1)
     data = request.json or {}
 
+    org = Organization.query.get(org_id)
+    sector_key = _get_sector_key(org.sector if org else "Healthcare")
+
+    appt_id = int(data["appointment_id"]) if data.get("appointment_id") else None
+    if appt_id:
+        existing_token = IndustryRecord.query.filter(
+            IndustryRecord.organization_id == org_id,
+            IndustryRecord.appointment_id == appt_id,
+            IndustryRecord.record_type.in_(["opd_queue", "queue_token"]),
+            IndustryRecord.status.notin_(["Cancelled", "Completed"])
+        ).first()
+        if existing_token:
+            return jsonify({
+                "msg": f"Active token already issued for appointment #{appt_id}",
+                "id": existing_token.id,
+                "token_number": (existing_token.data or {}).get("token_number", f"T-{existing_token.id}"),
+                "status": existing_token.status
+            }), 200
+
     client_name = data.get("client_name") or data.get("customer_name") or "Walk-in Guest"
     token_number = data.get("token_number")
     if not token_number:
@@ -667,15 +812,13 @@ def create_queue_token():
             IndustryRecord.organization_id == org_id,
             IndustryRecord.record_type.in_(["opd_queue", "queue_token"])
         ).count()
-        token_number = f"T-{today_count + 1:03d}"
-
-    org = Organization.query.get(org_id)
-    sector_key = _get_sector_key(org.sector if org else "Healthcare")
+        prefix = "OPD" if sector_key == "Healthcare" else "T"
+        token_number = f"{prefix}-{today_count + 1:03d}"
 
     queue_rec = IndustryRecord(
         organization_id=org_id,
         customer_id=int(data["customer_id"]) if data.get("customer_id") else None,
-        appointment_id=int(data["appointment_id"]) if data.get("appointment_id") else None,
+        appointment_id=appt_id,
         sector=sector_key,
         record_type="opd_queue" if sector_key == "Healthcare" else "queue_token",
         title=f"Token {token_number} — {client_name}",
@@ -736,6 +879,27 @@ def advance_queue():
     if role != "Admin" and rec.organization_id != org_id:
         return jsonify({"msg": "Unauthorized"}), 403
 
+    VALID_QUEUE_STATUSES = [
+        "Waiting", "Called", "In Consultation", "In Service", "In Progress",
+        "Completed", "Cancelled", "Skipped", "Active"
+    ]
+    if new_status not in VALID_QUEUE_STATUSES:
+        return jsonify({"msg": f"Invalid queue status '{new_status}'. Allowed: {', '.join(VALID_QUEUE_STATUSES)}"}), 400
+
+    VALID_TRANSITIONS = {
+        "Waiting": ["Called", "In Consultation", "In Service", "In Progress", "Skipped", "Cancelled"],
+        "Called": ["In Consultation", "In Service", "In Progress", "Waiting", "Skipped", "Cancelled"],
+        "In Consultation": ["Completed", "Cancelled", "Waiting"],
+        "In Service": ["Completed", "Cancelled", "Waiting"],
+        "In Progress": ["Completed", "Cancelled", "Waiting"],
+        "Skipped": ["Waiting", "Cancelled"],
+        "Completed": ["In Consultation", "In Service", "In Progress"],
+        "Cancelled": []
+    }
+    allowed = VALID_TRANSITIONS.get(rec.status, VALID_QUEUE_STATUSES)
+    if new_status != rec.status and new_status not in allowed:
+        return jsonify({"msg": f"Invalid status transition from '{rec.status}' to '{new_status}'"}), 400
+
     rec.status = new_status
     if rec.data and isinstance(rec.data, dict):
         updated_data = dict(rec.data)
@@ -749,6 +913,66 @@ def advance_queue():
         "id": rec.id,
         "status": new_status
     })
+
+
+@industry_suite_bp.route("/queue/public-display", methods=["GET"])
+def get_public_queue_display():
+    """
+    Privacy-safe waiting room public display.
+    Accessible without clinician login credentials.
+    Masks patient initials, shows token number, room, status, and refresh interval.
+    Never exposes phone numbers, email, diagnoses, medications, or clinical notes.
+    """
+    org_param = request.args.get("organization_id")
+    code_param = request.args.get("code")
+    org = None
+    if code_param:
+        org = Organization.query.filter_by(code=code_param).first()
+    elif org_param:
+        org = Organization.query.get(int(org_param))
+    else:
+        org = Organization.query.filter_by(sector="Healthcare").first()
+
+    if not org:
+        return jsonify({"msg": "Organization not found"}), 404
+
+    active_tokens = IndustryRecord.query.filter(
+        IndustryRecord.organization_id == org.id,
+        IndustryRecord.record_type.in_(["opd_queue", "queue_token"]),
+        IndustryRecord.status.in_(["Waiting", "Called", "In Consultation"])
+    ).order_by(IndustryRecord.created_at.asc()).all()
+
+    def _mask_name(full_name):
+        if not full_name:
+            return "Patient"
+        parts = [p.strip() for p in full_name.split() if p.strip()]
+        if len(parts) == 1:
+            return parts[0][0].upper() + "."
+        return f"{parts[0][0].upper()}. {parts[-1][0].upper()}."
+
+    display_items = []
+    for t in active_tokens:
+        tdata = t.data or {}
+        raw_name = tdata.get("client_name") or "Patient"
+        display_items.append({
+            "token_number": tdata.get("token_number") or f"OPD-{t.id:03d}",
+            "patient_initials": _mask_name(raw_name),
+            "status": t.status,
+            "assigned_room": tdata.get("treatment_room") or "Consultation Station",
+            "priority": tdata.get("priority", "Standard"),
+            "check_in_time": tdata.get("check_in_time", "")
+        })
+
+    resp = jsonify({
+        "organization_name": org.name,
+        "sector": org.sector,
+        "active_count": len(display_items),
+        "tokens": display_items,
+        "refresh_seconds": 15,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return resp
 
 
 @industry_suite_bp.route("/calculate-insurance-premium", methods=["POST"])
@@ -930,11 +1154,21 @@ def evaluate_generic_calculator():
     data = request.json or {}
     calc_type = data.get("calculator_type", "revenue_optimizer")
     inputs = data.get("inputs", {})
-    
+
     if calc_type == "insurance_premium":
         return calculate_insurance_premium()
     elif calc_type == "real_estate_roi":
         return calculate_real_estate_roi()
+    elif calc_type == "portfolio_drift":
+        return evaluate_portfolio_drift()
+    elif calc_type == "stylist_commission":
+        return calculate_stylist_commission()
+    elif calc_type == "legal_conflict":
+        return check_legal_conflict()
+    elif calc_type == "university_shortlist":
+        return evaluate_university_shortlist()
+    elif calc_type == "sla_incident":
+        return evaluate_sla_incident()
     else:
         units = float(inputs.get("active_units", 10))
         rate = float(inputs.get("base_rate", 200))
@@ -946,5 +1180,226 @@ def evaluate_generic_calculator():
             "efficiency_gain_pct": 15.0,
             "optimization_score": "A+"
         })
+
+
+@industry_suite_bp.route("/evaluate-portfolio-drift", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def evaluate_portfolio_drift():
+    data = request.json or {}
+    current = data.get("current_weights") or data.get("current_allocations") or {}
+    target = data.get("target_weights") or data.get("target_allocations") or {}
+    threshold = float(data.get("rebalance_threshold_pct") or data.get("threshold_pct") or 5.0)
+
+    drift = {}
+    alerts = []
+    rebalance_needed = False
+
+    all_classes = set(current.keys()) | set(target.keys())
+    for asset_class in all_classes:
+        curr_val = float(current.get(asset_class, 0.0))
+        targ_val = float(target.get(asset_class, 0.0))
+        diff = round(curr_val - targ_val, 2)
+        drift[asset_class] = diff
+        if abs(diff) >= threshold:
+            rebalance_needed = True
+            direction = "overweight" if diff > 0 else "underweight"
+            alerts.append(f"{asset_class.title()} is {direction} by {abs(diff):.1f}% (target: {targ_val}%, current: {curr_val}%, threshold: ±{threshold}%)")
+
+    return jsonify({
+        "status": "evaluated",
+        "drift_by_asset_class": drift,
+        "rebalance_required": rebalance_needed,
+        "drift_alerts": alerts,
+        "threshold_pct": threshold,
+        "suggested_action": "Execute rebalancing trade allocation" if rebalance_needed else "Portfolio allocation within target drift tolerance"
+    })
+
+
+@industry_suite_bp.route("/calculate-stylist-commission", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def calculate_stylist_commission():
+    data = request.json or {}
+    service_rev = float(data.get("service_revenue", 0.0))
+    service_rate = float(data.get("service_commission_rate", 0.40))
+    retail_rev = float(data.get("retail_product_revenue", 0.0))
+    retail_rate = float(data.get("retail_commission_rate", 0.10))
+    tips = float(data.get("tips_collected", 0.0))
+
+    service_payout = round(service_rev * service_rate, 2)
+    retail_payout = round(retail_rev * retail_rate, 2)
+    total_payout = round(service_payout + retail_payout + tips, 2)
+    total_rev = service_rev + retail_rev
+    effective_pct = round((total_payout / total_rev) * 100.0, 2) if total_rev > 0 else 0.0
+
+    return jsonify({
+        "status": "calculated",
+        "service_revenue": service_rev,
+        "service_commission_payout": service_payout,
+        "retail_product_revenue": retail_rev,
+        "retail_commission_payout": retail_payout,
+        "tips_payout": tips,
+        "gross_stylist_payout": total_payout,
+        "effective_commission_pct": effective_pct
+    })
+
+
+@industry_suite_bp.route("/check-legal-conflict", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def check_legal_conflict():
+    import json
+    claims = get_jwt()
+    org_id = get_organization_id() if claims.get("role") != "Admin" else int(request.json.get("organization_id") or 1)
+    data = request.json or {}
+
+    client_name = (data.get("client_name") or "").strip().lower()
+    opposing_parties = [str(p).strip().lower() for p in data.get("opposing_parties", []) if str(p).strip()]
+
+    records = IndustryRecord.query.filter_by(organization_id=org_id).all()
+    matched_conflicts = []
+
+    for rec in records:
+        rec_title_lower = (rec.title or "").lower()
+        rec_data_str = json.dumps(rec.data or {}).lower()
+        for party in opposing_parties:
+            if party and (party in rec_title_lower or party in rec_data_str):
+                matched_conflicts.append({
+                    "record_id": rec.id,
+                    "title": rec.title,
+                    "record_type": rec.record_type,
+                    "matched_party": party
+                })
+
+    has_conflict = len(matched_conflicts) > 0
+    return jsonify({
+        "status": "evaluated",
+        "conflict_detected": has_conflict,
+        "clearance_status": "POTENTIAL_CONFLICT_IDENTIFIED" if has_conflict else "CLEAR",
+        "matched_matters": matched_conflicts,
+        "checked_parties_count": len(opposing_parties),
+        "disclaimer": "Internal database match only. Mandatory manual ethical conflict review required before engagement clearance."
+    })
+
+
+@industry_suite_bp.route("/evaluate-university-shortlist", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def evaluate_university_shortlist():
+    data = request.json or {}
+    gpa = float(data.get("student_gpa", 3.0))
+    test_score = float(data.get("standardized_score", 1200))
+    institutions = data.get("institutions", [])
+
+    categorized = []
+    for inst in institutions:
+        name = inst.get("name", "University")
+        min_gpa = float(inst.get("min_gpa", 3.5))
+        min_score = float(inst.get("min_score", 1350))
+
+        gpa_diff = gpa - min_gpa
+        score_diff = test_score - min_score
+
+        if gpa_diff >= 0.2 and score_diff >= 50:
+            category = "Safety"
+        elif gpa_diff >= -0.1 and score_diff >= -30:
+            category = "Target / Match"
+        else:
+            category = "Reach"
+
+        categorized.append({
+            "name": name,
+            "category": category,
+            "target_gpa": min_gpa,
+            "target_score": min_score
+        })
+
+    return jsonify({
+        "status": "evaluated",
+        "student_gpa": gpa,
+        "student_test_score": test_score,
+        "shortlist_evaluations": categorized,
+        "summary": {
+            "reach_count": len([c for c in categorized if c["category"] == "Reach"]),
+            "target_count": len([c for c in categorized if c["category"] == "Target / Match"]),
+            "safety_count": len([c for c in categorized if c["category"] == "Safety"]),
+        }
+    })
+
+
+@industry_suite_bp.route("/evaluate-sla-incident", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def evaluate_sla_incident():
+    data = request.json or {}
+    priority = (data.get("priority") or "P3-Medium").upper()
+    reported_str = data.get("reported_at")
+
+    SLA_MINUTES = {
+        "P1-CRITICAL": 60,
+        "P1": 60,
+        "P2-HIGH": 240,
+        "P2": 240,
+        "P3-MEDIUM": 1440,
+        "P3": 1440,
+        "P4-LOW": 2880,
+        "P4": 2880
+    }
+    allowed_mins = SLA_MINUTES.get(priority, 1440)
+
+    try:
+        reported_at = datetime.fromisoformat(reported_str.replace("Z", "+00:00")) if reported_str else datetime.utcnow()
+        if reported_at.tzinfo is not None:
+            reported_at = reported_at.replace(tzinfo=None)
+    except Exception:
+        reported_at = datetime.utcnow()
+
+    now = datetime.utcnow()
+    deadline = reported_at + timedelta(minutes=allowed_mins)
+    mins_remaining = int((deadline - now).total_seconds() / 60.0)
+
+    if mins_remaining < 0:
+        breach_status = "BREACHED"
+        escalation = "Executive Steering Committee / VP Engineering"
+    elif mins_remaining < (allowed_mins * 0.25):
+        breach_status = "AT_RISK"
+        escalation = "Tier 2 Lead Escalation"
+    else:
+        breach_status = "HEALTHY"
+        escalation = "Standard Tier 1 Incident Desk"
+
+    return jsonify({
+        "status": "evaluated",
+        "priority": priority,
+        "allowed_resolution_minutes": allowed_mins,
+        "deadline_at": deadline.isoformat(),
+        "minutes_remaining": mins_remaining,
+        "breach_status": breach_status,
+        "escalation_tier": escalation
+    })
+
+
+@industry_suite_bp.route("/format-validator", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def validate_statutory_format():
+    import re
+    data = request.json or {}
+    validator_type = (data.get("validator_type") or "").lower()
+    value = str(data.get("value") or "").strip().upper()
+
+    PATTERNS = {
+        "pan": r"^[A-Z]{5}[0-9]{4}[A-Z]$",
+        "gstin": r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+        "rera": r"^(PRM|ACK|REP|REG)/[A-Z]{2}/RERA/[0-9A-Z\-/]+$"
+    }
+
+    pattern = PATTERNS.get(validator_type)
+    if not pattern:
+        return jsonify({"msg": f"Unsupported validator_type '{validator_type}'. Supported: pan, gstin, rera"}), 400
+
+    is_valid = bool(re.match(pattern, value))
+    return jsonify({
+        "validator_type": validator_type,
+        "value": value,
+        "is_valid_format": is_valid,
+        "disclaimer": "Syntactic pattern check only. Does not verify active legal validity or state registry enrollment."
+    })
+
 
 

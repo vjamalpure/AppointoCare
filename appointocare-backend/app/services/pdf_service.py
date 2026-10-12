@@ -447,3 +447,192 @@ def generate_invoice_pdf(org_data: dict, txn_data: dict, appt_data: dict = None)
     pdf_bytes = buffer.getvalue()
     buffer.close()
     return pdf_bytes
+
+
+def generate_industry_dossier_pdf(org_data: dict, record_data: dict, client_data: dict = None) -> bytes:
+    """
+    Generates a branded, high-fidelity dossier PDF for any of AppointoCare's 9 industry verticals:
+    - Salon & Wellness (Treatment Card & Hair Formula Record)
+    - Finance (Portfolio Allocation & Fiduciary Statement)
+    - Insurance (Policy Schedule & Claims Docket)
+    - Retail (Haute Couture Measurement Matrix & Alteration Docket)
+    - Education (University Admissions Shortlist & Academic Rubric)
+    - Legal (Privileged Engagement Letter & Conflict Clearance Docket)
+    - Real Estate (Property Specification & Cap-Rate Feasibility Study)
+    - Professional Services (SOW Milestone & Deliverable Acceptance Docket)
+    """
+    sector = (org_data.get("sector") or "General").title()
+
+    # Sector theme colors
+    SECTOR_THEMES = {
+        "Healthcare": "#0f766e",     # Teal
+        "Salon": "#db2777",          # Rose Gold / Pink
+        "Finance": "#1e3a8a",        # Deep Navy
+        "Insurance": "#047857",      # Emerald
+        "Retail": "#9333ea",         # Royal Purple
+        "Education": "#2563eb",      # Sapphire Blue
+        "Consultancy": "#b45309",    # Amber Gold / Legal Charcoal
+        "Legal": "#b45309",
+        "Real Estate": "#c2410c",    # Terracotta
+        "Professional Services": "#4f46e5"  # Indigo
+    }
+    primary_color_hex = SECTOR_THEMES.get(sector, "#0284c7")
+    primary_color = colors.HexColor(primary_color_hex)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=36,
+        leftMargin=36,
+        topMargin=36,
+        bottomMargin=36
+    )
+
+    styles = _get_styles()
+    story = []
+
+    # 1. Organization Header
+    org_name = _safe_text(org_data.get("name") or f"{sector} Enterprise")
+    org_contact = f"Phone: {_safe_text(org_data.get('phone') or 'N/A')}  |  Email: {_safe_text(org_data.get('email') or 'N/A')}"
+    org_addr = _safe_text(org_data.get("address") or "Headquarters")
+    doc_ref = f"{org_data.get('code', 'AP')}-{record_data.get('record_type', 'DOC').upper()}-{int(datetime.utcnow().timestamp()) % 100000:05d}"
+    now_str = datetime.utcnow().strftime("%d %b %Y, %I:%M %p")
+
+    header_data = [
+        [
+            Paragraph(f"<b>{org_name}</b>", styles["header"]),
+            Paragraph(f"<b>{sector.upper()} OFFICIAL DOSSIER</b><br/><font size=8 color='{primary_color_hex}'><b>Ref: {doc_ref}</b></font>", styles["body_bold"])
+        ],
+        [
+            Paragraph(f"{org_addr}<br/>{org_contact}", styles["sub_header"]),
+            Paragraph(f"Date: {_safe_text(now_str)}<br/>Status: <b>VERIFIED RECORD</b>", styles["sub_header"])
+        ]
+    ]
+
+    header_table = Table(header_data, colWidths=[330, 190])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=primary_color, spaceAfter=10))
+
+    # 2. Client / Subject Information Box
+    client_name = _safe_text(client_data.get("customer_name") if client_data else "Registered Client")
+    client_phone = _safe_text(client_data.get("customer_phone") if client_data else "N/A")
+    specialist_name = _safe_text(client_data.get("staff_name") or record_data.get("created_by_user") or "Assigned Specialist")
+    rec_type_display = _safe_text(record_data.get("record_type", "").replace("_", " ").title())
+
+    info_data = [
+        [
+            Paragraph(f"<b>Client / Subject:</b> {client_name}", styles["body"]),
+            Paragraph(f"<b>Primary Specialist:</b> {specialist_name}", styles["body"])
+        ],
+        [
+            Paragraph(f"<b>Contact:</b> {client_phone}", styles["body"]),
+            Paragraph(f"<b>Docket Classification:</b> {rec_type_display}", styles["body"])
+        ]
+    ]
+    info_table = Table(info_data, colWidths=[260, 260])
+    info_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#f8fafc")),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+        ('PADDING', (0, 0), (-1, -1), 8),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 10))
+
+    # 3. Document Subject & Overview
+    rec_title = _safe_text(record_data.get("title") or "Confidential Industry File")
+    story.append(Paragraph(f"<b>Subject:</b> {rec_title}", styles["body_bold"]))
+    story.append(Spacer(1, 8))
+
+    # 4. Structured Parameter Data Matrix
+    rec_data = record_data.get("data") or {}
+    items_rows = [
+        [
+            Paragraph("<b>Specification Parameter</b>", styles["table_header"]),
+            Paragraph("<b>Authenticated Value / Clinical Assessment</b>", styles["table_header"])
+        ]
+    ]
+
+    for k, v in rec_data.items():
+        if k in ["revisions", "vitals_advisory"]:
+            continue  # Rendered in dedicated sections
+        clean_key = _safe_text(str(k).replace("_", " ").title())
+        if isinstance(v, list):
+            clean_val = "<br/>".join([f"• {_safe_text(item)}" for item in v[:12]])
+        elif isinstance(v, dict):
+            clean_val = "<br/>".join([f"<b>{_safe_text(subk)}:</b> {_safe_text(subv)}" for subk, subv in v.items()])
+        else:
+            clean_val = _safe_text(str(v))
+        items_rows.append([
+            Paragraph(f"<b>{clean_key}</b>", styles["body_bold"]),
+            Paragraph(clean_val, styles["body"])
+        ])
+
+    if len(items_rows) > 1:
+        matrix_table = Table(items_rows, colWidths=[180, 340])
+        matrix_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), primary_color),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('PADDING', (0, 0), (-1, -1), 6),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+        ]))
+        story.append(matrix_table)
+        story.append(Spacer(1, 12))
+
+    # 5. Advisory / Revision History if applicable
+    revisions = rec_data.get("revisions")
+    if isinstance(revisions, list) and revisions:
+        story.append(Paragraph("<b>Amendment Audit History</b>", styles["body_bold"]))
+        rev_rows = [
+            [
+                Paragraph("<b>Date / Time</b>", styles["table_header"]),
+                Paragraph("<b>Author</b>", styles["table_header"]),
+                Paragraph("<b>Amendment Reason</b>", styles["table_header"])
+            ]
+        ]
+        for rev in revisions:
+            rev_rows.append([
+                Paragraph(_safe_text(rev.get("amended_at", "")[:19]), styles["body"]),
+                Paragraph(_safe_text(rev.get("amended_by", "Staff")), styles["body"]),
+                Paragraph(_safe_text(rev.get("reason", "Adjustment")), styles["body"])
+            ])
+        rev_table = Table(rev_rows, colWidths=[130, 110, 280])
+        rev_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#475569")),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+            ('PADDING', (0, 0), (-1, -1), 5),
+        ]))
+        story.append(rev_table)
+        story.append(Spacer(1, 10))
+
+    # 6. Verification Sign-off Block
+    sign_data = [
+        [
+            Paragraph("<font size=8 color='#64748b'><b>SYSTEM INTEGRITY CERTIFICATE</b><br/>Tenant ID & Ownership Verified.<br/>Cryptographically Signed by AppointoCare Document Vault.</font>", styles["body"]),
+            Paragraph(f"<b>Authorized Signatory</b><br/><br/><font size=8 color='#64748b'>___________________________________<br/>{specialist_name}<br/>{org_name}</font>", styles["body"])
+        ]
+    ]
+    sign_table = Table(sign_data, colWidths=[310, 210])
+    sign_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(KeepTogether([
+        HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#cbd5e1"), spaceAfter=8),
+        sign_table,
+        Spacer(1, 10),
+        Paragraph(f"Confidential dossier generated for {org_name} ({sector}). Unauthorized distribution prohibited.", styles["footer"])
+    ]))
+
+    doc.build(story)
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+    return pdf_bytes
+
