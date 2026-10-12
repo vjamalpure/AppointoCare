@@ -90,4 +90,25 @@ export class ClientPortalService {
     const headers = new HttpHeaders({ 'X-Portal-Token': sessionToken });
     return this.http.post<any>(`${this.baseUrl}/api/v1/portal/preferences`, preferences, { headers });
   }
+
+  public getServices(sessionToken: string): Observable<{ organization_id: number; services: any[] }> {
+    const headers = new HttpHeaders({ 'X-Portal-Token': sessionToken });
+    return this.http.get<{ organization_id: number; services: any[] }>(`${this.baseUrl}/api/v1/portal/services`, { headers });
+  }
+
+  public bookAppointment(sessionToken: string, payload: { service_name: string; appointment_date: string; staff_name?: string; notes?: string }): Observable<any> {
+    const headers = new HttpHeaders({ 'X-Portal-Token': sessionToken });
+    return this.http.post<any>(`${this.baseUrl}/api/v1/portal/appointments/book`, payload, { headers });
+  }
+
+  public rescheduleAppointment(sessionToken: string, appointmentId: number, payload: { appointment_date: string }): Observable<any> {
+    const headers = new HttpHeaders({ 'X-Portal-Token': sessionToken });
+    return this.http.post<any>(`${this.baseUrl}/api/v1/portal/appointments/${appointmentId}/reschedule`, payload, { headers });
+  }
+
+  public cancelAppointment(sessionToken: string, appointmentId: number, payload?: { reason?: string }): Observable<any> {
+    const headers = new HttpHeaders({ 'X-Portal-Token': sessionToken });
+    return this.http.post<any>(`${this.baseUrl}/api/v1/portal/appointments/${appointmentId}/cancel`, payload || {}, { headers });
+  }
 }
+

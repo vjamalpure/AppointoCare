@@ -87,6 +87,14 @@
       <span>Workflow State & Automations</span>
       <span class="badge-count" *ngIf="automationRules.length">{{ automationRules.length }}</span>
     </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'intelligence'"
+      (click)="activeTab = 'intelligence'; loadIntegrationsStatus()">
+      <mat-icon>auto_awesome</mat-icon>
+      <span>Industry Feature Packs & Gateways</span>
+    </button>
   </div>
 
   <!-- ========================================== -->
@@ -816,6 +824,359 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Tab 6: Industry Feature Packs & Gateways   -->
+  <!-- ========================================== -->
+  <div class="tab-pane" *ngIf="activeTab === 'intelligence'">
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <!-- Banner Header -->
+      <div style="background: linear-gradient(135deg, #1e3a8a, #0f172a); border-radius: 14px; padding: 24px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h2 style="margin: 0 0 6px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <mat-icon style="color: #38bdf8;">auto_awesome</mat-icon> Industry Intelligence & Platform Gateways
+          </h2>
+          <p style="margin: 0; color: #94a3b8; font-size: 13px;">
+            Specialized market-leading workflows for {{ sector }} alongside enterprise integration adapters.
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button mat-flat-button color="accent" (click)="loadIntegrationsStatus()">
+            <mat-icon>hub</mat-icon> Refresh Gateways
+          </button>
+        </div>
+      </div>
+
+      <!-- Sector-Specific Interactive Feature Pack -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <mat-icon color="primary">star</mat-icon> {{ sector }} Competitive Actions & Tools
+        </h3>
+
+        <!-- Healthcare Hub -->
+        <div *ngIf="sector === 'Healthcare'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">history</mat-icon> Patient Longitudinal Timeline</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Unified encounter timeline, past visits, vitals, prescriptions, and lab history.</p>
+            <button mat-raised-button color="primary" (click)="loadHealthcareTimeline(1)">
+              <mat-icon>visibility</mat-icon> View Patient Timeline
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">share</mat-icon> HL7 FHIR R4 Bundle Export</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">ABDM M1 compliant document bundle JSON generator for national health interoperability.</p>
+            <button mat-stroked-button color="primary" (click)="exportFhirBundle(1)">
+              <mat-icon>code</mat-icon> Generate FHIR Bundle
+            </button>
+          </div>
+        </div>
+
+        <!-- Salon Hub -->
+        <div *ngIf="sector === 'Salon & Wellness' || sector === 'Salon'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">card_membership</mat-icon> VIP Membership Enrollment</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Enroll customer in Gold membership tier with 1,200 points bonus and 15% discount.</p>
+            <button mat-raised-button color="accent" (click)="enrollSalonMembership(1, 'Gold')">
+              <mat-icon>loyalty</mat-icon> Enroll in Gold Tier
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">stars</mat-icon> Loyalty & Rewards Inquiry</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Check client points balance, tier status, and INR currency equivalent.</p>
+            <button mat-stroked-button color="primary" (click)="loadSalonLoyalty(1)">
+              <mat-icon>account_balance_wallet</mat-icon> Query Loyalty Balance
+            </button>
+          </div>
+        </div>
+
+        <!-- Finance Hub -->
+        <div *ngIf="sector === 'Finance'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">quiz</mat-icon> Risk Profile Questionnaire</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Suitability assessment model mapping loss reaction to recommended asset mix.</p>
+            <button mat-raised-button color="primary" (click)="evaluateRiskProfile('HOLD', 8)">
+              <mat-icon>psychology</mat-icon> Evaluate Risk Profile
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">verified</mat-icon> AML/KYC Compliance Checklist</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Record PEP screening, source of wealth verification, and officer attribution.</p>
+            <button mat-stroked-button color="primary" (click)="recordFinanceCompliance()">
+              <mat-icon>assignment_turned_in</mat-icon> Verify Compliance
+            </button>
+          </div>
+        </div>
+
+        <!-- Insurance Hub -->
+        <div *ngIf="sector === 'Insurance'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">compare_arrows</mat-icon> Multi-Carrier Quote Comparison</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Compare Star Health, HDFC ERGO, and Care Insurance premiums & network hospitals.</p>
+            <button mat-raised-button color="primary" (click)="compareInsuranceQuotes(35, 1000000)">
+              <mat-icon>balance</mat-icon> Compare 3 Carriers
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">event_repeat</mat-icon> Upcoming Policy Renewals</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Track policies expiring within 60 days to prevent coverage lapses.</p>
+            <button mat-stroked-button color="primary" (click)="loadInsuranceRenewals()">
+              <mat-icon>notifications_active</mat-icon> Check Renewals
+            </button>
+          </div>
+        </div>
+
+        <!-- Retail Hub -->
+        <div *ngIf="sector === 'Retail'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">style</mat-icon> Luxury Product Catalog Variants</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Inspect SKUs, sizing variants, colorways, and real-time stock levels.</p>
+            <button mat-raised-button color="primary" (click)="loadRetailCatalog()">
+              <mat-icon>inventory</mat-icon> View Product Catalog
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">sync_alt</mat-icon> Stock Movement & Transfer</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Log inventory restock or branch transfer with audit delta tracking.</p>
+            <button mat-stroked-button color="primary" (click)="logRetailStock('HC-BLAZER-01', 5)">
+              <mat-icon>add_box</mat-icon> Restock 5 Units
+            </button>
+          </div>
+        </div>
+
+        <!-- Education Hub -->
+        <div *ngIf="sector === 'Education'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">school</mat-icon> University Comparison Matrix</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Compare Toronto, Munich (TUM), and Manchester on fees, rankings, and work visas.</p>
+            <button mat-raised-button color="primary" (click)="compareEducationUniversities()">
+              <mat-icon>compare</mat-icon> Compare Universities
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">flight_takeoff</mat-icon> Visa Milestone Checklist</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Track CAS/I-20, financial affidavit, biometrics, and visa vignette issuance.</p>
+            <button mat-stroked-button color="primary" (click)="updateVisaChecklist()">
+              <mat-icon>task_alt</mat-icon> Update Visa Progress
+            </button>
+          </div>
+        </div>
+
+        <!-- Legal Hub -->
+        <div *ngIf="sector === 'Consultancy' || sector === 'Legal'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">gavel</mat-icon> Conflict Clearance Search</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Scan client database and adverse party index for corporate conflicts.</p>
+            <button mat-raised-button color="primary" (click)="runConflictCheck('Acme Corp')">
+              <mat-icon>search</mat-icon> Scan 'Acme Corp' Conflict
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">receipt_long</mat-icon> Itemized Retainer Statement</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Calculate unbilled WIP, billable hours deducted, and remaining trust balance.</p>
+            <button mat-stroked-button color="primary" (click)="loadRetainerStatement()">
+              <mat-icon>description</mat-icon> Generate Statement
+            </button>
+          </div>
+        </div>
+
+        <!-- Real Estate Hub -->
+        <div *ngIf="sector === 'Real Estate'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">apartment</mat-icon> Luxury Property Catalog</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Review MLS properties, penthouses, square footage, and list pricing.</p>
+            <button mat-raised-button color="primary" (click)="loadRealEstateProperties()">
+              <mat-icon>home_work</mat-icon> Browse Properties
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">calculate</mat-icon> Deal Commission Split</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Calculate listing agent share, broker split, and escrow closing fees.</p>
+            <button mat-stroked-button color="primary" (click)="calcDealCommission()">
+              <mat-icon>percent</mat-icon> Compute Split
+            </button>
+          </div>
+        </div>
+
+        <!-- Professional Services Hub -->
+        <div *ngIf="sector === 'Professional Services'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">groups</mat-icon> Team Resource Utilization</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Analyze billable capacity vs assigned SOW hours across engineers and consultants.</p>
+            <button mat-raised-button color="primary" (click)="loadResourceUtilization()">
+              <mat-icon>speed</mat-icon> View Utilization Matrix
+            </button>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+            <h4 style="margin: 0 0 6px; color: #1e3a8a;"><mat-icon style="vertical-align: middle;">warning</mat-icon> SLA P1 Incident Escalation</h4>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Trigger critical incident escalation clock with 2-hour target resolution.</p>
+            <button mat-stroked-button color="warn" (click)="logSlaIncident()">
+              <mat-icon>priority_high</mat-icon> Escalate P1 Incident
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enterprise Integration Gateway Status -->
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <mat-icon color="primary">hub</mat-icon> Enterprise Integration Gateway Adapters
+        </h3>
+        <div *ngIf="integrationList.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+          <div *ngFor="let item of integrationList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="font-size: 14px; color: #0f172a;">{{ item.name }}</strong>
+              <span class="status-chip" [ngClass]="item.mode ? item.mode.toLowerCase() : ''">{{ item.mode }}</span>
+            </div>
+            <p style="font-size: 12px; color: #64748b; margin: 0 0 8px;">Provider: {{ item.provider }}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+              <span *ngFor="let cap of item.capabilities" style="font-size: 10px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #334155;">
+                {{ cap }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Feature Result Modal Overlays -->
+    <div class="modal-backdrop" *ngIf="activeFeatureModal" (click)="closeFeatureModal()">
+      <div class="modal-card" style="max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto;" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>
+            <mat-icon color="primary">visibility</mat-icon>
+            {{ activeFeatureModal | uppercase }}
+          </h3>
+          <button mat-icon-button (click)="closeFeatureModal()"><mat-icon>close</mat-icon></button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <!-- 1. Healthcare Timeline -->
+          <div *ngIf="activeFeatureModal === 'healthcare_timeline' && patientTimeline">
+            <h4>Longitudinal History for {{ patientTimeline.patient.name }}</h4>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;">
+              <div *ngFor="let ev of patientTimeline.timeline_events" style="border-left: 3px solid #3b82f6; padding-left: 12px;">
+                <strong>{{ ev.title }}</strong> ({{ ev.type }})
+                <div style="font-size: 12px; color: #64748b;">Date: {{ ev.date | date:'medium' }} • Status: {{ ev.status }}</div>
+                <div *ngIf="ev.diagnosis" style="font-size: 12px; color: #0f172a; margin-top: 4px;">Diagnosis: {{ ev.diagnosis }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. FHIR Bundle -->
+          <div *ngIf="activeFeatureModal === 'fhir_bundle'">
+            <h4>HL7 FHIR R4 Compliant Document Bundle</h4>
+            <pre style="background: #0f172a; color: #38bdf8; padding: 14px; border-radius: 8px; font-size: 11px; max-height: 400px; overflow: auto;">{{ fhirBundleJson }}</pre>
+          </div>
+
+          <!-- 3. Salon Loyalty -->
+          <div *ngIf="activeFeatureModal === 'salon_loyalty' && salonLoyaltyData">
+            <h4>Loyalty & Rewards Summary</h4>
+            <p><strong>Tier:</strong> {{ salonLoyaltyData.tier }} Tier</p>
+            <p><strong>Points Balance:</strong> {{ salonLoyaltyData.points_balance }} Points</p>
+            <p><strong>INR Equivalent:</strong> ₹{{ salonLoyaltyData.currency_equivalent_inr }}</p>
+            <p><strong>Discount Entitlement:</strong> {{ salonLoyaltyData.discount_percentage }}% Off Services</p>
+          </div>
+
+          <!-- 4. Risk Profile -->
+          <div *ngIf="activeFeatureModal === 'risk_profile' && riskProfileResult">
+            <h4>Risk Suitability Assessment Result</h4>
+            <p><strong>Score:</strong> {{ riskProfileResult.risk_score }} / 100</p>
+            <p><strong>Risk Profile Tier:</strong> {{ riskProfileResult.profile_tier }}</p>
+            <h5>Recommended Asset Allocation:</h5>
+            <ul>
+              <li *ngFor="let item of riskProfileResult.model_asset_allocation | keyvalue">
+                {{ item.key }}: {{ item.value }}%
+              </li>
+            </ul>
+            <p style="font-size: 11px; color: #94a3b8; font-style: italic;">{{ riskProfileResult.regulatory_disclaimer }}</p>
+          </div>
+
+          <!-- 5. Insurance Quotes -->
+          <div *ngIf="activeFeatureModal === 'insurance_quotes' && insuranceQuotesResult">
+            <h4>Side-by-Side Carrier Quotations</h4>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+              <div *ngFor="let q of insuranceQuotesResult.quotes" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>{{ q.plan_name }}</strong> ({{ q.carrier }})
+                <div style="font-size: 13px; color: #16a34a; font-weight: 700;">₹{{ q.annual_premium | number }} / Year</div>
+                <div style="font-size: 12px; color: #64748b;">Hospitals: {{ q.cashless_hospitals_network | number }} • Copay: {{ q.copay_percentage }}%</div>
+                <div style="font-size: 12px; color: #64748b;">Room Rent: {{ q.room_rent_capping }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Retail Catalog -->
+          <div *ngIf="activeFeatureModal === 'retail_catalog'">
+            <h4>Luxury Product Catalog</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+              <div *ngFor="let item of retailCatalogList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>{{ item.name }}</strong> (SKU: {{ item.sku }})
+                <div style="font-size: 13px; color: #1e3a8a; font-weight: 700;">₹{{ item.retail_price | number }}</div>
+                <div style="font-size: 12px; color: #64748b;">Variants: {{ item.variants.length }} options in stock</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7. University Comparison -->
+          <div *ngIf="activeFeatureModal === 'education_comparison'">
+            <h4>World Universities Comparison</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+              <div *ngFor="let u of universityComparisonResult" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>{{ u.university }}</strong> ({{ u.country }} • QS Rank #{{ u.qs_rank }})
+                <div style="font-size: 12px; color: #64748b;">Tuition: ${{ u.annual_tuition_usd | number }} • Post-Study Visa: {{ u.post_study_work_visa_years }} Years</div>
+                <div style="font-size: 12px; color: #64748b;">Acceptance Rate: {{ u.acceptance_rate_pct }}%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8. Legal Conflict Result -->
+          <div *ngIf="activeFeatureModal === 'legal_conflict' && legalConflictResult">
+            <h4>Adverse Party Conflict Clearance</h4>
+            <p><strong>Party Searched:</strong> {{ legalConflictResult.adverse_party }}</p>
+            <p><strong>Clearance Status:</strong> <span style="font-weight: 700; color: #16a34a;">{{ legalConflictResult.clearance_status }}</span></p>
+            <p><strong>Partner Signoff:</strong> {{ legalConflictResult.partner_signoff }}</p>
+          </div>
+
+          <!-- 9. Retainer Statement -->
+          <div *ngIf="activeFeatureModal === 'retainer_statement' && retainerStatementData">
+            <h4>Itemized Retainer Statement</h4>
+            <p><strong>Matter:</strong> {{ retainerStatementData.matter_title }}</p>
+            <p><strong>Initial Retainer:</strong> ₹{{ retainerStatementData.initial_retainer_deposit | number }}</p>
+            <p><strong>Hourly Rate:</strong> ₹{{ retainerStatementData.hourly_billable_rate | number }} / hr</p>
+            <p><strong>Billable Hours Deducted:</strong> {{ retainerStatementData.billable_hours_deducted }} hrs</p>
+            <p><strong>Remaining Retainer Balance:</strong> <strong style="color: #16a34a;">₹{{ retainerStatementData.remaining_retainer_balance | number }}</strong></p>
+          </div>
+
+          <!-- 10. Real Estate Properties -->
+          <div *ngIf="activeFeatureModal === 're_properties'">
+            <h4>Active Property Listings</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+              <div *ngFor="let p of realEstatePropertiesList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>{{ p.title }}</strong> ({{ p.mls_id }})
+                <div style="font-size: 13px; color: #1e3a8a; font-weight: 700;">₹{{ p.list_price_inr | number }}</div>
+                <div style="font-size: 12px; color: #64748b;">{{ p.property_type }} • {{ p.square_feet }} sqft • Status: {{ p.status }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 11. Resource Utilization -->
+          <div *ngIf="activeFeatureModal === 'resource_utilization' && resourceUtilizationData">
+            <h4>Team Capacity & Utilization Matrix</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+              <div *ngFor="let m of resourceUtilizationData.team_utilization" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>{{ m.name }}</strong> ({{ m.role }})
+                  <div style="font-size: 12px; color: #64748b;">{{ m.assigned_billable_hours }} hrs / {{ m.weekly_capacity_hours }} hrs capacity</div>
+                </div>
+                <span class="status-chip" [ngClass]="m.status.toLowerCase()">{{ m.utilization_pct }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
+          <button mat-flat-button color="primary" (click)="closeFeatureModal()">Close Window</button>
         </div>
       </div>
     </div>

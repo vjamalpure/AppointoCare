@@ -33,6 +33,18 @@ export class ClientPortalComponent implements OnInit {
   public responseNotes = '';
   public isSubmittingResponse = false;
 
+  // Appointment Booking & Management State
+  public availableServices: any[] = [];
+  public showBookModal = false;
+  public newApptService = 'General Consultation';
+  public newApptDate = '';
+  public newApptStaff = 'Available Specialist';
+  public newApptNotes = '';
+  public isBookingAppt = false;
+  public rescheduleApptId: number | null = null;
+  public rescheduleDate = '';
+  public isRescheduling = false;
+
   constructor(
     private portalService: ClientPortalService,
     private snackBar: MatSnackBar
@@ -44,6 +56,11 @@ export class ClientPortalComponent implements OnInit {
       this.sessionToken = savedToken;
       this.loadOverview();
     }
+    // Set default booking date to tomorrow at 10:00 AM
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    this.newApptDate = tomorrow.toISOString().slice(0, 16);
   }
 
   public requestCode(): void {
@@ -106,12 +123,99 @@ export class ClientPortalComponent implements OnInit {
         this.isLoadingOverview = false;
         this.isAuthenticated = true;
         this.overview = data;
+        this.loadServices();
       },
       error: (err) => {
         this.isLoadingOverview = false;
         this.isAuthenticated = false;
         localStorage.removeItem('appointocare_portal_token');
         this.snackBar.open('Session expired. Please log in again.', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  public loadServices(): void {
+    if (!this.sessionToken) return;
+    this.portalService.getServices(this.sessionToken).subscribe({
+      next: (res) => {
+        this.availableServices = res.services || [];
+        if (this.availableServices.length > 0 && this.newApptService === 'General Consultation') {
+          this.newApptService = this.availableServices[0].name;
+        }
+      }
+    });
+  }
+
+  public openBookModal(): void {
+    this.loadServices();
+    this.showBookModal = true;
+  }
+
+  public bookAppointment(): void {
+    if (!this.newApptDate) {
+      this.snackBar.open('Please select an appointment date & time', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.isBookingAppt = true;
+    this.portalService.bookAppointment(this.sessionToken, {
+      service_name: this.newApptService,
+      appointment_date: this.newApptDate,
+      staff_name: this.newApptStaff,
+      notes: this.newApptNotes
+    }).subscribe({
+      next: () => {
+        this.isBookingAppt = false;
+        this.showBookModal = false;
+        this.newApptNotes = '';
+        this.snackBar.open('Appointment booked successfully!', 'OK', { duration: 3000 });
+        this.loadOverview();
+      },
+      error: (err) => {
+        this.isBookingAppt = false;
+        const msg = err.error?.msg || 'Booking failed';
+        this.snackBar.open(msg, 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  public openReschedule(appt: any): void {
+    this.rescheduleApptId = appt.id;
+    this.rescheduleDate = (appt.appointment_date || '').slice(0, 16);
+  }
+
+  public submitReschedule(): void {
+    if (!this.rescheduleApptId || !this.rescheduleDate) return;
+    this.isRescheduling = true;
+    this.portalService.rescheduleAppointment(this.sessionToken, this.rescheduleApptId, {
+      appointment_date: this.rescheduleDate
+    }).subscribe({
+      next: () => {
+        this.isRescheduling = false;
+        this.rescheduleApptId = null;
+        this.snackBar.open('Appointment rescheduled successfully!', 'OK', { duration: 3000 });
+        this.loadOverview();
+      },
+      error: (err) => {
+        this.isRescheduling = false;
+        const msg = err.error?.msg || 'Reschedule failed';
+        this.snackBar.open(msg, 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  public cancelAppointment(apptId: number): void {
+    if (!confirm('Are you sure you want to cancel this appointment?')) return;
+    this.portalService.cancelAppointment(this.sessionToken, apptId, {
+      reason: 'Cancelled by customer via self-service portal'
+    }).subscribe({
+      next: () => {
+        this.snackBar.open('Appointment cancelled', 'OK', { duration: 3000 });
+        this.loadOverview();
+      },
+      error: (err) => {
+        const msg = err.error?.msg || 'Cancellation failed';
+        this.snackBar.open(msg, 'Close', { duration: 3000 });
       }
     });
   }
@@ -185,3 +289,4 @@ export class ClientPortalComponent implements OnInit {
     this.snackBar.open('Signed out of Client Portal', 'OK', { duration: 2500 });
   }
 }
+

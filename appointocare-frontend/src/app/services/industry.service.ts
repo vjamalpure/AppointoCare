@@ -274,5 +274,106 @@ export class IndustryService {
   public triggerAutomationRule(ruleId: number): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/api/v1/automations/rules/${ruleId}/trigger`, {});
   }
+
+  // --- 9-Industry Competitive Feature Packs ---
+
+  // 1. Healthcare
+  public getHealthcareTimeline(customerId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/healthcare/patient/${customerId}/timeline`);
+  }
+
+  public getClinicalTemplates(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/healthcare/clinical-templates`);
+  }
+
+  public getHealthcareFhirBundle(customerId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/healthcare/patient/${customerId}/fhir-bundle`);
+  }
+
+  // 2. Salon & Wellness
+  public enrollSalonMembership(payload: { customer_id: number; tier: string; fee_paid?: number }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/salon/memberships/enroll`, payload);
+  }
+
+  public getSalonLoyalty(customerId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/salon/customers/${customerId}/loyalty`);
+  }
+
+  public logSalonConsumables(recordId: number, items: any[]): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/salon/records/${recordId}/log-consumables`, { items });
+  }
+
+  // 3. Finance & Wealth
+  public evaluateFinanceRiskProfile(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/finance/evaluate-risk-profile`, payload);
+  }
+
+  public updateFinanceCompliance(recordId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/finance/records/${recordId}/compliance-checklist`, payload);
+  }
+
+  // 4. Insurance
+  public compareInsuranceQuotes(payload: { age: number; sum_assured: number }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/insurance/compare-quotes`, payload);
+  }
+
+  public getInsuranceRenewals(days = 60): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/insurance/renewals-upcoming?days=${days}`);
+  }
+
+  // 5. Retail & Luxury
+  public getRetailCatalog(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/retail/catalog`);
+  }
+
+  public logRetailStockMovement(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/retail/stock-movement`, payload);
+  }
+
+  public createRetailLookbook(customerId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/retail/customers/${customerId}/lookbook`, payload);
+  }
+
+  // 6. Education
+  public compareEducationUniversities(payload?: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/education/compare-universities`, payload || {});
+  }
+
+  public updateEducationVisaChecklist(recordId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/education/records/${recordId}/visa-checklist`, payload);
+  }
+
+  // 7. Legal & Consultancy
+  public runLegalConflictReview(payload: { adverse_party: string; matter_title?: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/legal/conflict-review`, payload);
+  }
+
+  public getLegalRetainerStatement(recordId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/legal/records/${recordId}/retainer-statement`);
+  }
+
+  // 8. Real Estate
+  public getRealEstateProperties(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/real-estate/properties`);
+  }
+
+  public calculateRealEstateCommission(recordId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/real-estate/deals/${recordId}/calculate-commission`, payload);
+  }
+
+  // 9. Professional Services
+  public getResourceUtilization(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/professional-services/resource-utilization`);
+  }
+
+  public logSlaEscalation(recordId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/professional-services/records/${recordId}/sla-escalation`, payload);
+  }
+
+  // 10. Platform Integration Status Gateway
+  public getPlatformIntegrationsStatus(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/platform/integrations/status`);
+  }
 }
+
 

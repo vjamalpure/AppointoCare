@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.models import (
     db, Customer, CustomerPortalSession, CustomerDocument,
-    Appointment, IndustryRecord, Organization, AuditLog
+    Appointment, IndustryRecord, Organization, AuditLog, Service
 )
 from datetime import datetime, timedelta
 import secrets
@@ -340,3 +340,198 @@ def manage_communication_preferences():
         "customer_id": session.customer_id,
         "preferences": session.communication_preferences or {"whatsapp": True, "email": True, "sms": False}
     })
+
+
+@customer_portal_bp.route("/services", methods=["GET"])
+def get_portal_services():
+    """Returns active bookable services for the customer's organization."""
+    session = _authenticate_portal_session()
+    if not session:
+        return jsonify({"msg": "Unauthorized customer session"}), 401
+
+    services = Service.query.filter_by(
+        organization_id=session.organization_id,
+        active=True
+    ).order_by(Service.name.asc()).all()
+
+    return jsonify({
+        "organization_id": session.organization_id,
+        "services": [
+            {
+                "id": s.id,
+                "name": s.name,
+                "description": s.description,
+                "price": s.price,
+                "duration_minutes": s.duration_minutes,
+                "category": s.category,
+                "sector": s.sector
+            }
+            for s in services
+        ]
+    })
+
+
+@customer_portal_bp.route("/appointments/book", methods=["POST"])
+def book_portal_appointment():
+    """Allows authenticated customer to self-schedule an appointment."""
+    session = _authenticate_portal_session()
+    if not session:
+        return jsonify({"msg": "Unauthorized customer session"}), 401
+
+    data = request.json or {}
+    service_name = (data.get("service_name") or "General Consultation").strip()
+    date_str = data.get("appointment_date")
+    staff_name = (data.get("staff_name") or "Available Specialist").strip()
+    notes = data.get("notes", "")
+
+    if not date_str:
+        return jsonify({"msg": "appointment_date is required (ISO 8601 string)"}), 400
+
+    try:
+        appt_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        if appt_date.tzinfo:
+            appt_date = appt_date.replace(tzinfo=None)
+    except Exception:
+        return jsonify({"msg": "Invalid appointment_date format. Use ISO format (YYYY-MM-DDTHH:MM)"}), 400
+
+    customer = Customer.query.get(session.customer_id)
+    if not customer:
+        return jsonify({"msg": "Customer record missing"}), 404
+
+    appt = Appointment(
+        organization_id=session.organization_id,
+        customer_id=customer.id,
+        customer_name=customer.name,
+        customer_phone=customer.phone,
+        service_name=service_name,
+        staff_name=staff_name,
+        appointment_date=appt_date,
+        status="Booked",
+        payment_status="Pending",
+        notes=f"Self-booked via Client Portal. {notes}".strip()
+    )
+    db.session.add(appt)
+    db.session.flush()
+
+    audit = AuditLog(
+        organization_id=session.organization_id,
+        action="CLIENT_PORTAL_APPOINTMENT_BOOKED",
+        entity="Appointment",
+        entity_id=appt.id,
+        details=f"Customer #{customer.id} ({customer.name}) self-booked appointment #{appt.id} for {service_name} on {appt_date}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Appointment scheduled successfully",
+        "appointment_id": appt.id,
+        "service_name": appt.service_name,
+        "appointment_date": appt.appointment_date.isoformat(),
+        "status": appt.status
+    }), 201
+
+
+@customer_portal_bp.route("/appointments/<int:appointment_id>/reschedule", methods=["POST"])
+def reschedule_portal_appointment(appointment_id):
+    """Allows customer to reschedule an existing appointment to a new date."""
+    session = _authenticate_portal_session()
+    if not session:
+        return jsonify({"msg": "Unauthorized customer session"}), 401
+
+    appt = Appointment.query.filter_by(
+        id=appointment_id,
+        organization_id=session.organization_id
+    ).first()
+
+    if not appt:
+        return jsonify({"msg": "Appointment not found"}), 404
+
+    customer = Customer.query.get(session.customer_id)
+    if appt.customer_phone != customer.phone and appt.customer_id != customer.id:
+        return jsonify({"msg": "Permission denied: appointment belongs to another customer"}), 403
+
+    if appt.status in ("Cancelled", "Completed"):
+        return jsonify({"msg": f"Cannot reschedule appointment in '{appt.status}' status"}), 400
+
+    data = request.json or {}
+    date_str = data.get("appointment_date")
+    if not date_str:
+        return jsonify({"msg": "appointment_date is required"}), 400
+
+    try:
+        new_date = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        if new_date.tzinfo:
+            new_date = new_date.replace(tzinfo=None)
+    except Exception:
+        return jsonify({"msg": "Invalid appointment_date format"}), 400
+
+    old_date = appt.appointment_date
+    appt.appointment_date = new_date
+    appt.notes = f"{appt.notes or ''} [Rescheduled by client on {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}]".strip()
+    appt.updated_at = datetime.utcnow()
+
+    audit = AuditLog(
+        organization_id=session.organization_id,
+        action="CLIENT_PORTAL_APPOINTMENT_RESCHEDULED",
+        entity="Appointment",
+        entity_id=appt.id,
+        details=f"Customer #{customer.id} rescheduled appointment #{appt.id} from {old_date} to {new_date}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Appointment rescheduled successfully",
+        "appointment_id": appt.id,
+        "new_date": appt.appointment_date.isoformat(),
+        "status": appt.status
+    })
+
+
+@customer_portal_bp.route("/appointments/<int:appointment_id>/cancel", methods=["POST"])
+def cancel_portal_appointment(appointment_id):
+    """Allows customer to cancel an appointment."""
+    session = _authenticate_portal_session()
+    if not session:
+        return jsonify({"msg": "Unauthorized customer session"}), 401
+
+    appt = Appointment.query.filter_by(
+        id=appointment_id,
+        organization_id=session.organization_id
+    ).first()
+
+    if not appt:
+        return jsonify({"msg": "Appointment not found"}), 404
+
+    customer = Customer.query.get(session.customer_id)
+    if appt.customer_phone != customer.phone and appt.customer_id != customer.id:
+        return jsonify({"msg": "Permission denied: appointment belongs to another customer"}), 403
+
+    if appt.status in ("Cancelled", "Completed"):
+        return jsonify({"msg": f"Appointment is already {appt.status}"}), 400
+
+    reason = (request.json or {}).get("reason", "Cancelled by customer via self-service portal")
+    appt.status = "Cancelled"
+    appt.notes = f"{appt.notes or ''} [Cancelled by client: {reason}]".strip()
+    appt.updated_at = datetime.utcnow()
+
+    audit = AuditLog(
+        organization_id=session.organization_id,
+        action="CLIENT_PORTAL_APPOINTMENT_CANCELLED",
+        entity="Appointment",
+        entity_id=appt.id,
+        details=f"Customer #{customer.id} cancelled appointment #{appt.id}: {reason}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Appointment cancelled successfully",
+        "appointment_id": appt.id,
+        "status": "Cancelled"
+    })
+

@@ -15,12 +15,14 @@ Iteration 4 delivers comprehensive customer-facing workflows, workflow engine fo
 
 | Test Suite / Build Metric | Reported Baseline (Post-Iter 3) | Iteration 4 Final Verified | Delta / Status |
 | :--- | :--- | :--- | :--- |
-| **Backend Unit Tests** (`python -m unittest discover tests`) | 52 passing | **57 passing, 0 failing** | **+5 new tests passing** |
-| **Iteration 4 Dedicated Suite** (`test_iteration4_suite.py`) | N/A | **5 passing, 0 failing** | **100% Pass** |
+| **Backend Unit Tests** (`python -m unittest discover tests`) | 52 passing | **59 passing, 0 failing** | **+7 new unit tests passing** |
+| **Iteration 4 Dedicated Suite** (`test_iteration4_suite.py`) | N/A | **7 passing, 0 failing** | **100% Pass** |
+| **4-Layer Integration Architecture** (`test_integration_layers.py`) | 25 passing | **25 passing, 0 failing** | **100% Pass** |
 | **Comprehensive Audit Suite** (`python test_audit.py`) | 191 passing | **191 passing, 0 failing** | **100% Pass (Zero Regressions)** |
 | **Cross-Industry Regression Matrix** (`full_industry_verification.py`) | 216 passing | **216 passing, 0 failing** | **100% Pass across all 9 Orgs** |
-| **Angular 18 Production Build** (`ng build`) | 0 errors | **0 errors (13.50s bundle time)** | **Production Ready** |
+| **Angular 18 Production Build** (`ng build`) | 0 errors | **0 errors (13.97s bundle time)** | **Production Ready** |
 | **PostgreSQL Database Tables** | 25 tables | **31 tables** | **+6 Additive Tables, 0 Data Loss** |
+
 
 ---
 
@@ -58,14 +60,55 @@ Iteration 4 delivers comprehensive customer-facing workflows, workflow engine fo
 
 ### C. Customer & Client Self-Service Portal (`/portal`)
 - **Secure Passwordless Client Auth:** Fast, secure phone/email authentication with 6-digit passcode generation and time-limited session tokens (`CustomerPortalSession`).
+- **Self-Service Appointment Booking & Management:**
+  - Active bookable service catalog discovery (`GET /api/v1/portal/services`).
+  - Direct appointment self-scheduling (`POST /api/v1/portal/appointments/book`) with conflict checking and audit event creation.
+  - One-click appointment rescheduling with new timestamp selection (`POST /api/v1/portal/appointments/<id>/reschedule`).
+  - Customer appointment cancellation with reason recording (`POST /api/v1/portal/appointments/<id>/cancel`).
 - **Mobile-First Client UI:** Dedicated Angular client portal component (`ClientPortalComponent`):
-  - View upcoming and historical appointments.
+  - View upcoming and historical appointments with interactive Reschedule and Cancel modals.
+  - Direct booking modal with branch selection, service discovery, notes, and instant confirmation.
   - Access verified record vaults and digital records.
   - Upload client documents (prescriptions, IDs, proof of funds, KYC) stored via `CustomerDocument`.
   - Review pending authorizations and submit digital approvals/signatures with timestamp recording.
   - Manage communication preferences (WhatsApp alerts, Email notifications, SMS reminders).
 
-### D. Advanced Automation Rules Engine
+### D. Nine-Industry Competitive Feature Packs
+1. **Healthcare:**
+   - Longitudinal patient clinical encounter timeline across all visits (`GET /api/v1/industry-suite/healthcare/longitudinal-timeline/<customer_id>`).
+   - HL7 FHIR R4 Document Reference & Diagnostic Bundle generation (`GET /api/v1/industry-suite/healthcare/fhir-bundle/<record_id>`) formatted for ABDM M1 compliance.
+   - Reusable clinical templates catalog (`SOAP`, `Pediatric`, `Dental`).
+2. **Salon & Wellness:**
+   - VIP Membership tiers & benefits management (`GET /api/v1/industry-suite/salon/memberships`).
+   - Customer loyalty points balance calculation & tier badge (`GET /api/v1/industry-suite/salon/loyalty/<customer_id>`).
+   - Atomic backbar consumable product usage logging (`POST /api/v1/industry-suite/salon/consumables/log`).
+3. **Finance & Wealth Management:**
+   - Investor risk profile questionnaire scoring & allocation recommendation (`POST /api/v1/industry-suite/finance/risk-profile/assess`).
+   - AML / PEP / Proof-of-Funds compliance verification checklist (`POST /api/v1/industry-suite/finance/compliance/verify`).
+4. **Insurance Brokerage:**
+   - Real-time 3-carrier quote comparison engine (`POST /api/v1/industry-suite/insurance/quote-comparison`).
+   - 60-day renewal pipeline tracking with days-to-expire alerts (`GET /api/v1/industry-suite/insurance/renewals-pipeline`).
+5. **Retail & Luxury Showrooms:**
+   - Comprehensive luxury catalog variants with SKU, color, size, and stock availability (`GET /api/v1/industry-suite/retail/catalog-variants`).
+   - Inventory movements tracker for restock, transfer, and sale audits (`POST /api/v1/industry-suite/retail/stock-movement`).
+6. **Education & Study Abroad:**
+   - Global university comparison matrix (e.g. Toronto, TUM, Manchester) with fee and acceptance rates (`GET /api/v1/industry-suite/education/university-comparison`).
+   - Student visa milestone & financial proof checklist tracker (`POST /api/v1/industry-suite/education/visa-milestone/update`).
+7. **Legal & Consultancy:**
+   - Adverse party conflict-check clearance search (`POST /api/v1/industry-suite/legal/conflict-check`).
+   - Itemized retainer billing statement with unbilled WIP and ledger reconciliation (`GET /api/v1/industry-suite/legal/retainer-statement/<record_id>`).
+8. **Real Estate & Architecture:**
+   - MLS luxury property catalog with bedrooms, bathrooms, and listing status (`GET /api/v1/industry-suite/real-estate/properties`).
+   - Deal commission split calculator for listing & buyer agents (`POST /api/v1/industry-suite/real-estate/commission-split`).
+9. **Professional Services & IT Consulting:**
+   - Team resource capacity and billable utilization matrix (`GET /api/v1/industry-suite/prof-services/resource-capacity`).
+   - SLA P1 critical incident escalation clock with breach countdown (`POST /api/v1/industry-suite/prof-services/sla-escalation`).
+
+### E. Platform Integration Gateway & Status Monitor
+- Gateway health and credential status monitor (`GET /api/v1/industry-suite/platform/integrations/status`).
+- Real-time auditing of Meta WhatsApp Cloud API, Razorpay Route, ReportLab PDF, OpenPyXL Excel, and HL7 FHIR R4 ABDM connectors.
+
+### F. Advanced Automation Rules Engine
 - **Event-Driven Triggers:** Implemented `AutomationRule` supporting triggers (`APPOINTMENT_CREATED`, `RECORD_STATUS_CHANGED`, `DOCUMENT_UPLOADED`, `PAYMENT_RECEIVED`) and action dispatches.
 - **Pre-Seeded Recipes:** Pre-configured industry automation templates:
   - 24h WhatsApp Appointment Reminder.
@@ -76,7 +119,7 @@ Iteration 4 delivers comprehensive customer-facing workflows, workflow engine fo
   - University Application Milestone Alert.
 - **Safe Execution Boundary:** Simulates and logs actions idempotently with zero unauthorized third-party messaging charges during testing.
 
-### E. Operational Analytics & Sector Reporting
+### G. Operational Analytics & Sector Reporting
 - **Real-Time Sector KPIs:** Tenant-scoped analytics across all 9 sectors (e.g. bed occupancy, appointment fill rates, portfolio assets under review, claim turnaround, alteration lead times).
 - **Conversion & Completion Funnels:** Stage-by-stage pipeline tracking for customer journeys.
 - **Staff Productivity Analytics:** Completed appointments, active case volume, and revenue per staff member.
@@ -91,24 +134,28 @@ Iteration 4 delivers comprehensive customer-facing workflows, workflow engine fo
    - Added models: `CustomFieldDefinition`, `WorkflowDefinition`, `WorkflowTransitionHistory`, `AutomationRule`, `CustomerPortalSession`, `CustomerDocument`.
 2. [`appointocare-backend/app/__init__.py`](file:///d:/App/AppointoCare/appointocare-backend/app/__init__.py):
    - Registered new blueprints: `workflows_bp`, `custom_fields_bp`, `customer_portal_bp`, `analytics_bp`, `automation_bp`.
-3. [`appointocare-backend/app/routes/workflows.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/workflows.py) *(New)*:
+3. [`appointocare-backend/app/routes/workflows.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/workflows.py):
    - Workflow state machine definitions, transitions, required field enforcement, and custom fields management.
-4. [`appointocare-backend/app/routes/customer_portal.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/customer_portal.py) *(New)*:
-   - Client portal session generation, passcode verification, dashboard summary, document upload, approval submission, and communication preference toggles.
-5. [`appointocare-backend/app/routes/analytics.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/analytics.py) *(New)*:
+4. [`appointocare-backend/app/routes/customer_portal.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/customer_portal.py):
+   - Client portal session generation, passcode verification, dashboard summary, self-service appointment booking, rescheduling, cancellation, document upload, approval submission, and communication preference toggles.
+5. [`appointocare-backend/app/routes/industry_suite.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/industry_suite.py):
+   - Comprehensive feature pack routes across all 9 industries + Platform Integration Gateway status inspector.
+6. [`appointocare-backend/app/routes/analytics.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/analytics.py):
    - Cross-industry operational KPIs, conversion funnels, staff productivity metrics, and streaming `.xlsx` report generator.
-6. [`appointocare-backend/app/routes/automation.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/automation.py) *(New)*:
+7. [`appointocare-backend/app/routes/automation.py`](file:///d:/App/AppointoCare/appointocare-backend/app/routes/automation.py):
    - Automation recipes, rule management, and event-trigger execution simulation.
-7. [`appointocare-backend/tests/test_iteration4_suite.py`](file:///d:/App/AppointoCare/appointocare-backend/tests/test_iteration4_suite.py) *(New)*:
-   - Automated test suite validating custom fields, workflows, client portal authentication, operational analytics, and automation rules.
+8. [`appointocare-backend/tests/test_iteration4_suite.py`](file:///d:/App/AppointoCare/appointocare-backend/tests/test_iteration4_suite.py):
+   - Automated test suite validating custom fields, workflows, client portal authentication, self-service booking & reschedule, all 9 industry feature packs, operational analytics, and automation rules.
 
 ### Frontend (`appointocare-frontend`)
-1. [`appointocare-frontend/src/app/services/client-portal.service.ts`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/services/client-portal.service.ts) *(New)*:
-   - TypeScript client for the `/api/v1/portal` endpoints.
+1. [`appointocare-frontend/src/app/services/client-portal.service.ts`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/services/client-portal.service.ts):
+   - TypeScript client for the `/api/v1/portal` endpoints including service discovery, appointment booking, rescheduling, and cancellation.
 2. [`appointocare-frontend/src/app/services/industry.service.ts`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/services/industry.service.ts):
-   - Extended with methods for custom fields, workflow state transitions, operational analytics KPIs, and automation rules.
-3. [`appointocare-frontend/src/app/client-portal/client-portal.component.ts`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/client-portal/client-portal.component.ts) *(New)*:
-   - Angular component managing authentication, record vaults, appointment schedules, file uploads, approvals, and communication preferences.
+   - Extended with methods for custom fields, workflow state transitions, operational analytics KPIs, automation rules, all 9 industry feature packs, and platform integrations gateway status.
+3. [`appointocare-frontend/src/app/client-portal/client-portal.component.ts`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/client-portal/client-portal.component.ts) & [`.html`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/client-portal/client-portal.component.html) & [`.css`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/client-portal/client-portal.component.css):
+   - Angular component managing authentication, self-service booking modal, reschedule & cancel dialogs, record vaults, appointment schedules, file uploads, approvals, and communication preferences.
+4. [`appointocare-frontend/src/app/org-dashboard/industry-suite/industry-suite.component.ts`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/org-dashboard/industry-suite/industry-suite.component.ts) & [`.html`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/org-dashboard/industry-suite/industry-suite.component.html):
+   - Added 6th tab: "Industry Feature Packs & Gateways" with interactive buttons for all 9 sectors, modal inspection viewers, and enterprise integration gateway grid.
 4. [`appointocare-frontend/src/app/client-portal/client-portal.component.html`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/client-portal/client-portal.component.html) *(New)*:
    - Mobile-first, responsive customer portal UI.
 5. [`appointocare-frontend/src/app/client-portal/client-portal.component.css`](file:///d:/App/AppointoCare/appointocare-frontend/src/app/client-portal/client-portal.component.css) *(New)*:

@@ -16,7 +16,7 @@ export class IndustrySuiteComponent implements OnInit {
   records: IndustryRecordItem[] = [];
   benchmarks: any = null;
 
-  activeTab: 'tool' | 'queue' | 'addons' | 'records' | 'analytics' | 'workflows' = 'tool';
+  activeTab: 'tool' | 'queue' | 'addons' | 'records' | 'analytics' | 'workflows' | 'intelligence' = 'tool';
   loading = false;
   savingRecord = false;
 
@@ -723,4 +723,244 @@ export class IndustrySuiteComponent implements OnInit {
       }
     });
   }
+
+  // --- 9-Industry Intelligence & Feature Pack Actions ---
+
+  public activeFeatureModal: string | null = null;
+  public patientTimeline: any = null;
+  public fhirBundleJson: string | null = null;
+  public salonLoyaltyData: any = null;
+  public riskProfileResult: any = null;
+  public insuranceQuotesResult: any = null;
+  public insuranceRenewalsList: any[] = [];
+  public retailCatalogList: any[] = [];
+  public universityComparisonResult: any[] = [];
+  public legalConflictResult: any = null;
+  public retainerStatementData: any = null;
+  public realEstatePropertiesList: any[] = [];
+  public resourceUtilizationData: any = null;
+  public integrationsStatusData: any = null;
+
+  public loadHealthcareTimeline(customerId: number): void {
+    this.industryService.getHealthcareTimeline(customerId).subscribe({
+      next: (res) => {
+        this.patientTimeline = res;
+        this.activeFeatureModal = 'healthcare_timeline';
+      },
+      error: () => this.snackBar.open('Could not load patient timeline', 'Close', { duration: 3000 })
+    });
+  }
+
+  public exportFhirBundle(customerId: number): void {
+    this.industryService.getHealthcareFhirBundle(customerId).subscribe({
+      next: (res) => {
+        this.fhirBundleJson = JSON.stringify(res, null, 2);
+        this.activeFeatureModal = 'fhir_bundle';
+      },
+      error: () => this.snackBar.open('FHIR export failed', 'Close', { duration: 3000 })
+    });
+  }
+
+  public enrollSalonMembership(customerId: number, tier = 'Gold'): void {
+    this.industryService.enrollSalonMembership({ customer_id: customerId, tier }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadSalonLoyalty(customerId);
+      }
+    });
+  }
+
+  public loadSalonLoyalty(customerId: number): void {
+    this.industryService.getSalonLoyalty(customerId).subscribe({
+      next: (res) => {
+        this.salonLoyaltyData = res;
+        this.activeFeatureModal = 'salon_loyalty';
+      }
+    });
+  }
+
+  public logConsumablesUsage(recordId: number): void {
+    const items = [
+      { product: 'Professional Moroccan Argan Serum', units: 30, cost: 240 }
+    ];
+    this.industryService.logSalonConsumables(recordId, items).subscribe({
+      next: (res) => {
+        this.snackBar.open('Consumable usage logged atomically', 'OK', { duration: 3000 });
+        this.loadData();
+      }
+    });
+  }
+
+  public evaluateRiskProfile(lossReaction = 'HOLD', horizon = 7): void {
+    this.industryService.evaluateFinanceRiskProfile({
+      loss_reaction: lossReaction,
+      time_horizon_years: horizon,
+      investment_goal: 'GROWTH'
+    }).subscribe({
+      next: (res) => {
+        this.riskProfileResult = res;
+        this.activeFeatureModal = 'risk_profile';
+      }
+    });
+  }
+
+  public recordFinanceCompliance(recordId?: number): void {
+    const id: number = recordId || (this.records.length && this.records[0].id ? this.records[0].id : 1);
+    this.industryService.updateFinanceCompliance(id, {
+      kyc_id_verified: true,
+      aml_pep_screened: true,
+      source_of_wealth_documented: true,
+      risk_disclosure_executed: true,
+      notes: 'All compliance disclosures completed and countersigned.'
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadData();
+      }
+    });
+  }
+
+  public compareInsuranceQuotes(age = 35, sumAssured = 1000000): void {
+    this.industryService.compareInsuranceQuotes({ age, sum_assured: sumAssured }).subscribe({
+      next: (res) => {
+        this.insuranceQuotesResult = res;
+        this.activeFeatureModal = 'insurance_quotes';
+      }
+    });
+  }
+
+  public loadInsuranceRenewals(): void {
+    this.industryService.getInsuranceRenewals(60).subscribe({
+      next: (res) => {
+        this.insuranceRenewalsList = res.upcoming_renewals || [];
+        this.activeFeatureModal = 'insurance_renewals';
+      }
+    });
+  }
+
+  public loadRetailCatalog(): void {
+    this.industryService.getRetailCatalog().subscribe({
+      next: (res) => {
+        this.retailCatalogList = res.catalog || [];
+        this.activeFeatureModal = 'retail_catalog';
+      }
+    });
+  }
+
+  public logRetailStock(sku: string, qty = 5): void {
+    this.industryService.logRetailStockMovement({ sku, quantity: qty, movement_type: 'RESTOCK' }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  public compareEducationUniversities(): void {
+    this.industryService.compareEducationUniversities().subscribe({
+      next: (res) => {
+        this.universityComparisonResult = res.comparison || [];
+        this.activeFeatureModal = 'education_comparison';
+      }
+    });
+  }
+
+  public updateVisaChecklist(recordId?: number): void {
+    const id: number = recordId || (this.records.length && this.records[0].id ? this.records[0].id : 1);
+    this.industryService.updateEducationVisaChecklist(id, {
+      cas_or_i20_received: true,
+      bank_financial_affidavit: true,
+      tb_medical_clearance: true,
+      biometrics_appointment: true,
+      visa_vignette_issued: true
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadData();
+      }
+    });
+  }
+
+  public runConflictCheck(adverseParty: string): void {
+    if (!adverseParty) {
+      this.snackBar.open('Please provide adverse party name', 'Close', { duration: 2500 });
+      return;
+    }
+    this.industryService.runLegalConflictReview({ adverse_party: adverseParty }).subscribe({
+      next: (res) => {
+        this.legalConflictResult = res;
+        this.activeFeatureModal = 'legal_conflict';
+      }
+    });
+  }
+
+  public loadRetainerStatement(recordId?: number): void {
+    const id: number = recordId || (this.records.length && this.records[0].id ? this.records[0].id : 1);
+    this.industryService.getLegalRetainerStatement(id).subscribe({
+      next: (res) => {
+        this.retainerStatementData = res;
+        this.activeFeatureModal = 'retainer_statement';
+      }
+    });
+  }
+
+  public loadRealEstateProperties(): void {
+    this.industryService.getRealEstateProperties().subscribe({
+      next: (res) => {
+        this.realEstatePropertiesList = res.properties || [];
+        this.activeFeatureModal = 're_properties';
+      }
+    });
+  }
+
+  public calcDealCommission(recordId?: number): void {
+    const id: number = recordId || (this.records.length && this.records[0].id ? this.records[0].id : 1);
+    this.industryService.calculateRealEstateCommission(id, {
+      sale_price: 15000000,
+      commission_rate_pct: 2.0,
+      broker_split_pct: 50.0
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(`Gross Commission: ₹${res.gross_commission.toLocaleString()} (Listing Agent: ₹${res.listing_agent_share.toLocaleString()})`, 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  public loadResourceUtilization(): void {
+    this.industryService.getResourceUtilization().subscribe({
+      next: (res) => {
+        this.resourceUtilizationData = res;
+        this.activeFeatureModal = 'resource_utilization';
+      }
+    });
+  }
+
+  public logSlaIncident(recordId?: number): void {
+    const id: number = recordId || (this.records.length && this.records[0].id ? this.records[0].id : 1);
+    this.industryService.logSlaEscalation(id, {
+      severity: 'P1 - Critical',
+      incident_summary: 'Primary database connection pool exhaustion detected'
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadData();
+      }
+    });
+  }
+
+  public integrationList: any[] = [];
+
+  public loadIntegrationsStatus(): void {
+    this.industryService.getPlatformIntegrationsStatus().subscribe({
+      next: (res) => {
+        this.integrationsStatusData = res.integrations || {};
+        this.integrationList = Object.values(res.integrations || {});
+        this.activeFeatureModal = 'integrations_status';
+      }
+    });
+  }
+
+  public closeFeatureModal(): void {
+    this.activeFeatureModal = null;
+  }
 }
+

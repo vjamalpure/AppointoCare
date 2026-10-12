@@ -105,8 +105,13 @@
 
           <div class="tab-pane">
             <div class="section-header">
-              <h3>Scheduled Appointments & Encounters</h3>
-              <span class="count-badge">{{ overview.appointments.length }} Total</span>
+              <div>
+                <h3>Scheduled Appointments & Encounters</h3>
+                <span class="count-badge">{{ overview.appointments.length }} Total</span>
+              </div>
+              <button mat-raised-button color="primary" (click)="openBookModal()">
+                <mat-icon>add_circle</mat-icon> Book New Appointment
+              </button>
             </div>
 
             <div class="cards-grid" *ngIf="overview.appointments.length > 0; else noAppointments">
@@ -130,13 +135,88 @@
                     <span class="status-chip" [ngClass]="appt.payment_status.toLowerCase()">{{ appt.payment_status }}</span>
                   </div>
                 </mat-card-content>
+                <mat-card-actions *ngIf="appt.status !== 'Cancelled' && appt.status !== 'Completed'" class="appt-actions">
+                  <button mat-button color="primary" (click)="openReschedule(appt)">
+                    <mat-icon>schedule</mat-icon> Reschedule
+                  </button>
+                  <button mat-button color="warn" (click)="cancelAppointment(appt.id)">
+                    <mat-icon>close</mat-icon> Cancel
+                  </button>
+                </mat-card-actions>
               </mat-card>
+            </div>
+
+            <!-- Reschedule Inline Modal -->
+            <div class="portal-modal-backdrop" *ngIf="rescheduleApptId !== null">
+              <div class="portal-modal mat-elevation-z4">
+                <div class="modal-header">
+                  <h3><mat-icon>edit_calendar</mat-icon> Reschedule Appointment #{{ rescheduleApptId }}</h3>
+                  <button mat-icon-button (click)="rescheduleApptId = null"><mat-icon>close</mat-icon></button>
+                </div>
+                <div class="modal-body">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>New Date & Time</mat-label>
+                    <input matInput type="datetime-local" [(ngModel)]="rescheduleDate" />
+                  </mat-form-field>
+                </div>
+                <div class="modal-footer">
+                  <button mat-button (click)="rescheduleApptId = null">Discard</button>
+                  <button mat-raised-button color="primary" [disabled]="isRescheduling" (click)="submitReschedule()">
+                    {{ isRescheduling ? 'Saving...' : 'Confirm Reschedule' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Book New Appointment Modal -->
+            <div class="portal-modal-backdrop" *ngIf="showBookModal">
+              <div class="portal-modal mat-elevation-z4">
+                <div class="modal-header">
+                  <h3><mat-icon>calendar_month</mat-icon> Schedule An Appointment</h3>
+                  <button mat-icon-button (click)="showBookModal = false"><mat-icon>close</mat-icon></button>
+                </div>
+                <div class="modal-body">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Select Service</mat-label>
+                    <mat-select [(ngModel)]="newApptService">
+                      <mat-option *ngFor="let s of availableServices" [value]="s.name">
+                        {{ s.name }} (₹{{ s.price }} • {{ s.duration_minutes }}m)
+                      </mat-option>
+                      <mat-option *ngIf="availableServices.length === 0" value="General Consultation">
+                        General Consultation
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Preferred Date & Time</mat-label>
+                    <input matInput type="datetime-local" [(ngModel)]="newApptDate" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Assigned Specialist / Attending</mat-label>
+                    <input matInput [(ngModel)]="newApptStaff" placeholder="e.g. Dr. Sarah, Stylist Chloe" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Special Requests or Symptoms</mat-label>
+                    <textarea matInput rows="2" [(ngModel)]="newApptNotes" placeholder="Reason for visit..."></textarea>
+                  </mat-form-field>
+                </div>
+                <div class="modal-footer">
+                  <button mat-button (click)="showBookModal = false">Cancel</button>
+                  <button mat-raised-button color="primary" [disabled]="isBookingAppt" (click)="bookAppointment()">
+                    {{ isBookingAppt ? 'Scheduling...' : 'Confirm Appointment' }}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <ng-template #noAppointments>
               <div class="empty-state">
                 <mat-icon>event_busy</mat-icon>
                 <p>No appointments found in your profile.</p>
+                <button mat-raised-button color="primary" (click)="openBookModal()">Book Your First Appointment</button>
               </div>
             </ng-template>
           </div>
