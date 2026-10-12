@@ -389,6 +389,29 @@ class GlobalSetting(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class FinancialLedgerEntry(db.Model):
+    __tablename__ = "financial_ledger_entries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=True, index=True)
+    record_id = db.Column(db.Integer, db.ForeignKey("industry_records.id"), nullable=True, index=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey("appointments.id"), nullable=True)
+    entry_type = db.Column(db.String(50), nullable=False)  # CREDIT_ISSUANCE, CREDIT_REDEMPTION, CREDIT_REVERSAL, RETAINER_DEPOSIT, RETAINER_TIME_LOGGED
+    units_delta = db.Column(db.Float, nullable=False)
+    balance_after = db.Column(db.Float, nullable=False)
+    currency_or_unit = db.Column(db.String(20), default="sessions")  # sessions, hours, INR, USD
+    monetary_equivalent = db.Column(db.Float, nullable=True, default=0.0)
+    reference_id = db.Column(db.String(100), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    created_by_user = db.Column(db.String(100), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("idx_fin_ledger_org_record", "organization_id", "record_id"),
+    )
+
+
 # -----------------------------------------------------------------------------
 # Multi-Tenant Service Integrations: Meta WhatsApp & Razorpay Route
 # -----------------------------------------------------------------------------

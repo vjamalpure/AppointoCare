@@ -20,6 +20,47 @@ export class IndustrySuiteComponent implements OnInit {
   loading = false;
   savingRecord = false;
 
+  // Granular Workflow Machine Actions (Workstream 1)
+  actionLoading: { [key: string]: boolean } = {};
+
+  salonCreditInput = {
+    sessions: 1,
+    service_name: 'Treatment & Spa Session',
+    staff_name: 'Lead Specialist',
+    notes: 'Package credit redemption requested'
+  };
+
+  legalTimeInput = {
+    hours: 1.5,
+    rate: 12500,
+    description: 'Matter contract drafting & clause advisory',
+    lawyer_name: 'Lead Advocate'
+  };
+
+  insuranceClaimInput = {
+    status: 'Under_Review',
+    notes: 'Surveyor and clinical documentation under review',
+    approved_amount: 0
+  };
+
+  retailAlterationInput = {
+    stage: 'In_Tailoring',
+    notes: 'Hemming and shoulder adjustment in progress',
+    fitting_suite: 'VIP Lounge 1'
+  };
+
+  healthcareFollowupInput = {
+    date: '',
+    service: 'Clinical Follow-up Consultation',
+    notes: 'Post-treatment recovery review'
+  };
+
+  financeRebalanceInput = {
+    portfolio_value: 500000,
+    fee_bps: 10
+  };
+  financeRebalanceResult: any = null;
+
   // Live Queue & Token Board State
   queueTokens: any[] = [];
   loadingQueue = false;
@@ -346,6 +387,155 @@ export class IndustrySuiteComponent implements OnInit {
 
   closeInspection(): void {
     this.selectedRecord = null;
+  }
+
+  // --- Workstream 1: Dedicated Granular Workflow Actions ---
+
+  executeRedeemCredit(record: IndustryRecordItem): void {
+    if (!record?.id) return;
+    this.actionLoading['redeem'] = true;
+    this.industryService.redeemSessionCredit(record.id, {
+      sessions_to_redeem: this.salonCreditInput.sessions,
+      service_name: this.salonCreditInput.service_name,
+      staff_name: this.salonCreditInput.staff_name,
+      notes: this.salonCreditInput.notes
+    }).subscribe({
+      next: (res) => {
+        this.actionLoading['redeem'] = false;
+        this.snackBar.open(`Redeemed ${res.sessions_redeemed} credit(s). Remaining: ${res.remaining_credits}`, 'OK', { duration: 3500 });
+        if (record.data) {
+          record.data.remaining_sessions = res.remaining_credits;
+        }
+        this.loadData();
+      },
+      error: (err) => {
+        this.actionLoading['redeem'] = false;
+        const msg = err.error?.msg || 'Failed to redeem credit';
+        this.snackBar.open(msg, 'Dismiss', { duration: 3500 });
+      }
+    });
+  }
+
+  executeLogBillableTime(record: IndustryRecordItem): void {
+    if (!record?.id) return;
+    this.actionLoading['time'] = true;
+    this.industryService.logBillableTime(record.id, {
+      hours: this.legalTimeInput.hours,
+      hourly_rate: this.legalTimeInput.rate,
+      activity_description: this.legalTimeInput.description,
+      lawyer_name: this.legalTimeInput.lawyer_name
+    }).subscribe({
+      next: (res) => {
+        this.actionLoading['time'] = false;
+        this.snackBar.open(`Logged ${res.hours_logged}h (₹${res.billable_amount}). Retainer remaining: ${res.retainer_hours_remaining}h`, 'OK', { duration: 3500 });
+        if (record.data) {
+          record.data.retainer_hours_remaining = res.retainer_hours_remaining;
+          record.data.retainer_depleted_alert = res.retainer_depleted_alert;
+        }
+        this.loadData();
+      },
+      error: (err) => {
+        this.actionLoading['time'] = false;
+        this.snackBar.open(err.error?.msg || 'Failed to log billable time', 'Dismiss', { duration: 3500 });
+      }
+    });
+  }
+
+  executeTransitionClaim(record: IndustryRecordItem): void {
+    if (!record?.id) return;
+    this.actionLoading['claim'] = true;
+    this.industryService.transitionClaimStatus(record.id, {
+      new_status: this.insuranceClaimInput.status,
+      adjuster_notes: this.insuranceClaimInput.notes,
+      approved_amount: this.insuranceClaimInput.approved_amount
+    }).subscribe({
+      next: (res) => {
+        this.actionLoading['claim'] = false;
+        this.snackBar.open(`Claim #${record.id} status transitioned to: ${res.current_status}`, 'OK', { duration: 3500 });
+        record.status = res.current_status;
+        this.loadData();
+      },
+      error: (err) => {
+        this.actionLoading['claim'] = false;
+        this.snackBar.open(err.error?.msg || 'Failed to transition claim', 'Dismiss', { duration: 3500 });
+      }
+    });
+  }
+
+  executeUpdateAlteration(record: IndustryRecordItem): void {
+    if (!record?.id) return;
+    this.actionLoading['alteration'] = true;
+    this.industryService.updateAlterationStage(record.id, {
+      stage: this.retailAlterationInput.stage,
+      tailor_notes: this.retailAlterationInput.notes,
+      fitting_suite: this.retailAlterationInput.fitting_suite
+    }).subscribe({
+      next: (res) => {
+        this.actionLoading['alteration'] = false;
+        const note = res.ready_for_fitting ? ' (Ready notification queued)' : '';
+        this.snackBar.open(`Alteration stage updated to: ${res.current_stage}${note}`, 'OK', { duration: 3500 });
+        record.status = res.current_stage;
+        this.loadData();
+      },
+      error: (err) => {
+        this.actionLoading['alteration'] = false;
+        this.snackBar.open(err.error?.msg || 'Failed to update alteration', 'Dismiss', { duration: 3500 });
+      }
+    });
+  }
+
+  executeScheduleFollowup(appointmentId?: number | null): void {
+    const targetId = appointmentId || this.selectedRecord?.appointment_id;
+    if (!targetId) {
+      this.snackBar.open('No appointment bound to this record for follow-up scheduling', 'Dismiss', { duration: 3000 });
+      return;
+    }
+    const targetDate = this.healthcareFollowupInput.date || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0] + 'T10:00:00';
+    this.actionLoading['followup'] = true;
+    this.industryService.scheduleFollowupAppointment(targetId, {
+      followup_date: targetDate,
+      service_name: this.healthcareFollowupInput.service,
+      notes: this.healthcareFollowupInput.notes
+    }).subscribe({
+      next: (res) => {
+        this.actionLoading['followup'] = false;
+        this.snackBar.open(`Follow-up appointment #${res.followup_appointment_id} scheduled for ${res.customer_name}`, 'OK', { duration: 3500 });
+      },
+      error: (err) => {
+        this.actionLoading['followup'] = false;
+        this.snackBar.open(err.error?.msg || 'Failed to schedule follow-up', 'Dismiss', { duration: 3500 });
+      }
+    });
+  }
+
+  executeGenerateRebalancePlan(): void {
+    this.actionLoading['rebalance'] = true;
+    const currentWeights = {
+      equity: Number(this.toolForm.equity_pct || 65),
+      debt: Number(this.toolForm.fixed_income_pct || 25),
+      cash: Number(this.toolForm.cash_alternatives_pct || 10)
+    };
+    const targetWeights = {
+      equity: 50,
+      debt: 40,
+      cash: 10
+    };
+    this.industryService.generateRebalancePlan({
+      portfolio_value: this.financeRebalanceInput.portfolio_value,
+      current_weights: currentWeights,
+      target_weights: targetWeights,
+      fee_bps: this.financeRebalanceInput.fee_bps
+    }).subscribe({
+      next: (res) => {
+        this.actionLoading['rebalance'] = false;
+        this.financeRebalanceResult = res;
+        this.snackBar.open(`Rebalance plan computed: ₹${res.total_turnover.toLocaleString('en-IN')} turnover`, 'OK', { duration: 3500 });
+      },
+      error: (err) => {
+        this.actionLoading['rebalance'] = false;
+        this.snackBar.open(err.error?.msg || 'Failed to compute rebalancing plan', 'Dismiss', { duration: 3500 });
+      }
+    });
   }
 
   getFormattedAttributes(data: any): { label: string; value: string }[] {

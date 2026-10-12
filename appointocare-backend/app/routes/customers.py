@@ -364,6 +364,16 @@ def export_customers():
     customers = query.order_by(Customer.created_at.desc()).all()
 
     export_format = (request.args.get("format") or "json").lower()
+    if export_format not in ["json", "csv", "xlsx"]:
+        return jsonify({"msg": f"Unsupported export format '{export_format}'. Allowed: json, csv, xlsx"}), 400
+
+    def _sanitize_cell(val):
+        if val is None:
+            return ""
+        s = str(val)
+        if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+            return f"'{s}"
+        return s
 
     # Record audit log
     try:
@@ -383,6 +393,8 @@ def export_customers():
     except Exception:
         db.session.rollback()
 
+    org_tag = scoped_org_id if 'scoped_org_id' in locals() else (org_id if 'org_id' in locals() else "all")
+
     if export_format == "csv":
         import io
         import csv
@@ -393,23 +405,72 @@ def export_customers():
         for c in customers:
             writer.writerow([
                 c.id,
-                c.name or "",
-                c.phone or "",
-                c.email or "",
-                c.gender or "",
+                _sanitize_cell(c.name),
+                _sanitize_cell(c.phone),
+                _sanitize_cell(c.email),
+                _sanitize_cell(c.gender),
                 c.dob.isoformat() if c.dob else "",
-                c.address or "",
-                c.tags or "",
-                c.notes or "",
-                c.source or "",
+                _sanitize_cell(c.address),
+                _sanitize_cell(c.tags),
+                _sanitize_cell(c.notes),
+                _sanitize_cell(c.source),
                 c.created_at.isoformat() if c.created_at else ""
             ])
         output.seek(0)
-        org_tag = scoped_org_id if 'scoped_org_id' in locals() else (org_id if 'org_id' in locals() else "all")
         return Response(
             output.getvalue(),
             mimetype="text/csv",
             headers={"Content-Disposition": f"attachment; filename=customers_export_{org_tag}.csv"}
+        )
+
+    elif export_format == "xlsx":
+        import io
+        from flask import Response
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Customers"
+
+        headers = ["ID", "Name", "Phone", "Email", "Gender", "DOB", "Address", "Tags", "Notes", "Source", "Created At"]
+        ws.append(headers)
+
+        header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+        header_font = Font(name="Arial", size=11, bold=True, color="FFFFFF")
+        for col_num in range(1, len(headers) + 1):
+            cell = ws.cell(row=1, column=col_num)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        for c in customers:
+            ws.append([
+                c.id,
+                _sanitize_cell(c.name),
+                _sanitize_cell(c.phone),
+                _sanitize_cell(c.email),
+                _sanitize_cell(c.gender),
+                c.dob.isoformat() if c.dob else "",
+                _sanitize_cell(c.address),
+                _sanitize_cell(c.tags),
+                _sanitize_cell(c.notes),
+                _sanitize_cell(c.source),
+                c.created_at.isoformat() if c.created_at else ""
+            ])
+
+        for col in ws.columns:
+            max_len = max(len(str(cell.value or "")) for cell in col)
+            col_letter = openpyxl.utils.get_column_letter(col[0].column)
+            ws.column_dimensions[col_letter].width = min(max(max_len + 3, 12), 40)
+
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return Response(
+            output.getvalue(),
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename=customers_export_{org_tag}.xlsx"}
         )
 
     return jsonify({

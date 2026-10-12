@@ -230,17 +230,18 @@ def payment_webhook():
             # If no tenant could be bound, reject the unresolvable webhook payload
             return jsonify({"error": "TENANT_REQUIRED", "msg": "Could not bind payment event to valid tenant"}), 400
 
-        # Log appointment transaction
-        txn = AppointmentTransaction(
-            appointment_id=int(appt_id) if appt_id and str(appt_id).isdigit() else None,
-            organization_id=tenant_id,
-            amount=amount,
-            transaction_type="Razorpay Route Captured",
-            payment_method="Webhook Auto-Capture",
-            processed_by_type="Razorpay Webhook",
-            status="Success"
-        )
-        db.session.add(txn)
+        # Log appointment transaction if bound to an appointment
+        if appt_id and str(appt_id).isdigit():
+            txn = AppointmentTransaction(
+                appointment_id=int(appt_id),
+                organization_id=tenant_id,
+                amount=amount,
+                transaction_type="Razorpay Route Captured",
+                payment_method="Webhook Auto-Capture",
+                processed_by_type="Razorpay Webhook",
+                status="Success"
+            )
+            db.session.add(txn)
 
         audit = AuditLog(
             organization_id=tenant_id,

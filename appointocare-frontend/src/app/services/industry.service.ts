@@ -187,5 +187,31 @@ export class IndustryService {
   public calculateRealEstateRoi(payload: { purchase_price: number; monthly_rent: number; annual_expenses?: number }): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/calculate-real-estate-roi`, payload);
   }
+
+  // --- Granular Workflow Machine APIs ---
+
+  public redeemSessionCredit(recordId: number, payload: { sessions_to_redeem: number; service_name?: string; staff_name?: string; notes?: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/records/${recordId}/redeem-session-credit`, payload);
+  }
+
+  public logBillableTime(recordId: number, payload: { hours: number; hourly_rate: number; activity_description: string; lawyer_name?: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/records/${recordId}/log-billable-time`, payload);
+  }
+
+  public transitionClaimStatus(recordId: number, payload: { new_status: string; adjuster_notes?: string; approved_amount?: number }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/records/${recordId}/transition-claim-status`, payload);
+  }
+
+  public updateAlterationStage(recordId: number, payload: { stage: string; tailor_notes?: string; fitting_suite?: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/records/${recordId}/update-alteration-stage`, payload);
+  }
+
+  public scheduleFollowupAppointment(appointmentId: number, payload: { followup_date: string; service_name?: string; staff_name?: string; notes?: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/appointments/${appointmentId}/schedule-followup`, payload);
+  }
+
+  public generateRebalancePlan(payload: { portfolio_value: number; current_weights: any; target_weights: any; fee_bps?: number }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/generate-rebalance-plan`, payload);
+  }
 }
 

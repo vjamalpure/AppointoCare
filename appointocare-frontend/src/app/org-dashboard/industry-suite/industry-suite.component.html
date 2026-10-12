@@ -789,6 +789,202 @@
             <span class="attr-value">{{ attr.value }}</span>
           </div>
         </div>
+
+        <!-- Granular Workflow Machine Actions Card (Workstream 1) -->
+        <div class="specialized-block" style="margin-top: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+          <!-- Salon Session Credit Redemption -->
+          <div *ngIf="sector === 'Salon'" class="workflow-action-box">
+            <h4 style="display: flex; align-items: center; gap: 8px; color: #800020; margin-bottom: 8px;">
+              <mat-icon>card_membership</mat-icon> Redeem Package Session Credits
+            </h4>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+              Package Balance: <strong>{{ selectedRecord.data?.remaining_sessions ?? 10 }}</strong> of {{ selectedRecord.data?.total_sessions ?? 10 }} sessions remaining.
+            </p>
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 140px;">
+                <label style="font-size: 12px; font-weight: 600;">Sessions</label>
+                <input type="number" min="1" [(ngModel)]="salonCreditInput.sessions" class="custom-input" style="height: 38px;">
+              </div>
+              <div style="flex: 2; min-width: 180px;">
+                <label style="font-size: 12px; font-weight: 600;">Service Name</label>
+                <input type="text" [(ngModel)]="salonCreditInput.service_name" class="custom-input" style="height: 38px;">
+              </div>
+              <button mat-flat-button color="primary" [disabled]="actionLoading['redeem']" (click)="executeRedeemCredit(selectedRecord)" style="height: 38px;">
+                <mat-icon *ngIf="!actionLoading['redeem']">check_circle</mat-icon>
+                <span *ngIf="actionLoading['redeem']">Processing...</span>
+                <span *ngIf="!actionLoading['redeem']">Redeem Session</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Legal Billable Hours & Retainer Depletion -->
+          <div *ngIf="sector === 'Consultancy'" class="workflow-action-box">
+            <h4 style="display: flex; align-items: center; gap: 8px; color: #1e3a8a; margin-bottom: 8px;">
+              <mat-icon>schedule</mat-icon> Log Billable Time & Deplete Retainer
+            </h4>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+              Retainer Available: <strong>{{ selectedRecord.data?.retainer_hours_remaining ?? 15 }}</strong> billable hours.
+              <span *ngIf="selectedRecord.data?.retainer_depleted_alert" style="color: #ef4444; font-weight: 700; margin-left: 8px;">
+                ⚠ Low Retainer Alert
+              </span>
+            </p>
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 100px;">
+                <label style="font-size: 12px; font-weight: 600;">Hours</label>
+                <input type="number" step="0.5" min="0.5" [(ngModel)]="legalTimeInput.hours" class="custom-input" style="height: 38px;">
+              </div>
+              <div style="flex: 1; min-width: 120px;">
+                <label style="font-size: 12px; font-weight: 600;">Rate (₹/hr)</label>
+                <input type="number" [(ngModel)]="legalTimeInput.rate" class="custom-input" style="height: 38px;">
+              </div>
+              <div style="flex: 2; min-width: 180px;">
+                <label style="font-size: 12px; font-weight: 600;">Activity Description</label>
+                <input type="text" [(ngModel)]="legalTimeInput.description" class="custom-input" style="height: 38px;">
+              </div>
+              <button mat-flat-button color="primary" [disabled]="actionLoading['time']" (click)="executeLogBillableTime(selectedRecord)" style="height: 38px;">
+                <span *ngIf="actionLoading['time']">Logging...</span>
+                <span *ngIf="!actionLoading['time']">Log Billable Time</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Insurance Claim Status Transition -->
+          <div *ngIf="sector === 'Insurance'" class="workflow-action-box">
+            <h4 style="display: flex; align-items: center; gap: 8px; color: #0284c7; margin-bottom: 8px;">
+              <mat-icon>assignment_turned_in</mat-icon> Transition Claim Lifecycle Stage
+            </h4>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+              Current Status: <strong>{{ selectedRecord.status || 'Draft' }}</strong>
+            </p>
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 140px;">
+                <label style="font-size: 12px; font-weight: 600;">New Status</label>
+                <select [(ngModel)]="insuranceClaimInput.status" class="custom-input" style="height: 38px;">
+                  <option value="Draft">Draft</option>
+                  <option value="Filed">Filed</option>
+                  <option value="Under_Review">Under Review</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Settled">Settled</option>
+                </select>
+              </div>
+              <div style="flex: 2; min-width: 180px;">
+                <label style="font-size: 12px; font-weight: 600;">Adjuster Notes</label>
+                <input type="text" [(ngModel)]="insuranceClaimInput.notes" class="custom-input" style="height: 38px;">
+              </div>
+              <div style="flex: 1; min-width: 120px;">
+                <label style="font-size: 12px; font-weight: 600;">Settlement Amount</label>
+                <input type="number" [(ngModel)]="insuranceClaimInput.approved_amount" class="custom-input" style="height: 38px;">
+              </div>
+              <button mat-flat-button color="primary" [disabled]="actionLoading['claim']" (click)="executeTransitionClaim(selectedRecord)" style="height: 38px;">
+                <span *ngIf="actionLoading['claim']">Updating...</span>
+                <span *ngIf="!actionLoading['claim']">Update Stage</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Retail Alteration Stage Progression -->
+          <div *ngIf="sector === 'Retail'" class="workflow-action-box">
+            <h4 style="display: flex; align-items: center; gap: 8px; color: #be123c; margin-bottom: 8px;">
+              <mat-icon>straighten</mat-icon> Advance Alteration Stage
+            </h4>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+              Current Stage: <strong>{{ selectedRecord.status || 'Received' }}</strong>
+            </p>
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 140px;">
+                <label style="font-size: 12px; font-weight: 600;">Next Stage</label>
+                <select [(ngModel)]="retailAlterationInput.stage" class="custom-input" style="height: 38px;">
+                  <option value="Received">Received</option>
+                  <option value="Measuring">Measuring</option>
+                  <option value="In_Tailoring">In Tailoring</option>
+                  <option value="Ready_For_Fitting">Ready For Fitting</option>
+                  <option value="Delivered">Delivered</option>
+                </select>
+              </div>
+              <div style="flex: 2; min-width: 180px;">
+                <label style="font-size: 12px; font-weight: 600;">Tailor Notes</label>
+                <input type="text" [(ngModel)]="retailAlterationInput.notes" class="custom-input" style="height: 38px;">
+              </div>
+              <button mat-flat-button color="primary" [disabled]="actionLoading['alteration']" (click)="executeUpdateAlteration(selectedRecord)" style="height: 38px;">
+                <span *ngIf="actionLoading['alteration']">Saving...</span>
+                <span *ngIf="!actionLoading['alteration']">Advance Stage</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Healthcare Follow-up Scheduling -->
+          <div *ngIf="sector === 'Healthcare'" class="workflow-action-box">
+            <h4 style="display: flex; align-items: center; gap: 8px; color: #047857; margin-bottom: 8px;">
+              <mat-icon>event_repeat</mat-icon> Schedule Follow-up Appointment
+            </h4>
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 160px;">
+                <label style="font-size: 12px; font-weight: 600;">Follow-up Date & Time</label>
+                <input type="datetime-local" [(ngModel)]="healthcareFollowupInput.date" class="custom-input" style="height: 38px;">
+              </div>
+              <div style="flex: 2; min-width: 180px;">
+                <label style="font-size: 12px; font-weight: 600;">Service</label>
+                <input type="text" [(ngModel)]="healthcareFollowupInput.service" class="custom-input" style="height: 38px;">
+              </div>
+              <button mat-flat-button color="primary" [disabled]="actionLoading['followup']" (click)="executeScheduleFollowup(selectedRecord.appointment_id)" style="height: 38px;">
+                <span *ngIf="actionLoading['followup']">Scheduling...</span>
+                <span *ngIf="!actionLoading['followup']">Book Follow-up</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Finance Portfolio Rebalance Plan Generator -->
+          <div *ngIf="sector === 'Finance'" class="workflow-action-box">
+            <h4 style="display: flex; align-items: center; gap: 8px; color: #0f766e; margin-bottom: 8px;">
+              <mat-icon>pie_chart</mat-icon> Algorithmic Portfolio Rebalance Order Sheet
+            </h4>
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 140px;">
+                <label style="font-size: 12px; font-weight: 600;">Portfolio Value (₹)</label>
+                <input type="number" [(ngModel)]="financeRebalanceInput.portfolio_value" class="custom-input" style="height: 38px;">
+              </div>
+              <div style="flex: 1; min-width: 100px;">
+                <label style="font-size: 12px; font-weight: 600;">Fee (BPS)</label>
+                <input type="number" [(ngModel)]="financeRebalanceInput.fee_bps" class="custom-input" style="height: 38px;">
+              </div>
+              <button mat-flat-button color="primary" [disabled]="actionLoading['rebalance']" (click)="executeGenerateRebalancePlan()" style="height: 38px;">
+                <span *ngIf="actionLoading['rebalance']">Calculating...</span>
+                <span *ngIf="!actionLoading['rebalance']">Generate Trade Orders</span>
+              </button>
+            </div>
+            <div *ngIf="financeRebalanceResult" style="margin-top: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 8px;">
+                <span>Total Turnover: ₹{{ financeRebalanceResult.total_turnover | number }}</span>
+                <span>Est. Fees: ₹{{ financeRebalanceResult.estimated_execution_fees | number }}</span>
+              </div>
+              <table class="spec-table modal-table" style="font-size: 12px;">
+                <thead>
+                  <tr>
+                    <th>Asset Class</th>
+                    <th>Current %</th>
+                    <th>Target %</th>
+                    <th>Action</th>
+                    <th>Trade Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let ord of financeRebalanceResult.rebalance_orders">
+                    <td><strong>{{ ord.asset_class | titlecase }}</strong></td>
+                    <td>{{ ord.current_weight_pct }}%</td>
+                    <td>{{ ord.target_weight_pct }}%</td>
+                    <td>
+                      <span [style.color]="ord.trade_action === 'BUY' ? '#16a34a' : (ord.trade_action === 'SELL' ? '#dc2626' : '#64748b')" style="font-weight: 700;">
+                        {{ ord.trade_action }}
+                      </span>
+                    </td>
+                    <td>₹{{ ord.trade_amount | number }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="record-modal-footer">

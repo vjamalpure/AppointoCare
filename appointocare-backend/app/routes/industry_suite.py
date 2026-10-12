@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
-from app.models import db, IndustryRecord, Organization, Appointment, Customer, AuditLog
+from app.models import db, IndustryRecord, Organization, Appointment, Customer, AuditLog, FinancialLedgerEntry
 from app.security import get_organization_id, require_roles
 from datetime import datetime, timedelta
 
@@ -1451,6 +1451,23 @@ def redeem_session_credit(record_id):
     record.data = rec_data
     record.updated_at = datetime.utcnow()
 
+    # Immutable Financial Ledger Entry (Workstream 2)
+    ledger_entry = FinancialLedgerEntry(
+        organization_id=record.organization_id,
+        customer_id=record.customer_id,
+        record_id=record.id,
+        appointment_id=record.appointment_id,
+        entry_type="CREDIT_REDEMPTION",
+        units_delta=-float(sessions_to_redeem),
+        balance_after=float(new_remaining),
+        currency_or_unit="sessions",
+        reference_id=f"RED-{record.id}-{int(datetime.utcnow().timestamp())}",
+        description=f"Redeemed {sessions_to_redeem} session credit(s) for '{service_name}'",
+        created_by_user=claims.get("username") or str(claims.get("sub")),
+        created_at=datetime.utcnow()
+    )
+    db.session.add(ledger_entry)
+
     user_id_val = claims.get("sub")
     audit = AuditLog(
         organization_id=record.organization_id,
@@ -1468,6 +1485,7 @@ def redeem_session_credit(record_id):
     return jsonify({
         "status": "success",
         "record_id": record.id,
+        "ledger_entry_id": ledger_entry.id,
         "sessions_redeemed": sessions_to_redeem,
         "remaining_credits": new_remaining,
         "total_credits": total,
@@ -1518,6 +1536,24 @@ def log_billable_time(record_id):
     record.data = rec_data
     record.updated_at = datetime.utcnow()
 
+    # Immutable Financial Ledger Entry (Workstream 2)
+    ledger_entry = FinancialLedgerEntry(
+        organization_id=record.organization_id,
+        customer_id=record.customer_id,
+        record_id=record.id,
+        appointment_id=record.appointment_id,
+        entry_type="RETAINER_TIME_LOGGED",
+        units_delta=-float(hours),
+        balance_after=float(new_retainer_hours),
+        currency_or_unit="hours",
+        monetary_equivalent=float(billable_amt),
+        reference_id=f"TIME-{record.id}-{int(datetime.utcnow().timestamp())}",
+        description=f"Logged {hours} billable hrs (₹{billable_amt}) - {desc}",
+        created_by_user=claims.get("username") or str(claims.get("sub")),
+        created_at=datetime.utcnow()
+    )
+    db.session.add(ledger_entry)
+
     user_id_val = claims.get("sub")
     audit = AuditLog(
         organization_id=record.organization_id,
@@ -1535,11 +1571,63 @@ def log_billable_time(record_id):
     return jsonify({
         "status": "success",
         "record_id": record.id,
+        "ledger_entry_id": ledger_entry.id,
         "hours_logged": hours,
         "billable_amount": billable_amt,
         "retainer_hours_remaining": new_retainer_hours,
         "retainer_depleted_alert": retainer_depleted_alert,
         "timestamp": datetime.utcnow().isoformat()
+    })
+
+
+@industry_suite_bp.route("/records/<int:record_id>/ledger-audit", methods=["GET"])
+@require_roles(*ORG_ROLES)
+def audit_record_ledger(record_id):
+    """Workstream 2: Historical ledger reconciliation & immutable audit trail."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else None
+
+    record = IndustryRecord.query.get_or_404(record_id)
+    if org_id and record.organization_id != org_id:
+        return jsonify({"msg": "Unauthorized cross-tenant access denied"}), 403
+
+    entries = FinancialLedgerEntry.query.filter_by(
+        organization_id=record.organization_id,
+        record_id=record.id
+    ).order_by(FinancialLedgerEntry.created_at.asc()).all()
+
+    total_delta = sum(e.units_delta for e in entries)
+
+    # Reconciliation check against record.data
+    rec_data = record.data or {}
+    reported_balance = rec_data.get("remaining_sessions") or rec_data.get("retainer_hours_remaining")
+    latest_balance = entries[-1].balance_after if entries else None
+    is_reconciled = (latest_balance == float(reported_balance)) if (latest_balance is not None and reported_balance is not None) else True
+
+    return jsonify({
+        "status": "success",
+        "record_id": record.id,
+        "entries_count": len(entries),
+        "total_units_delta": total_delta,
+        "latest_ledger_balance": latest_balance,
+        "reported_json_balance": reported_balance,
+        "reconciliation_verified": is_reconciled,
+        "entries": [
+            {
+                "id": e.id,
+                "entry_type": e.entry_type,
+                "units_delta": e.units_delta,
+                "balance_after": e.balance_after,
+                "currency_or_unit": e.currency_or_unit,
+                "monetary_equivalent": e.monetary_equivalent,
+                "reference_id": e.reference_id,
+                "description": e.description,
+                "created_by": e.created_by_user,
+                "created_at": e.created_at.isoformat() if e.created_at else None
+            }
+            for e in entries
+        ]
     })
 
 
