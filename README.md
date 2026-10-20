@@ -1,8 +1,8 @@
-# AppointoCare — Enterprise Multi-Industry SaaS Platform
+# AppointoCore — Enterprise Multi-Industry SaaS Platform
 
 <div align="center">
 
-![AppointoCare Platform](https://img.shields.io/badge/Platform-AppointoCare-4f46e5?style=for-the-badge&logo=shield)
+![AppointoCore Platform](https://img.shields.io/badge/Platform-AppointoCore-4f46e5?style=for-the-badge&logo=shield)
 ![Angular](https://img.shields.io/badge/Angular_18-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![Flask](https://img.shields.io/badge/Python_Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-316192?style=for-the-badge&logo=postgresql&logoColor=white)
@@ -32,7 +32,7 @@
 
 ## 🚀 Overview
 
-**AppointoCare** is a production-ready, multi-tenant scheduling and CRM platform designed for modern service enterprises. The system dynamically adapts its terminology, custom dossier fields, WhatsApp reception bots, service catalogs, and live queue boards across **9 distinct industry sectors**.
+**AppointoCore** is a production-ready, multi-tenant scheduling and CRM platform designed for modern service enterprises. The system dynamically adapts its terminology, custom dossier fields, WhatsApp reception bots, service catalogs, and live queue boards across **9 distinct industry sectors**.
 
 ### Tech Stack
 - **Frontend**: Angular 18, Angular Material, RxJS, Responsive Design System (auto-adjusts to viewport).
@@ -98,8 +98,8 @@
 ### 1. Clone and Launch
 ```bash
 # Clone the repository
-git clone https://github.com/vjamalpure/AppointoCare.git
-cd AppointoCare
+git clone https://github.com/vjamalpure/AppointoCore.git
+cd AppointoCore
 
 # Build and start all services in detached mode
 docker compose up --build -d
@@ -227,7 +227,7 @@ META_APP_SECRET=your_meta_app_secret
 META_GRAPH_VERSION=v20.0
 
 # Razorpay Partner Configuration
-RAZORPAY_KEY_ID=rzp_test_AppointoCare99
+RAZORPAY_KEY_ID=rzp_test_AppointoCore99
 RAZORPAY_KEY_SECRET=your_razorpay_secret
 RAZORPAY_WEBHOOK_SECRET=rzp_webhook_secret_secure_2026
 ```
@@ -235,4 +235,4 @@ RAZORPAY_WEBHOOK_SECRET=rzp_webhook_secret_secure_2026
 ---
 
 ## 📄 License
-Copyright © 2026 **AppointoCare**. All rights reserved.
+Copyright © 2026 **AppointoCore**. All rights reserved.

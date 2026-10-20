@@ -2,7 +2,7 @@
 set -eu
 
 echo "=========================================="
-echo "AppointoCare Backend Startup"
+echo "AppointoCore Backend Startup"
 echo "=========================================="
 
 echo ""

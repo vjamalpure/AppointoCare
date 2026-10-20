@@ -254,7 +254,7 @@ def download_transaction_pdf(txn_id):
         "code": org.code if org else "ORG",
         "sector": org.sector if org else "Commercial",
         "phone": getattr(org, "phone", "") or "+1 555-0100",
-        "email": getattr(org, "email", "") or "billing@appointocare.com",
+        "email": getattr(org, "email", "") or "billing@appointocore.com",
         "address": getattr(org, "address", "") or "Commercial City Center"
     }
 

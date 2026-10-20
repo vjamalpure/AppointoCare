@@ -1,8 +1,8 @@
 {
-  "name": "appointocare",
+  "name": "appointocore",
   "version": "1.0.0",
   "private": true,
-  "description": "AppointoCare - Multi-tenant Appointment and Organization Management System",
+  "description": "AppointoCore - Multi-tenant Appointment and Organization Management System",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "appointocare-frontend": {
+    "appointocore-frontend": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -24,7 +24,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/appointocare-frontend",
+            "outputPath": "dist/appointocore-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -85,10 +85,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "appointocare-frontend:build:production"
+              "buildTarget": "appointocore-frontend:build:production"
             },
             "development": {
-              "buildTarget": "appointocare-frontend:build:development"
+              "buildTarget": "appointocore-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

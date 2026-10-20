@@ -51,7 +51,7 @@ export class ClientPortalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const savedToken = localStorage.getItem('appointocare_portal_token');
+    const savedToken = localStorage.getItem('appointocore_portal_token') || localStorage.getItem('appointocare_portal_token');
     if (savedToken) {
       this.sessionToken = savedToken;
       this.loadOverview();
@@ -105,7 +105,8 @@ export class ClientPortalComponent implements OnInit {
       next: (res) => {
         this.isAuthLoading = false;
         this.sessionToken = res.session_token;
-        localStorage.setItem('appointocare_portal_token', this.sessionToken);
+        localStorage.setItem('appointocore_portal_token', this.sessionToken);
+        localStorage.removeItem('appointocare_portal_token');
         this.loadOverview();
       },
       error: (err) => {
@@ -128,6 +129,7 @@ export class ClientPortalComponent implements OnInit {
       error: (err) => {
         this.isLoadingOverview = false;
         this.isAuthenticated = false;
+        localStorage.removeItem('appointocore_portal_token');
         localStorage.removeItem('appointocare_portal_token');
         this.snackBar.open('Session expired. Please log in again.', 'Close', { duration: 3000 });
       }
@@ -285,6 +287,7 @@ export class ClientPortalComponent implements OnInit {
     this.identifier = '';
     this.authCode = '';
     this.sessionToken = '';
+    localStorage.removeItem('appointocore_portal_token');
     localStorage.removeItem('appointocare_portal_token');
     this.snackBar.open('Signed out of Client Portal', 'OK', { duration: 2500 });
   }

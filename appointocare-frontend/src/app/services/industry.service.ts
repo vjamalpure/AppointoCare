@@ -45,14 +45,14 @@ export interface IndustryRecordItem {
 })
 export class IndustryService {
   private readonly baseUrl = environment.apiUrl;
-  private readonly SECTOR_KEY = 'appointocare_org_sector';
+  private readonly SECTOR_KEY = 'appointocore_org_sector';
   private currentSectorSubject = new BehaviorSubject<string>(this.loadInitialSector());
   public currentSector$: Observable<string> = this.currentSectorSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
   private loadInitialSector(): string {
-    return localStorage.getItem(this.SECTOR_KEY) || sessionStorage.getItem(this.SECTOR_KEY) || 'Healthcare';
+    return localStorage.getItem(this.SECTOR_KEY) || sessionStorage.getItem(this.SECTOR_KEY) || localStorage.getItem('appointocare_org_sector') || sessionStorage.getItem('appointocare_org_sector') || 'Healthcare';
   }
 
   public setSector(sector: string, persist = true): void {

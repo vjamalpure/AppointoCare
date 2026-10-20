@@ -320,7 +320,7 @@ def get_staff():
             "is_active": u.is_active,
             "name": u.username.replace("_", " ").title(),
             "branch_name": next(iter(branches.values())) if branches else "Main Center",
-            "email": f"{u.username}@appointocare.app",
+            "email": f"{u.username}@appointocore.app",
             "phone": "+1 555-0144",
             "created_at": u.created_at.isoformat() if u.created_at else None
         }

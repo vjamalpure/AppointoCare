@@ -10,11 +10,11 @@ import hashlib
 payments_bp = Blueprint("payments_bp", __name__)
 
 PAYMENT_CONFIG = {
-    "key_id": os.getenv("RAZORPAY_KEY_ID", "rzp_test_AppointoCare99"),
-    "key_secret": os.getenv("RAZORPAY_KEY_SECRET", "mock_key_secret_appointocare_9988"),
+    "key_id": os.getenv("RAZORPAY_KEY_ID", "rzp_test_AppointoCore99"),
+    "key_secret": os.getenv("RAZORPAY_KEY_SECRET", "mock_key_secret_appointocore_9988"),
     "webhook_secret": os.getenv("RAZORPAY_WEBHOOK_SECRET", "rzp_webhook_secret_secure_2026"),
     "currency": "INR",
-    "merchant_name": "AppointoCare Multi-Industry Platform",
+    "merchant_name": "AppointoCore Multi-Industry Platform",
     "status": "Ready (Test Sandbox)",
     "auto_capture": True,
     "platform_fee_percent": 5.0

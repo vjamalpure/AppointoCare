@@ -19,7 +19,7 @@ def get_json(url, token=None):
         return json.loads(resp.read().decode('utf-8'))
 
 print("=" * 60)
-print("Testing AppointoCare Multi-Industry Platform Backend & Migration Data")
+print("Testing AppointoCore Multi-Industry Platform Backend & Migration Data")
 print("=" * 60)
 
 # 1. SuperAdmin

@@ -18,7 +18,7 @@ def create_app():
     jwt_secret = os.getenv("JWT_SECRET_KEY", app.config.get("JWT_SECRET_KEY", ""))
 
     if app_env == "production":
-        insecure_keys = {"supersecretkey", "jwtsecretkey", "secret", "changeme", "dev", "appointocare-secret-jwt-key-2026"}
+        insecure_keys = {"supersecretkey", "jwtsecretkey", "secret", "changeme", "dev", "appointocare-secret-jwt-key-2026", "appointocore-secret-jwt-key-2026"}
         if not secret or secret in insecure_keys or len(secret) < 32:
             raise RuntimeError("FATAL: Insecure or default SECRET_KEY in production environment. A strong key (>= 32 chars) is required.")
         if not jwt_secret or jwt_secret in insecure_keys or len(jwt_secret) < 32:
@@ -33,7 +33,7 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "service": "appointocare-api", "app": "AppointoCare"}, 200
+        return {"status": "ok", "service": "appointocore-api", "app": "AppointoCore"}, 200
 
     @app.get("/ready")
     def ready():

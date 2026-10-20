@@ -1,5 +1,5 @@
 """
-AppointoCare Iteration 6 Final Verification Suite
+AppointoCore Iteration 6 Final Verification Suite
 Tests:
 1. Branded E-Prescription (Rx) PDF generation & Doctor MCI attribution
 2. Tax Invoice PDF generation with GST decomposition & multi-currency

@@ -25,7 +25,7 @@ def parse_database_url():
         print("ERROR: DATABASE_URL environment variable is not set")
         print("Please set it in your .env file or as an environment variable")
         print("\nExample:")
-        print("  DATABASE_URL=postgresql://postgres:password@localhost:5432/appointocare")
+        print("  DATABASE_URL=postgresql://postgres:password@localhost:5432/appointocore")
         sys.exit(1)
 
     parsed = urlparse(database_url)
@@ -134,7 +134,7 @@ def seed_demo_data():
 
 if __name__ == "__main__":
     print("\n" + "="*60)
-    print("AppointoCare - Local Database Initialization")
+    print("AppointoCore - Local Database Initialization")
     print("="*60)
     
     success = True

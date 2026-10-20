@@ -28,7 +28,7 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   get showRoleSwitcher(): boolean {
     if (this.isProduction) {
       try {
-        return localStorage.getItem('appointocare_dev_mode') === 'true';
+        return localStorage.getItem('appointocore_dev_mode') === 'true' || localStorage.getItem('appointocare_dev_mode') === 'true';
       } catch {
         return false;
       }

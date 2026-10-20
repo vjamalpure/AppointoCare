@@ -32,7 +32,7 @@ WHATSAPP_CONFIG = {
     "phone_number_id": "10948271829104",
     "business_account_id": "90281948172901",
     "display_phone_number": "+1 (555) 019-9000",
-    "verified_name": "AppointoCare Official Business",
+    "verified_name": "AppointoCore Official Business",
     "webhook_verified": True,
     "bot_enabled": True,
     "quality_rating": "GREEN",
@@ -105,7 +105,7 @@ def send_whatsapp_message():
         message_content=message_text,
         status="Sent",
         sent_at=datetime.utcnow(),
-        remarks=data.get("remarks") or "Sent via AppointoCare Cloud API"
+        remarks=data.get("remarks") or "Sent via AppointoCore Cloud API"
     )
     db.session.add(message_log)
     db.session.commit()
@@ -169,7 +169,7 @@ def simulate_whatsapp_chat():
     org_id = int(data.get("organization_id") or claims.get("organization_id") or 1)
 
     org = Organization.query.get(org_id)
-    org_name = org.name if org else "AppointoCare Enterprise"
+    org_name = org.name if org else "AppointoCore Enterprise"
     sector = (org.sector if org else "Healthcare") or "Healthcare"
 
     # Dynamic Sector Chatbot Responses
@@ -196,7 +196,7 @@ def simulate_whatsapp_chat():
 
     t = user_text.lower()
     if t in ["1", "book", "appointment", "schedule"]:
-        bot_reply = f"📅 *Booking Portal*\nTo reserve your slot at *{org_name}*, please visit our secure reservation page: https://appointocare.app/book?org={org_id}\n\nOr reply with your preferred date (e.g. 'Tomorrow 2 PM') and our receptionist will confirm."
+        bot_reply = f"📅 *Booking Portal*\nTo reserve your slot at *{org_name}*, please visit our secure reservation page: https://appointocore.app/book?org={org_id}\n\nOr reply with your preferred date (e.g. 'Tomorrow 2 PM') and our receptionist will confirm."
     elif t in ["2", "services", "catalog", "menu", "offerings", "price"]:
         from app.models import Service
         svcs = Service.query.filter_by(organization_id=org_id).limit(4).all()
@@ -229,7 +229,7 @@ def whatsapp_webhook():
         mode = request.args.get("hub.mode")
         token = request.args.get("hub.verify_token")
         challenge = request.args.get("hub.challenge")
-        if mode == "subscribe" and token == os.getenv("WHATSAPP_VERIFY_TOKEN", "appointocare_token"):
+        if mode == "subscribe" and token in (os.getenv("WHATSAPP_VERIFY_TOKEN", "appointocore_token"), "appointocore_token", "appointocare_token"):
             return challenge, 200
         return challenge or "Verified", 200
 

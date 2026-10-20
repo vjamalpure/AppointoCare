@@ -709,7 +709,7 @@ def download_record_pdf(record_id):
         "code": org.code if org else "ORG",
         "sector": org.sector if org else "Healthcare",
         "phone": getattr(org, "phone", "") or "+1 555-0100",
-        "email": getattr(org, "email", "") or "care@appointocare.com",
+        "email": getattr(org, "email", "") or "care@appointocore.com",
         "address": getattr(org, "address", "") or "100 Medical Center Blvd"
     }
 
@@ -2234,7 +2234,7 @@ def export_patient_fhir_bundle(customer_id):
     # Construct FHIR R4 Document Bundle
     fhir_bundle = {
         "resourceType": "Bundle",
-        "id": f"appointocare-patient-{customer.id}-bundle",
+        "id": f"appointocore-patient-{customer.id}-bundle",
         "type": "document",
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "entry": [

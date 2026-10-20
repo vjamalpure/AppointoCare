@@ -1,5 +1,5 @@
 """
-AppointoCare Industry Leaders Competitor Matrix Verification Suite
+AppointoCore Industry Leaders Competitor Matrix Verification Suite
 Comprehensive automated tests verifying market benchmark parity and gap-closure:
 1. Shared Platform:
    - Automation event dispatcher (`POST /api/v1/automation/dispatch-event`) & execution audit logging (`GET /api/v1/automation/logs`)

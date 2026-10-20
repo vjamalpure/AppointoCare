@@ -7,7 +7,7 @@ import secrets
 
 def _get_encryption_key():
     """Derives a consistent 32-byte secret key from environment or app secret."""
-    raw_secret = os.getenv("APP_ENCRYPTION_KEY") or os.getenv("SECRET_KEY") or "AppointoCare_Enterprise_Master_Secret_Key_2026_Secure"
+    raw_secret = os.getenv("APP_ENCRYPTION_KEY") or os.getenv("SECRET_KEY") or "AppointoCore_Enterprise_Master_Secret_Key_2026_Secure"
     return hashlib.sha256(raw_secret.encode()).digest()
 
 

@@ -21,11 +21,11 @@ export interface DecodedToken {
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
-  private readonly TOKEN_KEY = 'appointocare_access_token';
-  private readonly REFRESH_KEY = 'appointocare_refresh_token';
-  private readonly ROLE_KEY = 'appointocare_user_role';
+  private readonly TOKEN_KEY = 'appointocore_access_token';
+  private readonly REFRESH_KEY = 'appointocore_refresh_token';
+  private readonly ROLE_KEY = 'appointocore_user_role';
   private readonly ORG_NAME_KEY = 'OrgName';
-  private readonly SECTOR_KEY = 'appointocare_org_sector';
+  private readonly SECTOR_KEY = 'appointocore_org_sector';
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -101,11 +101,11 @@ export class AuthService {
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
+    return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY) || localStorage.getItem('appointocare_access_token') || sessionStorage.getItem('appointocare_access_token');
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_KEY) || sessionStorage.getItem(this.REFRESH_KEY);
+    return localStorage.getItem(this.REFRESH_KEY) || sessionStorage.getItem(this.REFRESH_KEY) || localStorage.getItem('appointocare_refresh_token') || sessionStorage.getItem('appointocare_refresh_token');
   }
 
   refreshToken(): Observable<any> {

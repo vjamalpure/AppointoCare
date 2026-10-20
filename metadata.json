@@ -1,5 +1,5 @@
 {
-  "name": "AppointoCare",
+  "name": "AppointoCore",
   "description": "Multi-tenant appointment booking, subscription, and organization management platform.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

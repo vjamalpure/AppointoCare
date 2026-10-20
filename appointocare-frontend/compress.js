@@ -2,7 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const targetDir = path.join(__dirname, 'dist', 'appointocare-frontend', 'browser');
+const primaryDir = path.join(__dirname, 'dist', 'appointocore-frontend', 'browser');
+const fallbackDir = path.join(__dirname, 'dist', 'appointocare-frontend', 'browser');
+const targetDir = fs.existsSync(primaryDir) ? primaryDir : fallbackDir;
 
 function compressDirectory(dir) {
   if (!fs.existsSync(dir)) {

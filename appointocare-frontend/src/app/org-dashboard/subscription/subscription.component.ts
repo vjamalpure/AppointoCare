@@ -72,7 +72,7 @@ export class OrgSubscriptionComponent implements OnInit {
     if (this.subscription.plan === planName) return;
 
     this.loading = true;
-    const token = localStorage.getItem('appointocare_token');
+    const token = localStorage.getItem('appointocore_token') || localStorage.getItem('appointocare_token') || localStorage.getItem('appointocore_access_token') || sessionStorage.getItem('appointocore_access_token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     const body = {
       name: this.organization.name,

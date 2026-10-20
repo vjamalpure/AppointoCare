@@ -740,7 +740,7 @@ export function getIndustryWhatsAppDefaults(industryTemplateOrSector?: string | 
     infoCatalog: `📋 *{organization_name} — Curated Services & Fee Schedule*\n\n${topServices}\n\n💡 All sessions include dedicated 1-on-1 consultation with our licensed ${terms.staffSingular.toLowerCase()}.\nReply *1* to pick a slot or send a service name!`,
     infoLocation: `📍 *{organization_name} — Branch Locations & Operating Hours*\n\n• *Main Executive Branch*: 742 Evergreen Terrace (Mon-Sat 08:30 AM - 07:00 PM)\n• *Downtown Satellite Office*: 100 Market St, Suite 500 (Mon-Fri 09:00 AM - 06:00 PM)\n\n🚗 *Visitor Parking:* Complimentary guest parking on premises. Wheelchair accessible.`,
     infoPreparation: `📝 *{organization_name} — Pre-Visit Preparation & Required Documents*\n\n${prepText}`,
-    bookingInstructions: `To schedule via WhatsApp, reply *1* now, or click your direct booking link: https://appointocare.com/book?org={organization_code}`
+    bookingInstructions: `To schedule via WhatsApp, reply *1* now, or click your direct booking link: https://appointocore.com/book?org={organization_code}`
   };
 }
 

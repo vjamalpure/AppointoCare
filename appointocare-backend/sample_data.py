@@ -1,5 +1,5 @@
 """
-Comprehensive Sample Data Migration Script for AppointoCare Multi-Industry Platform
+Comprehensive Sample Data Migration Script for AppointoCore Multi-Industry Platform
 Seeds users of each level (SuperAdmin, Org Admins, Staff/Specialists/Managers),
 all 9 industry sectors, branches, services, customers/patients, appointments,
 transactions, subscriptions, plans, templates, notifications, audit logs,
@@ -990,7 +990,7 @@ def seed_all_sample_data(reset=False):
     If reset=True, it clears application data tables safely without dropping alembic_version.
     """
     print("=" * 60)
-    print("Starting AppointoCare Comprehensive Multi-Industry Data Migration")
+    print("Starting AppointoCore Comprehensive Multi-Industry Data Migration")
     print("=" * 60)
 
     if reset:
@@ -1324,7 +1324,7 @@ def seed_all_sample_data(reset=False):
                 tenant_id=org.id,
                 razorpay_account_id=f"acc_{org.code.lower()}_rzp_partner",
                 merchant_name=org.name,
-                merchant_email=f"billing@{org.username}.appointocare.com",
+                merchant_email=f"billing@{org.username}.appointocore.com",
                 onboarding_status="VERIFIED",
                 service_status=ServiceStatus.ACTIVE,
                 platform_commission_rate=0.05,
@@ -1341,7 +1341,7 @@ def seed_all_sample_data(reset=False):
         db.session.commit()
 
     print("=" * 60)
-    print("âœ“ AppointoCare Sample Data Migration Completed Successfully!")
+    print("✓ AppointoCore Sample Data Migration Completed Successfully!")
     print(f"  Organizations : {len(SAMPLE_ORGANIZATIONS)} Multi-Industry Tenants (ORG1 to ORG9)")
     print("  SuperAdmin    : superadmin / Admin@12345")
     print("  Org Admins    : org1..org9 / Org@12345")

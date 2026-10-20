@@ -149,7 +149,7 @@
     <div class="showcase-content-wrapper">
       <!-- Stylized Wordmark (Exact Truet Style) -->
       <div class="brand-wordmark-strip">
-        <h2 class="truet-logo-text">AppointoCare</h2>
+        <h2 class="truet-logo-text">AppointoCore</h2>
       </div>
 
       <!-- Headline & Tagline Relevant to Real Product Features -->
@@ -184,9 +184,9 @@
       </div>
 
       <!-- Frosted Glass Promo Card (Clickable, opens feature overview) -->
-      <div class="frosted-glass-card" (click)="openInfoModal('features')" role="button" tabindex="0" title="Click to view AppointoCare feature matrix">
-        <span class="card-pretitle">Learn more about AppointoCare features on</span>
-        <span class="card-domain-link">AppointoCare.net</span>
+      <div class="frosted-glass-card" (click)="openInfoModal('features')" role="button" tabindex="0" title="Click to view AppointoCore feature matrix">
+        <span class="card-pretitle">Learn more about AppointoCore features on</span>
+        <span class="card-domain-link">AppointoCore.net</span>
       </div>
     </div>
 
@@ -366,7 +366,7 @@
     <!-- Right Column Bottom Footer -->
     <div class="auth-legal-footer">
       <p class="legal-text">
-        © {{ currentYear }} AppointoCare Enterprise Multi-Industry Platform. All Rights Reserved.
+        © {{ currentYear }} AppointoCore Enterprise Multi-Industry Platform. All Rights Reserved.
       </p>
     </div>
   </div>
@@ -428,8 +428,8 @@
           <h3 *ngIf="activeInfoModal === 'terms'">Terms of Service & Data Governance</h3>
           <h3 *ngIf="activeInfoModal === 'blog'">Product Release Updates (v2.4)</h3>
           <h3 *ngIf="activeInfoModal === 'register'">Register a Clinic / Demo Workspace</h3>
-          <h3 *ngIf="activeInfoModal === 'features'">AppointoCare Multi-Industry Matrix</h3>
-          <p>AppointoCare Enterprise Multi-Tenant SaaS Platform</p>
+          <h3 *ngIf="activeInfoModal === 'features'">AppointoCore Multi-Industry Matrix</h3>
+          <p>AppointoCore Enterprise Multi-Tenant SaaS Platform</p>
         </div>
         <button type="button" class="close-dialog-btn" (click)="closeInfoModal()">×</button>
       </div>
@@ -472,7 +472,7 @@
       <div class="modal-body-content" *ngIf="activeInfoModal === 'license'">
         <div class="text-content-card">
           <h4>Enterprise Software License Agreement</h4>
-          <p>AppointoCare Enterprise Platform is licensed for commercial multi-industry operations with tenant-isolated database partitions.</p>
+          <p>AppointoCore Enterprise Platform is licensed for commercial multi-industry operations with tenant-isolated database partitions.</p>
           <ul>
             <li><strong>HIPAA Alignment:</strong> End-to-end encrypted clinical records, E-prescriptions, and appointment intake forms.</li>
             <li><strong>DPDP Act 2023:</strong> Patient and client data sovereignty with granular practitioner consent management.</li>
@@ -486,7 +486,7 @@
       <div class="modal-body-content" *ngIf="activeInfoModal === 'terms'">
         <div class="text-content-card">
           <h4>Terms of Service & Usage Policy</h4>
-          <p>By using the AppointoCare platform, clinical organizations and specialists agree to the following terms:</p>
+          <p>By using the AppointoCore platform, clinical organizations and specialists agree to the following terms:</p>
           <ul>
             <li>Tenant workspaces remain isolated with zero cross-tenant data leakage.</li>
             <li>SuperAdmin audit controls preserve immutability of financial transactions and payment receipts.</li>
@@ -519,7 +519,7 @@
       <!-- Modal Body: Register New Workspace -->
       <div class="modal-body-content" *ngIf="activeInfoModal === 'register'">
         <form (ngSubmit)="handleRegisterSubmit()" class="register-form" novalidate>
-          <div class="reg-desc">Register a new organization workspace to experience AppointoCare:</div>
+          <div class="reg-desc">Register a new organization workspace to experience AppointoCore:</div>
           <div class="form-row">
             <label class="input-label">Clinic / Organization Name*</label>
             <input type="text" [(ngModel)]="registerData.clinicName" name="clinicName" class="text-input" placeholder="e.g. Metro Care Dental" required>
@@ -580,7 +580,7 @@
 
       <!-- Modal Footer -->
       <div class="modal-dialog-footer">
-        <span class="footer-note">⚡ AppointoCare Cloud Architecture</span>
+        <span class="footer-note">⚡ AppointoCore Cloud Architecture</span>
         <button type="button" class="btn-modal-close" (click)="closeInfoModal()">Close</button>
       </div>
     </div>

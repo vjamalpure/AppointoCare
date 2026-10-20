@@ -35,7 +35,7 @@ class TestIteration7Suite(unittest.TestCase):
             self.admin = Admin(
                 username="superadmin",
                 password=hash_password("Admin@12345"),
-                email="admin@appointocare.com",
+                email="admin@appointocore.com",
                 role="SuperAdmin"
             )
             db.session.add(self.admin)

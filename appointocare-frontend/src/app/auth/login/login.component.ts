@@ -151,7 +151,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const savedTheme = localStorage.getItem('appointocare_theme');
+    const savedTheme = localStorage.getItem('appointocore_theme') || localStorage.getItem('appointocare_theme');
     this.isDarkMode = savedTheme === 'dark';
 
     // Start streaming diverse, realistic flowing balloons
@@ -357,7 +357,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   // =========================================================================
   toggleTheme(): void {
     this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('appointocare_theme', this.isDarkMode ? 'dark' : 'light');
+    localStorage.setItem('appointocore_theme', this.isDarkMode ? 'dark' : 'light');
     this.showToast(this.isDarkMode ? '🌙 Night mode activated' : '☀️ Day mode activated');
   }
 

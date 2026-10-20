@@ -50,7 +50,7 @@ export class OrgProfileComponent implements OnInit {
 
   saveProfile() {
     this.loading = true;
-    const token = localStorage.getItem('appointocare_token');
+    const token = localStorage.getItem('appointocore_token') || localStorage.getItem('appointocare_token') || localStorage.getItem('appointocore_access_token') || sessionStorage.getItem('appointocore_access_token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     const body = {
       name: this.profile.name,

@@ -100,7 +100,7 @@ def create_customer():
         address=data.get("address"),
         tags=data.get("tags", "General"),
         notes=data.get("notes"),
-        source=data.get("source", "AppointoCare Web Intake")
+        source=data.get("source", "AppointoCore Web Intake")
     )
     db.session.add(customer)
 

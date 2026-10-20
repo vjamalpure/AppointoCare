@@ -33,7 +33,7 @@ class Config:
     EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "mock" if APP_ENV != "production" else "none")
     EMAIL_API_KEY = os.getenv("EMAIL_API_KEY", "")
     EMAIL_FROM = os.getenv("EMAIL_FROM", "")
-    EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "AppointoCare")
+    EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "AppointoCore")
     SMS_ENABLED = os.getenv("SMS_ENABLED", "false").lower() == "true"
     SMS_PROVIDER = os.getenv("SMS_PROVIDER", "mock" if APP_ENV != "production" else "none")
     SMS_API_KEY = os.getenv("SMS_API_KEY", "")

@@ -425,7 +425,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Appointment Confirmation & Payment Link',
       category: 'confirmation',
       subject: 'Confirmed Clinical Appointment with {staff_name}',
-      content: 'Hello {customer_name}, your appointment for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nSecure Razorpay Payment Link: https://appointocare.com/pay/{appointment_id}\n\nReply to this message if you have any questions before your visit.',
+      content: 'Hello {customer_name}, your appointment for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nSecure Razorpay Payment Link: https://appointocore.com/pay/{appointment_id}\n\nReply to this message if you have any questions before your visit.',
       quickActionLabel: 'Send Confirmation & Payment'
     }
   ],
@@ -460,7 +460,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Advisory Session Confirmation & Fee Schedule',
       category: 'confirmation',
       subject: 'Confirmed Advisory Consultation with {staff_name}',
-      content: 'Dear {customer_name}, your financial advisory consultation for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nRetainer / Fee Invoice: https://appointocare.com/pay/{appointment_id}\n\nWe look forward to partnering on your long-term wealth roadmap.',
+      content: 'Dear {customer_name}, your financial advisory consultation for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nRetainer / Fee Invoice: https://appointocore.com/pay/{appointment_id}\n\nWe look forward to partnering on your long-term wealth roadmap.',
       quickActionLabel: 'Send Confirmation & Invoice'
     }
   ],
@@ -495,7 +495,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'VIP Styling Appointment Confirmation',
       category: 'confirmation',
       subject: 'Confirmed Personal Styling Appointment with {staff_name}',
-      content: 'Hello {customer_name}, your VIP styling session for {service_name} with {staff_name} is confirmed for {appointment_date} at {organization_name} ({branch_name}).\n\nBooking Deposit Link: https://appointocare.com/pay/{appointment_id}\n\nWe look forward to welcoming you to the salon.',
+      content: 'Hello {customer_name}, your VIP styling session for {service_name} with {staff_name} is confirmed for {appointment_date} at {organization_name} ({branch_name}).\n\nBooking Deposit Link: https://appointocore.com/pay/{appointment_id}\n\nWe look forward to welcoming you to the salon.',
       quickActionLabel: 'Send Confirmation & Deposit'
     }
   ],
@@ -530,7 +530,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Coverage Review Confirmation & Premium Link',
       category: 'confirmation',
       subject: 'Confirmed Insurance Review with {staff_name}',
-      content: 'Hello {customer_name}, your appointment for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nInitial Premium Payment Link: https://appointocare.com/pay/{appointment_id}\n\nFeel free to message us here with any policy questions.',
+      content: 'Hello {customer_name}, your appointment for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nInitial Premium Payment Link: https://appointocore.com/pay/{appointment_id}\n\nFeel free to message us here with any policy questions.',
       quickActionLabel: 'Send Confirmation & Premium'
     }
   ],
@@ -557,7 +557,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Academic Hub Location & Video Conference Link',
       category: 'directions',
       subject: 'Counseling Hub Address & Virtual Conference Access',
-      content: 'Hello {customer_name}, your session with Dr. {staff_name} is at {organization_name} — {branch_name} ({branch_address}).\n• If attending virtually, your dedicated secure video room is: https://appointocare.com/meet/{appointment_id}\n• For in-person meetings, guest parking is available in the academic campus lot.',
+      content: 'Hello {customer_name}, your session with Dr. {staff_name} is at {organization_name} — {branch_name} ({branch_address}).\n• If attending virtually, your dedicated secure video room is: https://appointocore.com/meet/{appointment_id}\n• For in-person meetings, guest parking is available in the academic campus lot.',
       quickActionLabel: 'Send Hub Directions'
     },
     {
@@ -565,7 +565,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'University Counseling Session Confirmation',
       category: 'confirmation',
       subject: 'Confirmed Academic Counseling with {staff_name}',
-      content: 'Hello {customer_name}, your academic counseling session for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nTuition / Advisory Fee Link: https://appointocare.com/pay/{appointment_id}\n\nWe look forward to helping you achieve your admissions goals.',
+      content: 'Hello {customer_name}, your academic counseling session for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nTuition / Advisory Fee Link: https://appointocore.com/pay/{appointment_id}\n\nWe look forward to helping you achieve your admissions goals.',
       quickActionLabel: 'Send Confirmation & Fee Link'
     }
   ],
@@ -600,7 +600,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Spa Ritual Confirmation & Reservation Deposit',
       category: 'confirmation',
       subject: 'Confirmed Wellness Ritual with {staff_name}',
-      content: 'Hello {customer_name}, your wellness appointment for {service_name} with {staff_name} is confirmed for {appointment_date} at {organization_name} ({branch_name}).\n\nOnline Payment Link: https://appointocare.com/pay/{appointment_id}\n\nWe look forward to pampering you.',
+      content: 'Hello {customer_name}, your wellness appointment for {service_name} with {staff_name} is confirmed for {appointment_date} at {organization_name} ({branch_name}).\n\nOnline Payment Link: https://appointocore.com/pay/{appointment_id}\n\nWe look forward to pampering you.',
       quickActionLabel: 'Send Confirmation & Pay Link'
     }
   ],
@@ -635,7 +635,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Legal Consultation Confirmation & Retainer Invoice',
       category: 'confirmation',
       subject: 'Confirmed Legal Consultation with {staff_name}',
-      content: 'Dear {customer_name}, your legal consultation for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nTrust Account Retainer Invoice: https://appointocare.com/pay/{appointment_id}\n\nAll disclosures will be handled with strict confidentiality.',
+      content: 'Dear {customer_name}, your legal consultation for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nTrust Account Retainer Invoice: https://appointocore.com/pay/{appointment_id}\n\nAll disclosures will be handled with strict confidentiality.',
       quickActionLabel: 'Send Confirmation & Retainer'
     }
   ],
@@ -670,7 +670,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Property Advisory Appointment Confirmation',
       category: 'confirmation',
       subject: 'Confirmed Real Estate Tour with {staff_name}',
-      content: 'Hello {customer_name}, your property tour for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nRetainer / Advisory Deposit Link: https://appointocare.com/pay/{appointment_id}\n\nWe look forward to presenting your tailored portfolio.',
+      content: 'Hello {customer_name}, your property tour for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nRetainer / Advisory Deposit Link: https://appointocore.com/pay/{appointment_id}\n\nWe look forward to presenting your tailored portfolio.',
       quickActionLabel: 'Send Confirmation & Link'
     }
   ],
@@ -705,7 +705,7 @@ export const INDUSTRY_INFO_MESSAGES_BY_KEY: Record<string, IndustryInfoMessagePr
       title: 'Enterprise Engagement Confirmation & Retainer',
       category: 'confirmation',
       subject: 'Confirmed Enterprise Consultation with {staff_name}',
-      content: 'Dear {customer_name}, your enterprise consultation for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nProfessional Retainer Invoice: https://appointocare.com/pay/{appointment_id}\n\nWe look forward to partnering with your leadership team.',
+      content: 'Dear {customer_name}, your enterprise consultation for {service_name} with {staff_name} is confirmed for {appointment_date} at {branch_name}.\n\nProfessional Retainer Invoice: https://appointocore.com/pay/{appointment_id}\n\nWe look forward to partnering with your leadership team.',
       quickActionLabel: 'Send Confirmation & Retainer'
     }
   ]

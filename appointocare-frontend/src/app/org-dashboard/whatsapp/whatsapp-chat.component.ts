@@ -77,7 +77,7 @@ export class WhatsAppChatComponent implements OnInit {
       {
         id: 'payment_link',
         name: 'Razorpay Invoice & Fee Link',
-        text: `Hi {customer_name}, your invoice for ${this.terms.serviceLabel} is ready. Secure online checkout: https://appointocare.app/pay?order=rzp_${Date.now().toString().slice(-4)}`
+        text: `Hi {customer_name}, your invoice for ${this.terms.serviceLabel} is ready. Secure online checkout: https://appointocore.app/pay?order=rzp_${Date.now().toString().slice(-4)}`
       },
       {
         id: 'feedback_request',
