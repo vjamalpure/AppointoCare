@@ -65,7 +65,7 @@
 }
 
 /* ==========================================================================
-   BOTTOM-LEFT CORNER: BALLOON DROPPING ON/OFF SWITCH
+   BOTTOM-LEFT CORNER: BALLOON ICON + TOGGLE SWITCH ONLY
    ========================================================================== */
 .balloons-corner-control {
   position: fixed;
@@ -78,31 +78,24 @@
   .balloons-toggle-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     background: rgba(15, 23, 42, 0.72);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 9999px;
-    padding: 6px 14px 6px 10px;
+    padding: 6px 10px;
     color: #ffffff;
-    font-size: 12.5px;
-    font-weight: 600;
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: inherit;
 
     .btn-balloon-emoji {
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1;
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    }
-
-    .btn-label {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 12px;
-      font-weight: 600;
+      user-select: none;
     }
 
     .toggle-pill-track {
@@ -133,17 +126,6 @@
       &.on .toggle-pill-knob {
         transform: translateX(12px);
       }
-    }
-
-    .status-state-text {
-      font-size: 11px;
-      font-weight: 700;
-      color: #94a3b8;
-      min-width: 24px;
-    }
-
-    &.active .status-state-text {
-      color: #34d399;
     }
 
     &:hover {

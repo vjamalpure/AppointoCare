@@ -28,13 +28,11 @@
       [class.active]="balloonsEnabled"
       (click)="toggleBalloons()"
       [title]="balloonsEnabled ? 'Turn balloons dropping OFF' : 'Turn balloons dropping ON'"
-      aria-label="Toggle balloons dropping on or off">
+      aria-label="Toggle balloons dropping">
       <span class="btn-balloon-emoji">🎈</span>
-      <span class="btn-label">Balloons</span>
       <span class="toggle-pill-track" [class.on]="balloonsEnabled">
         <span class="toggle-pill-knob"></span>
       </span>
-      <span class="status-state-text">{{ balloonsEnabled ? 'ON' : 'OFF' }}</span>
     </button>
   </div>
 
