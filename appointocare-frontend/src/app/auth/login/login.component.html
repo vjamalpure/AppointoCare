@@ -19,9 +19,29 @@
   </div>
 
   <!-- =========================================================================
+       BOTTOM-LEFT CORNER: BALLOONS ON / OFF TOGGLE (Default: ON)
+       ========================================================================= -->
+  <div class="balloons-corner-control">
+    <button
+      type="button"
+      class="balloons-toggle-btn"
+      [class.active]="balloonsEnabled"
+      (click)="toggleBalloons()"
+      [title]="balloonsEnabled ? 'Turn balloons dropping OFF' : 'Turn balloons dropping ON'"
+      aria-label="Toggle balloons dropping on or off">
+      <span class="btn-balloon-emoji">🎈</span>
+      <span class="btn-label">Balloons</span>
+      <span class="toggle-pill-track" [class.on]="balloonsEnabled">
+        <span class="toggle-pill-knob"></span>
+      </span>
+      <span class="status-state-text">{{ balloonsEnabled ? 'ON' : 'OFF' }}</span>
+    </button>
+  </div>
+
+  <!-- =========================================================================
        INTERACTIVE BALLOONS LAYER (Descend from top, click to pop!)
        ========================================================================= -->
-  <div class="interactive-balloons-layer" aria-label="Interactive poppable celebration balloons">
+  <div class="interactive-balloons-layer" *ngIf="balloonsEnabled" aria-label="Interactive poppable celebration balloons">
     <div
       *ngFor="let b of balloons"
       class="balloon-item"

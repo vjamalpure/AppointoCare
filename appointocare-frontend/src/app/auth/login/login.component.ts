@@ -75,6 +75,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   ripples: LiquidRipple[] = [];
 
   // Interactive Flowing Balloons with Realistic Latex Shapes & Diverse Sizes
+  balloonsEnabled = true;
   balloons: InteractiveBalloon[] = [];
   popEffects: PopEffect[] = [];
   poppedBalloonCount = 0;
@@ -191,7 +192,26 @@ export class LoginComponent implements OnInit, OnDestroy {
   // =========================================================================
   // Realistic Balloons (Diverse sizes from mini to jumbo, teardrop shape)
   // =========================================================================
+  toggleBalloons(): void {
+    this.balloonsEnabled = !this.balloonsEnabled;
+    if (!this.balloonsEnabled) {
+      if (this.balloonInterval) {
+        clearInterval(this.balloonInterval);
+        this.balloonInterval = null;
+      }
+      this.balloons = [];
+      this.showToast('🎈 Balloons dropping turned OFF');
+    } else {
+      this.startBalloonStream();
+      this.showToast('🎈 Balloons dropping turned ON');
+    }
+  }
+
   private startBalloonStream(): void {
+    if (!this.balloonsEnabled) return;
+    if (this.balloonInterval) {
+      clearInterval(this.balloonInterval);
+    }
     // Immediate staggered balloons floating at various heights across screen
     const initialDelays = [-1.5, -4.5, -7.5, -10.5, -3.0, -6.0];
     for (const delay of initialDelays) {
@@ -200,7 +220,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     // Continuously spawn fresh balloons of varied sizes
     this.balloonInterval = setInterval(() => {
-      if (this.balloons.length < 14) {
+      if (this.balloonsEnabled && this.balloons.length < 14) {
         this.spawnBalloon(0);
       }
     }, 1900);
