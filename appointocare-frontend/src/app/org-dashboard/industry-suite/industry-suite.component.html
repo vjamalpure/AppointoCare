@@ -1413,6 +1413,147 @@
           </div>
         </div>
       </div>
+
+      <!-- SECTION 4: MARKET LEADER DIFFERENTIATORS & GAP-CLOSURE ENGINES -->
+      <div style="background: linear-gradient(135deg, #090d16 0%, #111827 100%); border: 1px solid #1e293b; border-radius: 12px; padding: 22px; margin-top: 24px; color: #f8fafc;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(56, 189, 248, 0.1); padding: 3px 8px; border-radius: 4px;">
+              Industry Benchmark Parity Engine
+            </span>
+            <h3 style="margin: 6px 0 2px; font-size: 18px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <mat-icon style="color: #38bdf8;">star</mat-icon> Production Specialist Workflows & Differentiators
+            </h3>
+            <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+              End-to-end operational parity against Clinicea, Zenoti, Salesforce FSC, EZLynx, Clientbook, ApplyBoard, Clio, Follow Up Boss, and Accelo.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button mat-stroked-button style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);" (click)="handleDispatchAutomationEvent('appointment.cancelled')">
+              <mat-icon>bolt</mat-icon> Dispatch Event
+            </button>
+            <button mat-stroked-button style="color: #a78bfa; border-color: rgba(167, 139, 250, 0.3);" (click)="loadAutomationExecutionLogs()">
+              <mat-icon>history</mat-icon> Execution Logs
+            </button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+          <!-- 1. Healthcare: Closed-Loop Care & Refills -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #38bdf8; font-size: 13px;">Healthcare (Clinicea Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Closed-Loop Care</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Consultation → Rx → Lab orders → Clinician sign-off & medication refill management.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button color="primary" style="font-size: 11px; height: 30px; line-height: 30px;" (click)="loadClosedLoopCare(1)">Closed-Loop Care</button>
+              <button mat-stroked-button style="font-size: 11px; height: 30px; line-height: 30px; color: #ffffff; border-color: rgba(255,255,255,0.2);" (click)="loadMedicationRefills()">Refill Orders</button>
+            </div>
+          </div>
+
+          <!-- 2. Salon: Cancellation Recovery & Retail POS -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #ec4899; font-size: 13px;">Salon & Wellness (Zenoti Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(236, 72, 153, 0.2); color: #ec4899; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Recovery Engine</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Auto-offer released slots to waitlisted clients with timed expiry & retail inventory alerts.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button color="accent" style="font-size: 11px; height: 30px; line-height: 30px;" (click)="handleRecoverSalonCancellation()">Recover Slot</button>
+              <button mat-stroked-button style="font-size: 11px; height: 30px; line-height: 30px; color: #ffffff; border-color: rgba(255,255,255,0.2);" (click)="loadRetailInventory()">Retail POS</button>
+            </div>
+          </div>
+
+          <!-- 3. Finance: Portfolio Health & Household View -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #34d399; font-size: 13px;">Finance (Salesforce FSC Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Portfolio Health</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Asset allocation drift, household wealth aggregation & audited SEBI/fiduciary suitability.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button style="background: #059669; color: #ffffff; font-size: 11px; height: 30px; line-height: 30px;" (click)="loadPortfolioHealth(1)">Drift Analysis</button>
+              <button mat-stroked-button style="font-size: 11px; height: 30px; line-height: 30px; color: #ffffff; border-color: rgba(255,255,255,0.2);" (click)="loadHouseholdViews()">Household 360</button>
+            </div>
+          </div>
+
+          <!-- 4. Insurance: Renewal Command Center -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #fbbf24; font-size: 13px;">Insurance (EZLynx Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Renewal Center</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Prioritized renewal book ranking policies by expiry risk, retention probability & carrier policy admin.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button style="background: #d97706; color: #ffffff; font-size: 11px; height: 30px; line-height: 30px;" (click)="loadRenewalCommandCenter()">Renewal Book</button>
+            </div>
+          </div>
+
+          <!-- 5. Retail: Bespoke Orders & Client Lookbooks -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #f472b6; font-size: 13px;">Retail & Luxury (Clientbook Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(244, 114, 182, 0.2); color: #f472b6; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Bespoke Order</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">End-to-end bespoke order lifecycle: measurements → fabrics → fittings → final pickup.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button style="background: #db2777; color: #ffffff; font-size: 11px; height: 30px; line-height: 30px;" (click)="loadBespokeOrders()">Bespoke Orders</button>
+            </div>
+          </div>
+
+          <!-- 6. Education: University Catalog & Student Readiness -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #60a5fa; font-size: 13px;">Education (ApplyBoard Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(96, 165, 250, 0.2); color: #60a5fa; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Readiness Score</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Global university program catalog and student readiness scoring with transparent rubric.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button style="background: #2563eb; color: #ffffff; font-size: 11px; height: 30px; line-height: 30px;" (click)="loadUniversityPrograms()">Program Catalog</button>
+              <button mat-stroked-button style="font-size: 11px; height: 30px; line-height: 30px; color: #ffffff; border-color: rgba(255,255,255,0.2);" (click)="handleCalculateStudentReadiness()">Readiness Score</button>
+            </div>
+          </div>
+
+          <!-- 7. Legal: Matters & Conflict Checks -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #c084fc; font-size: 13px;">Legal & Advisory (Clio Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(192, 132, 252, 0.2); color: #c084fc; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Matter Hub</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Unified legal matters, trust balance tracking, conflict search and clearance logs.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button style="background: #7c3aed; color: #ffffff; font-size: 11px; height: 30px; line-height: 30px;" (click)="loadLegalMatters()">Matters Hub</button>
+            </div>
+          </div>
+
+          <!-- 8. Real Estate: Reservations & Architecture -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #38bdf8; font-size: 13px;">Real Estate (Follow Up Boss Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Site & Build</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Unit reservations with deposit escrow, plus architectural drawing revisions & site logs.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button style="background: #0284c7; color: #ffffff; font-size: 11px; height: 30px; line-height: 30px;" (click)="loadPropertyReservations()">Reservations</button>
+              <button mat-stroked-button style="font-size: 11px; height: 30px; line-height: 30px; color: #ffffff; border-color: rgba(255,255,255,0.2);" (click)="loadArchitectureProjects()">Arch Projects</button>
+            </div>
+          </div>
+
+          <!-- 9. Professional Services: Margin Early-Warning & SLAs -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #f87171; font-size: 13px;">IT Services (Accelo Benchmark)</strong>
+              <span style="font-size: 10px; background: rgba(248, 113, 113, 0.2); color: #f87171; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Margin & SLA</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 12px;">Project margin early-warning engine, cost burn analysis, and P1–P4 SLA incident escalation.</p>
+            <div style="display: flex; gap: 8px;">
+              <button mat-flat-button style="background: #dc2626; color: #ffffff; font-size: 11px; height: 30px; line-height: 30px;" (click)="loadProjectMargins()">Project Margin</button>
+              <button mat-stroked-button style="font-size: 11px; height: 30px; line-height: 30px; color: #ffffff; border-color: rgba(255,255,255,0.2);" (click)="loadIncidentTickets()">SLA Tickets</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Active Feature Result Modal Overlays -->
@@ -1544,6 +1685,264 @@
                   <div style="font-size: 12px; color: #64748b;">{{ m.assigned_billable_hours }} hrs / {{ m.weekly_capacity_hours }} hrs capacity</div>
                 </div>
                 <span class="status-chip" [ngClass]="m.status.toLowerCase()">{{ m.utilization_pct }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 12. Closed Loop Care -->
+          <div *ngIf="activeFeatureModal === 'closed_loop_care' && closedLoopCareData">
+            <h4>Closed-Loop Clinical Journey (Clinicea Benchmark)</h4>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+              <strong>Patient: {{ closedLoopCareData.patient?.name }}</strong> • Status: {{ closedLoopCareData.workflow_stage }}
+              <div style="font-size: 12px; color: #64748b;">Primary Physician: {{ closedLoopCareData.primary_physician }}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div *ngFor="let ord of closedLoopCareData.lab_orders" style="border-left: 3px solid #0284c7; padding-left: 10px; font-size: 12px;">
+                <strong>{{ ord.test_name }}</strong> ({{ ord.order_number }}) - Status: {{ ord.status }}
+                <div style="color: #64748b;">Clinician Sign-off: {{ ord.clinician_review_status || 'Pending' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 13. Medication Refills -->
+          <div *ngIf="activeFeatureModal === 'medication_refills'">
+            <h4>Medication Refill & Dispensing Queue</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div *ngIf="medicationRefillsList.length === 0" style="color: #94a3b8; font-size: 12px; text-align: center; padding: 12px;">
+                No pending refill requests.
+              </div>
+              <div *ngFor="let ref of medicationRefillsList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>{{ ref.medication_name }}</strong> (Rx #{{ ref.prescription_id }})
+                  <div style="font-size: 12px; color: #64748b;">Quantity: {{ ref.quantity_requested }} • Status: {{ ref.status }}</div>
+                </div>
+                <button mat-flat-button color="primary" *ngIf="ref.status === 'Requested'" (click)="handleApproveRefill(ref.id)">
+                  Approve Refill
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 14. Cancellation Recovery -->
+          <div *ngIf="activeFeatureModal === 'cancellation_recovery' && cancellationRecoveryData">
+            <h4>Zenoti-Parity Cancellation Recovery</h4>
+            <div style="background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+              <strong style="color: #db2777;">Offer ID: {{ cancellationRecoveryData.offer?.offer_code }}</strong>
+              <div style="font-size: 13px; margin-top: 4px;">Service: {{ cancellationRecoveryData.offer?.service_name }}</div>
+              <div style="font-size: 12px; color: #64748b;">Status: {{ cancellationRecoveryData.offer?.status }} • Expires: {{ cancellationRecoveryData.offer?.expires_at | date:'short' }}</div>
+            </div>
+            <p style="font-size: 12px; color: #475569;">
+              Waitlist notified via WhatsApp. Auto-release hold on slot if unaccepted within 15 minutes.
+            </p>
+          </div>
+
+          <!-- 15. Retail Inventory -->
+          <div *ngIf="activeFeatureModal === 'retail_inventory'">
+            <h4>Retail & Consumable Inventory Ledger</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 350px; overflow-y: auto;">
+              <div *ngFor="let item of retailInventoryList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>{{ item.name }}</strong> (SKU: {{ item.sku }})
+                  <div style="font-size: 12px; color: #64748b;">Category: {{ item.category }} • Cost: ₹{{ item.cost_price }}</div>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-weight: 700; color: #0284c7;">₹{{ item.retail_price }}</span>
+                  <div style="font-size: 11px; color: item.stock_quantity <= item.reorder_level ? '#dc2626' : '#16a34a'; font-weight: 600;">
+                    Stock: {{ item.stock_quantity }} (Reorder: {{ item.reorder_level }})
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 16. Portfolio Health -->
+          <div *ngIf="activeFeatureModal === 'portfolio_health' && portfolioHealthData">
+            <h4>Salesforce FSC-Parity Portfolio Health & Drift</h4>
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; font-weight: 600;">Total AUM: ₹{{ portfolioHealthData.portfolio_summary?.total_aum | number }}</span>
+                <span style="font-size: 12px; font-weight: 700; color: #16a34a;">Status: {{ portfolioHealthData.portfolio_summary?.drift_status }}</span>
+              </div>
+              <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Overall Allocation Drift: {{ portfolioHealthData.portfolio_summary?.overall_drift_percentage }}%</div>
+            </div>
+            <h5>SEBI / Fiduciary Suitability Action:</h5>
+            <p style="font-size: 12px; color: #475569;">{{ portfolioHealthData.portfolio_summary?.recommended_action }}</p>
+          </div>
+
+          <!-- 17. Household Wealth -->
+          <div *ngIf="activeFeatureModal === 'household_wealth'">
+            <h4>Family & Household Wealth Mapping</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div *ngFor="let h of householdList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>{{ h.relationship_type }}</strong>: {{ h.member_name }}
+                <div style="font-size: 12px; color: #64748b;">PAN: {{ h.tax_id_masked }} (Verified: {{ h.is_tax_id_verified }})</div>
+                <div style="font-size: 12px; color: #0284c7; font-weight: 600;">Share of Household Wealth: {{ h.ownership_percentage }}%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 18. Renewal Command Center -->
+          <div *ngIf="activeFeatureModal === 'renewal_command_center' && renewalCommandCenterData">
+            <h4>EZLynx-Parity Policy Renewal Command Center</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;">
+              <div style="background: #eff6ff; padding: 10px; border-radius: 6px; text-align: center;">
+                <span style="font-size: 11px; color: #64748b; display: block;">Upcoming Renewals</span>
+                <strong style="font-size: 18px; color: #1e40af;">{{ renewalCommandCenterData.summary?.total_expiring_policies }}</strong>
+              </div>
+              <div style="background: #fefce8; padding: 10px; border-radius: 6px; text-align: center;">
+                <span style="font-size: 11px; color: #64748b; display: block;">Expiring Book Value</span>
+                <strong style="font-size: 18px; color: #854d0e;">₹{{ renewalCommandCenterData.summary?.total_expiring_premium | number }}</strong>
+              </div>
+              <div style="background: #f0fdf4; padding: 10px; border-radius: 6px; text-align: center;">
+                <span style="font-size: 11px; color: #64748b; display: block;">Avg Retention Risk</span>
+                <strong style="font-size: 18px; color: #166534;">{{ renewalCommandCenterData.summary?.retention_risk_index }}</strong>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;">
+              <div *ngFor="let pol of renewalCommandCenterData.prioritized_policies" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>{{ pol.policy_number }}</strong> ({{ pol.carrier }})
+                  <div style="font-size: 12px; color: #64748b;">Client: {{ pol.insured_name }} • Premium: ₹{{ pol.premium_amount | number }}</div>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #b45309; background: #fef3c7; padding: 3px 8px; border-radius: 4px;">
+                  Retention Score: {{ pol.retention_score }}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 19. Bespoke Orders -->
+          <div *ngIf="activeFeatureModal === 'bespoke_orders'">
+            <h4>Clientbook & Shopify-Parity Bespoke Orders</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px; max-height: 350px; overflow-y: auto;">
+              <div *ngFor="let ord of bespokeOrdersList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <strong>{{ ord.order_number }} - {{ ord.garment_type }}</strong>
+                  <span style="font-size: 11px; font-weight: 700; background: #fce7f3; color: #be185d; padding: 2px 8px; border-radius: 4px;">
+                    Stage: {{ ord.stage }}
+                  </span>
+                </div>
+                <div style="font-size: 12px; color: #64748b;">Fabric: {{ ord.fabric_reference }} • Value: ₹{{ ord.total_price_inr | number }} (Balance: ₹{{ ord.balance_due_inr | number }})</div>
+                <div style="display: flex; gap: 6px; margin-top: 8px;">
+                  <button mat-stroked-button style="font-size: 11px; height: 26px; line-height: 26px;" (click)="handleAdvanceBespokeStage(ord.id, 'Fittings')">To Fittings</button>
+                  <button mat-stroked-button style="font-size: 11px; height: 26px; line-height: 26px;" (click)="handleAdvanceBespokeStage(ord.id, 'Ready_For_Pickup')">Ready for Pickup</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 20. University Catalog -->
+          <div *ngIf="activeFeatureModal === 'university_catalog'">
+            <h4>ApplyBoard-Parity Global University Programs</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 350px; overflow-y: auto;">
+              <div *ngFor="let prog of universityProgramsList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>{{ prog.program_name }} ({{ prog.degree_level }})</strong>
+                <div style="font-size: 12px; color: #0284c7; font-weight: 600;">{{ prog.university_name }} • {{ prog.country }}</div>
+                <div style="font-size: 12px; color: #64748b;">Tuition: {{ prog.annual_tuition }} • Min GPA: {{ prog.min_gpa }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 21. Student Readiness -->
+          <div *ngIf="activeFeatureModal === 'student_readiness' && studentReadinessResult">
+            <h4>Admissions Readiness Scorecard</h4>
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+              <strong style="color: #1d4ed8; font-size: 16px;">Overall Readiness: {{ studentReadinessResult.readiness_percentage }}%</strong>
+              <div style="font-size: 12px; color: #475569; margin-top: 4px;">Admissions Probability Category: {{ studentReadinessResult.probability_tier }}</div>
+            </div>
+            <h5>Missing Documents / Outstanding Actions:</h5>
+            <ul style="font-size: 12px; color: #dc2626; margin: 4px 0 0 16px;">
+              <li *ngFor="let item of studentReadinessResult.missing_items">{{ item }}</li>
+            </ul>
+          </div>
+
+          <!-- 22. Legal Matters -->
+          <div *ngIf="activeFeatureModal === 'legal_matters'">
+            <h4>Clio-Parity Legal Matter Command Center</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 350px; overflow-y: auto;">
+              <div *ngFor="let mat of legalMattersList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <strong>{{ mat.matter_number }}: {{ mat.title }}</strong>
+                  <span style="font-size: 11px; font-weight: 700; color: #6d28d9; background: #ede9fe; padding: 2px 6px; border-radius: 4px;">{{ mat.status }}</span>
+                </div>
+                <div style="font-size: 12px; color: #64748b;">Practice Area: {{ mat.practice_area }} • Retainer Balance: ₹{{ mat.retainer_balance_inr | number }}</div>
+                <div style="font-size: 11px; color: #16a34a; font-weight: 600; margin-top: 4px;">Conflict Check: {{ mat.conflict_cleared ? 'CLEARED' : 'PENDING REVIEW' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 23. Real Estate Reservations -->
+          <div *ngIf="activeFeatureModal === 're_reservations'">
+            <h4>Property Reservation & Escrow Dossiers</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div *ngFor="let res of propertyReservationsList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>Reservation #{{ res.reservation_number }}</strong>
+                <div style="font-size: 12px; color: #64748b;">Unit ID: {{ res.unit_id }} • Deposit Held: ₹{{ res.deposit_amount_inr | number }}</div>
+                <div style="font-size: 11px; color: #0284c7; font-weight: 600;">Status: {{ res.status }} (Escrow Account Verified)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 24. Architecture Projects -->
+          <div *ngIf="activeFeatureModal === 'architecture_projects'">
+            <h4>Buildertrend-Parity Architecture Project Workspaces</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div *ngFor="let prj of architectureProjectsList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <strong>{{ prj.project_code }}: {{ prj.project_name }}</strong>
+                <div style="font-size: 12px; color: #64748b;">Stage: {{ prj.current_stage }} • Revision #{{ prj.drawing_revision_count }}</div>
+                <div style="font-size: 12px; color: #16a34a; font-weight: 600;">Budget Committed: ₹{{ prj.budget_spent_inr | number }} / ₹{{ prj.total_budget_inr | number }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 25. Project Margins -->
+          <div *ngIf="activeFeatureModal === 'project_margins'">
+            <h4>Accelo-Parity Project Margin Early-Warning Engine</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div *ngFor="let mg of projectMarginsList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <strong>{{ mg.project_name }}</strong>
+                  <span style="font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px;"
+                        [style.background]="mg.margin_status === 'HEALTHY' ? '#dcfce7' : '#fee2e2'"
+                        [style.color]="mg.margin_status === 'HEALTHY' ? '#15803d' : '#b91c1c'">
+                    {{ mg.margin_status }}
+                  </span>
+                </div>
+                <div style="font-size: 12px; color: #64748b;">Contract Value: ₹{{ mg.contract_value_inr | number }} • Burned: ₹{{ mg.actual_cost_inr | number }}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-top: 4px;">Gross Margin: {{ mg.margin_percentage }}% (Planned: {{ mg.target_margin_percentage }}%)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 26. Incident Tickets -->
+          <div *ngIf="activeFeatureModal === 'incident_tickets'">
+            <h4>P1–P4 SLA Incident Tracking & Escalation</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div *ngFor="let inc of incidentTicketsList" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>{{ inc.incident_number }}: {{ inc.title }}</strong>
+                  <div style="font-size: 12px; color: #64748b;">Severity: {{ inc.severity }} • Assignee: {{ inc.assigned_engineer }}</div>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #fee2e2; color: #b91c1c;">
+                  SLA: {{ inc.sla_remaining_minutes }}m remaining
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 27. Automation Logs -->
+          <div *ngIf="activeFeatureModal === 'automation_logs'">
+            <h4>Platform Automation Execution Audit History</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 350px; overflow-y: auto;">
+              <div *ngIf="automationExecutionLogs.length === 0" style="color: #94a3b8; font-size: 12px; text-align: center; padding: 12px;">
+                No execution logs recorded yet. Dispatch an event to test.
+              </div>
+              <div *ngFor="let log of automationExecutionLogs" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <strong>Rule #{{ log.rule_id }}: {{ log.event_trigger }}</strong>
+                  <span style="font-size: 10px; font-weight: 700; color: #16a34a; background: #f0fdf4; padding: 2px 6px; border-radius: 4px;">{{ log.status }}</span>
+                </div>
+                <div style="color: #64748b; margin-top: 4px;">Actions: {{ log.action_type }} • Duration: {{ log.execution_duration_ms }}ms</div>
               </div>
             </div>
           </div>

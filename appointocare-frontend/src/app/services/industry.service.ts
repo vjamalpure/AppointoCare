@@ -606,6 +606,108 @@ export class IndustryService {
   public getSubscriptionLimits(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/api/v1/platform/organization/subscription-limits`);
   }
+
+  // Competitor Matrix & Leader Gap-Closing API Integrations
+  public getClosedLoopCare(patientId: number = 1): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/healthcare/closed-loop-care/${patientId}`);
+  }
+
+  public getMedicationRefills(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/healthcare/medications/refills`);
+  }
+
+  public approveMedicationRefill(refillId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/healthcare/medications/refills/${refillId}/approve`, {});
+  }
+
+  public recoverSalonCancellation(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/salon/recover-cancellation`, payload);
+  }
+
+  public getSalonRecoveryOffers(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/salon/recovery-offers`);
+  }
+
+  public getRetailInventory(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/inventory`);
+  }
+
+  public createRetailInventoryItem(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/inventory`, payload);
+  }
+
+  public getPortfolioHealth(customerId: number = 1): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/finance/portfolio-health?customer_id=${customerId}`);
+  }
+
+  public getHouseholdViews(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/finance/households`);
+  }
+
+  public submitSuitabilityProfile(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/finance/suitability-profile`, payload);
+  }
+
+  public getRenewalCommandCenter(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/insurance/renewal-command-center`);
+  }
+
+  public createInsurancePolicy(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/insurance/policies`, payload);
+  }
+
+  public getBespokeOrders(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/retail/bespoke-orders`);
+  }
+
+  public createBespokeOrder(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/retail/bespoke-orders`, payload);
+  }
+
+  public updateBespokeOrderStage(orderId: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/api/v1/industry-suite/retail/bespoke-orders/${orderId}/stage`, payload);
+  }
+
+  public getUniversityPrograms(query = ''): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/education/programs?q=${encodeURIComponent(query)}`);
+  }
+
+  public evaluateStudentReadiness(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/education/readiness-score`, payload);
+  }
+
+  public getLegalMatters(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/legal/matters`);
+  }
+
+  public createLegalMatter(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/industry-suite/legal/matters`, payload);
+  }
+
+  public getPropertyReservations(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/real-estate/reservations`);
+  }
+
+  public getArchitectureProjects(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/real-estate/architecture-projects`);
+  }
+
+  public getProjectMargins(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/professional/project-margins`);
+  }
+
+  public getIncidentTickets(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/industry-suite/professional/incidents`);
+  }
+
+  public dispatchAutomationEvent(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/v1/automation/dispatch-event`, payload);
+  }
+
+  public getAutomationLogs(limit = 20): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/v1/automation/logs?limit=${limit}`);
+  }
 }
+
 
 

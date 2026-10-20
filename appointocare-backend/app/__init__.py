@@ -109,6 +109,7 @@ def create_app():
     app.register_blueprint(customer_portal_bp, url_prefix="/api/v1/customer-portal", name="customer_portal_api_v1")
     app.register_blueprint(analytics_bp, url_prefix="/api/v1/analytics")
     app.register_blueprint(automation_bp, url_prefix="/api/v1/automations")
+    app.register_blueprint(automation_bp, url_prefix="/api/v1/automation", name="automation_singular_api_v1")
 
     # Iteration 5: Tasks, Pipelines, Documents & Healthcare Clinical Engine
     app.register_blueprint(tasks_bp, url_prefix="/api/v1/tasks")

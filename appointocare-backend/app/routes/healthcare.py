@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from app.models import (
     db, ClinicalEncounter, AppointmentWaitlist, ResourceRoomSchedule,
     DiagnosticLabOrder, ABDMConsentArtifact, Appointment, Customer,
-    AuditLog, User, Organization
+    AuditLog, User, Organization, MedicationRefillRequest
 )
 from datetime import datetime, timedelta
 
@@ -716,4 +716,184 @@ def download_encounter_prescription_pdf(encounter_id):
         mimetype="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+
+# -----------------------------------------------------------------------------
+# 8. Medication Refill & Pharmacy Dispensing Workflow
+# -----------------------------------------------------------------------------
+@healthcare_bp.route("/medications/refills", methods=["POST"])
+@healthcare_bp.route("/api/v1/healthcare/medications/refills", methods=["POST"])
+@jwt_required()
+def create_medication_refill():
+    claims = get_jwt()
+    org_id = _get_org_id()
+    data = request.json or {}
+
+    customer_id = data.get("customer_id") or data.get("patient_id")
+    medication_name = data.get("medication_name")
+    if not customer_id or not medication_name:
+        return jsonify({"msg": "customer_id and medication_name are required"}), 400
+
+    refill = MedicationRefillRequest(
+        organization_id=org_id,
+        customer_id=int(customer_id),
+        encounter_id=data.get("encounter_id"),
+        medication_name=medication_name,
+        dosage=data.get("dosage", "1 tab daily"),
+        quantity_requested=int(data.get("quantity_requested", 30)),
+        refills_remaining=int(data.get("refills_remaining", 2)),
+        status="Pending_Approval",
+        approving_doctor=data.get("approving_doctor", "Dr. Sarah Jenkins"),
+        pharmacy_notes=data.get("pharmacy_notes", "Patient requested monthly maintenance refill")
+    )
+    db.session.add(refill)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Medication refill request submitted for clinical review",
+        "refill": {
+            "id": refill.id,
+            "medication_name": refill.medication_name,
+            "dosage": refill.dosage,
+            "quantity_requested": refill.quantity_requested,
+            "status": refill.status
+        }
+    }), 201
+
+
+@healthcare_bp.route("/medications/refills", methods=["GET"])
+@healthcare_bp.route("/api/v1/healthcare/medications/refills", methods=["GET"])
+@jwt_required()
+def get_medication_refills():
+    claims = get_jwt()
+    org_id = _get_org_id()
+
+    query = MedicationRefillRequest.query.filter_by(organization_id=org_id)
+    customer_id = request.args.get("customer_id")
+    if customer_id:
+        query = query.filter_by(customer_id=int(customer_id))
+
+    refills = query.order_by(MedicationRefillRequest.created_at.desc()).all()
+    return jsonify([
+        {
+            "id": r.id,
+            "customer_id": r.customer_id,
+            "encounter_id": r.encounter_id,
+            "medication_name": r.medication_name,
+            "dosage": r.dosage,
+            "quantity_requested": r.quantity_requested,
+            "refills_remaining": r.refills_remaining,
+            "status": r.status,
+            "approving_doctor": r.approving_doctor,
+            "pharmacy_notes": r.pharmacy_notes,
+            "created_at": r.created_at.isoformat()
+        }
+        for r in refills
+    ]), 200
+
+
+@healthcare_bp.route("/medications/refills/<int:refill_id>/approve", methods=["POST"])
+@healthcare_bp.route("/api/v1/healthcare/medications/refills/<int:refill_id>/approve", methods=["POST"])
+@jwt_required()
+def approve_medication_refill(refill_id):
+    claims = get_jwt()
+    if claims.get("role") not in ["Doctor", "Specialist", "Admin", "SuperAdmin"]:
+        return jsonify({"msg": "Doctor authorization required to approve prescription refill"}), 403
+
+    org_id = _get_org_id()
+    refill = MedicationRefillRequest.query.filter_by(id=refill_id, organization_id=org_id).first_or_404()
+    data = request.json or {}
+
+    refill.status = data.get("status", "Approved")
+    if refill.refills_remaining > 0:
+        refill.refills_remaining -= 1
+    refill.approving_doctor = claims.get("sub") or refill.approving_doctor
+    if data.get("pharmacy_notes"):
+        refill.pharmacy_notes = data["pharmacy_notes"]
+
+    db.session.commit()
+    return jsonify({
+        "msg": f"Refill status updated to {refill.status}",
+        "refill_id": refill.id,
+        "status": refill.status,
+        "refills_remaining": refill.refills_remaining
+    }), 200
+
+
+# -----------------------------------------------------------------------------
+# 9. Closed-Loop Care Workflow (Consultation -> Rx -> Lab -> Review -> Followup)
+# -----------------------------------------------------------------------------
+@healthcare_bp.route("/closed-loop-care/<int:patient_id>", methods=["GET"])
+@healthcare_bp.route("/api/v1/healthcare/closed-loop-care/<int:patient_id>", methods=["GET"])
+@jwt_required()
+def get_closed_loop_care(patient_id):
+    claims = get_jwt()
+    if claims.get("role") not in CLINICAL_ROLES:
+        return jsonify({"msg": "Unauthorized: Clinical credentials required"}), 403
+
+    org_id = _get_org_id()
+    patient = Customer.query.filter_by(id=patient_id, organization_id=org_id).first_or_404()
+
+    encounters = ClinicalEncounter.query.filter_by(patient_id=patient.id, organization_id=org_id).order_by(ClinicalEncounter.encounter_date.desc()).all()
+    lab_orders = DiagnosticLabOrder.query.filter_by(customer_id=patient.id, organization_id=org_id).order_by(DiagnosticLabOrder.created_at.desc()).all()
+    refills = MedicationRefillRequest.query.filter_by(customer_id=patient.id, organization_id=org_id).order_by(MedicationRefillRequest.created_at.desc()).all()
+    appts = Appointment.query.filter_by(customer_id=patient.id, organization_id=org_id).order_by(Appointment.appointment_date.desc()).all()
+
+    # Safety Checks
+    pending_lab_reviews = sum(1 for l in lab_orders if l.status != "Reviewed_By_Doctor")
+    critical_lab_count = sum(1 for l in lab_orders if getattr(l, "critical_flag", False))
+    unsigned_encounters = sum(1 for e in encounters if e.status != "Signed_Off")
+
+    return jsonify({
+        "patient": {
+            "id": patient.id,
+            "name": patient.name,
+            "phone": patient.phone,
+            "email": patient.email
+        },
+        "workflow_stage": "Closed-Loop Care Complete" if unsigned_encounters == 0 and pending_lab_reviews == 0 else "Pending Clinician Actions",
+        "primary_physician": encounters[0].practitioner_name if encounters else "Attending Clinician",
+        "care_journey": {
+            "total_encounters": len(encounters),
+            "unsigned_encounters": unsigned_encounters,
+            "total_lab_orders": len(lab_orders),
+            "pending_lab_reviews": pending_lab_reviews,
+            "critical_lab_orders": critical_lab_count,
+            "active_refills": len(refills),
+            "upcoming_followups": sum(1 for a in appts if a.status == "Booked" and a.appointment_date >= datetime.utcnow())
+        },
+        "encounters": [
+            {
+                "id": e.id,
+                "encounter_date": e.encounter_date.isoformat(),
+                "practitioner_name": e.practitioner_name,
+                "diagnosis": e.diagnosis,
+                "status": e.status,
+                "signed_at": e.signed_at.isoformat() if e.signed_at else None
+            }
+            for e in encounters[:5]
+        ],
+        "lab_orders": [
+            {
+                "id": l.id,
+                "order_number": l.order_number,
+                "test_name": l.test_name,
+                "category": l.category,
+                "status": l.status,
+                "critical_flag": getattr(l, "critical_flag", False),
+                "reviewed_at": l.reviewed_at.isoformat() if l.reviewed_at else None
+            }
+            for l in lab_orders[:5]
+        ],
+        "medication_refills": [
+            {
+                "id": r.id,
+                "medication_name": r.medication_name,
+                "dosage": r.dosage,
+                "refills_remaining": r.refills_remaining,
+                "status": r.status
+            }
+            for r in refills[:5]
+        ]
+    }), 200
 

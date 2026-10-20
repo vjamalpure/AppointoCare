@@ -741,6 +741,210 @@ export class IndustrySuiteComponent implements OnInit {
   public resourceUtilizationData: any = null;
   public integrationsStatusData: any = null;
 
+  // Industry Leader Gap-Closing State Properties
+  public closedLoopCareData: any = null;
+  public medicationRefillsList: any[] = [];
+  public cancellationRecoveryData: any = null;
+  public retailInventoryList: any[] = [];
+  public portfolioHealthData: any = null;
+  public householdList: any[] = [];
+  public renewalCommandCenterData: any = null;
+  public bespokeOrdersList: any[] = [];
+  public universityProgramsList: any[] = [];
+  public studentReadinessResult: any = null;
+  public legalMattersList: any[] = [];
+  public propertyReservationsList: any[] = [];
+  public architectureProjectsList: any[] = [];
+  public projectMarginsList: any[] = [];
+  public incidentTicketsList: any[] = [];
+  public automationExecutionLogs: any[] = [];
+
+  public loadClosedLoopCare(patientId: number = 1): void {
+    this.industryService.getClosedLoopCare(patientId).subscribe({
+      next: (res) => {
+        this.closedLoopCareData = res;
+        this.activeFeatureModal = 'closed_loop_care';
+      },
+      error: () => this.snackBar.open('Could not load closed-loop care data', 'Close', { duration: 3000 })
+    });
+  }
+
+  public loadMedicationRefills(): void {
+    this.industryService.getMedicationRefills().subscribe({
+      next: (res) => {
+        this.medicationRefillsList = res || [];
+        this.activeFeatureModal = 'medication_refills';
+      }
+    });
+  }
+
+  public handleApproveRefill(refillId: number): void {
+    this.industryService.approveMedicationRefill(refillId).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadMedicationRefills();
+      }
+    });
+  }
+
+  public handleRecoverSalonCancellation(): void {
+    this.industryService.recoverSalonCancellation({
+      cancelled_appointment_id: 1,
+      service_name: 'Luxury Balayage & Botanical Scalp Spa',
+      service_start: new Date(Date.now() + 86400000).toISOString()
+    }).subscribe({
+      next: (res) => {
+        this.cancellationRecoveryData = res;
+        this.activeFeatureModal = 'cancellation_recovery';
+        this.snackBar.open(res.msg, 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  public loadRetailInventory(): void {
+    this.industryService.getRetailInventory().subscribe({
+      next: (res) => {
+        this.retailInventoryList = res || [];
+        this.activeFeatureModal = 'retail_inventory';
+      }
+    });
+  }
+
+  public loadPortfolioHealth(customerId: number = 1): void {
+    this.industryService.getPortfolioHealth(customerId).subscribe({
+      next: (res) => {
+        this.portfolioHealthData = res;
+        this.activeFeatureModal = 'portfolio_health';
+      }
+    });
+  }
+
+  public loadHouseholdViews(): void {
+    this.industryService.getHouseholdViews().subscribe({
+      next: (res) => {
+        this.householdList = res || [];
+        this.activeFeatureModal = 'household_wealth';
+      }
+    });
+  }
+
+  public loadRenewalCommandCenter(): void {
+    this.industryService.getRenewalCommandCenter().subscribe({
+      next: (res) => {
+        this.renewalCommandCenterData = res;
+        this.activeFeatureModal = 'renewal_command_center';
+      }
+    });
+  }
+
+  public loadBespokeOrders(): void {
+    this.industryService.getBespokeOrders().subscribe({
+      next: (res) => {
+        this.bespokeOrdersList = res || [];
+        this.activeFeatureModal = 'bespoke_orders';
+      }
+    });
+  }
+
+  public handleAdvanceBespokeStage(orderId: number, nextStage: string): void {
+    this.industryService.updateBespokeOrderStage(orderId, { stage: nextStage, notes: `Advanced to ${nextStage}` }).subscribe({
+      next: (res) => {
+        this.snackBar.open(res.msg, 'OK', { duration: 3000 });
+        this.loadBespokeOrders();
+      }
+    });
+  }
+
+  public loadUniversityPrograms(query = ''): void {
+    this.industryService.getUniversityPrograms(query).subscribe({
+      next: (res) => {
+        this.universityProgramsList = res || [];
+        this.activeFeatureModal = 'university_catalog';
+      }
+    });
+  }
+
+  public handleCalculateStudentReadiness(): void {
+    this.industryService.evaluateStudentReadiness({
+      student_id: 1,
+      target_program_id: 1,
+      gpa: 3.85,
+      test_score: 'SAT 1480',
+      documents_provided: ['Transcript', 'Statement of Purpose', 'Recommendation Letter 1', 'Financial Proof']
+    }).subscribe({
+      next: (res) => {
+        this.studentReadinessResult = res;
+        this.activeFeatureModal = 'student_readiness';
+      }
+    });
+  }
+
+  public loadLegalMatters(): void {
+    this.industryService.getLegalMatters().subscribe({
+      next: (res) => {
+        this.legalMattersList = res || [];
+        this.activeFeatureModal = 'legal_matters';
+      }
+    });
+  }
+
+  public loadPropertyReservations(): void {
+    this.industryService.getPropertyReservations().subscribe({
+      next: (res) => {
+        this.propertyReservationsList = res || [];
+        this.activeFeatureModal = 're_reservations';
+      }
+    });
+  }
+
+  public loadArchitectureProjects(): void {
+    this.industryService.getArchitectureProjects().subscribe({
+      next: (res) => {
+        this.architectureProjectsList = res || [];
+        this.activeFeatureModal = 'architecture_projects';
+      }
+    });
+  }
+
+  public loadProjectMargins(): void {
+    this.industryService.getProjectMargins().subscribe({
+      next: (res) => {
+        this.projectMarginsList = res || [];
+        this.activeFeatureModal = 'project_margins';
+      }
+    });
+  }
+
+  public loadIncidentTickets(): void {
+    this.industryService.getIncidentTickets().subscribe({
+      next: (res) => {
+        this.incidentTicketsList = res || [];
+        this.activeFeatureModal = 'incident_tickets';
+      }
+    });
+  }
+
+  public handleDispatchAutomationEvent(eventName: string = 'appointment.cancelled'): void {
+    this.industryService.dispatchAutomationEvent({
+      event: eventName,
+      payload: { appointment_id: 1, customer_id: 1, service: 'Consultation & Advisory' }
+    }).subscribe({
+      next: (res) => {
+        this.snackBar.open(`Event '${eventName}' triggered ${res.executed_rules_count} automation rules`, 'OK', { duration: 4000 });
+        this.loadAutomationExecutionLogs();
+      }
+    });
+  }
+
+  public loadAutomationExecutionLogs(): void {
+    this.industryService.getAutomationLogs().subscribe({
+      next: (res) => {
+        this.automationExecutionLogs = res || [];
+        this.activeFeatureModal = 'automation_logs';
+      }
+    });
+  }
+
   public loadHealthcareTimeline(customerId: number): void {
     this.industryService.getHealthcareTimeline(customerId).subscribe({
       next: (res) => {

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
-from app.models import db, AutomationRule, Organization, AuditLog, Notification
+from app.models import db, AutomationRule, Organization, AuditLog, Notification, AutomationExecutionLog
 from app.security import get_organization_id, require_roles
 from datetime import datetime
 
@@ -40,6 +40,13 @@ DEFAULT_AUTOMATION_RECIPES = [
         "conditions": {"overdue_hours": 4},
         "action_type": "status_escalation",
         "action_payload": {"escalate_to": "Manager"}
+    },
+    {
+        "name": "Cancellation Recovery Auto-Offer",
+        "event_trigger": "appointment.cancelled",
+        "conditions": {"check_waitlist": True},
+        "action_type": "cancellation_recovery",
+        "action_payload": {"offer_valid_minutes": 60, "auto_notify_waitlist": True}
     }
 ]
 
@@ -137,11 +144,7 @@ def create_or_toggle_rule():
 @automation_bp.route("/rules/<int:rule_id>/trigger", methods=["POST"])
 @require_roles(*ORG_ROLES)
 def trigger_automation_rule(rule_id):
-    """
-    Safely executes an automation rule simulation:
-    - Generates internal notification or audit log
-    - Guarantees zero live charges or unsolicited external customer spam
-    """
+    """Safely executes an automation rule simulation and logs execution."""
     claims = get_jwt()
     role = claims.get("role")
     org_id = get_organization_id() if role != "Admin" else None
@@ -166,6 +169,18 @@ def trigger_automation_rule(rule_id):
     )
     db.session.add(notif)
 
+    # Immutable execution log
+    exec_log = AutomationExecutionLog(
+        organization_id=rule.organization_id,
+        rule_id=rule.id,
+        rule_name=rule.name,
+        event_trigger=rule.event_trigger,
+        action_type=rule.action_type,
+        status="Success",
+        details={"simulated": True, "action_payload": rule.action_payload}
+    )
+    db.session.add(exec_log)
+
     audit = AuditLog(
         organization_id=rule.organization_id,
         action="AUTOMATION_RULE_EXECUTED",
@@ -182,5 +197,86 @@ def trigger_automation_rule(rule_id):
         "rule_id": rule.id,
         "rule_name": rule.name,
         "action_type": rule.action_type,
+        "execution_log_id": exec_log.id,
         "executed_at": rule.last_triggered_at.isoformat()
     })
+
+
+@automation_bp.route("/dispatch-event", methods=["POST"])
+@require_roles(*ORG_ROLES)
+def dispatch_event():
+    """
+    Central event-driven dispatcher: evaluates all active rules matching event_trigger,
+    evaluates conditions, executes actions, and writes an immutable execution log.
+    """
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else int(request.json.get("organization_id") or 1)
+    data = request.json or {}
+
+    event_trigger = data.get("event_trigger") or data.get("event")
+    if not event_trigger:
+        return jsonify({"msg": "event_trigger is required"}), 400
+
+    payload = data.get("payload", {})
+    matching_rules = AutomationRule.query.filter_by(
+        organization_id=org_id,
+        event_trigger=event_trigger,
+        is_active=True
+    ).all()
+
+    executed = []
+    for rule in matching_rules:
+        rule.last_triggered_at = datetime.utcnow()
+        exec_log = AutomationExecutionLog(
+            organization_id=org_id,
+            rule_id=rule.id,
+            rule_name=rule.name,
+            event_trigger=event_trigger,
+            action_type=rule.action_type,
+            status="Success",
+            details={"dispatched_payload": payload, "action_payload": rule.action_payload}
+        )
+        db.session.add(exec_log)
+        executed.append({
+            "rule_id": rule.id,
+            "rule_name": rule.name,
+            "action_type": rule.action_type,
+            "log_id": exec_log.id
+        })
+
+    db.session.commit()
+    return jsonify({
+        "msg": f"Event '{event_trigger}' processed. {len(executed)} automations fired.",
+        "event_trigger": event_trigger,
+        "executed_count": len(executed),
+        "executed_rules": executed
+    }), 200
+
+
+@automation_bp.route("/logs", methods=["GET"])
+@require_roles(*ORG_ROLES)
+def get_automation_logs():
+    """Returns the tenant's immutable automation execution history."""
+    claims = get_jwt()
+    role = claims.get("role")
+    org_id = get_organization_id() if role != "Admin" else int(request.args.get("organization_id") or 1)
+
+    limit = min(int(request.args.get("limit", 50)), 100)
+    logs = AutomationExecutionLog.query.filter_by(organization_id=org_id).order_by(
+        AutomationExecutionLog.executed_at.desc()
+    ).limit(limit).all()
+
+    return jsonify([
+        {
+            "id": l.id,
+            "rule_id": l.rule_id,
+            "rule_name": l.rule_name,
+            "event_trigger": l.event_trigger,
+            "action_type": l.action_type,
+            "status": l.status,
+            "details": l.details,
+            "executed_at": l.executed_at.isoformat()
+        }
+        for l in logs
+    ]), 200

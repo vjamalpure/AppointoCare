@@ -511,6 +511,7 @@ def export_customers():
 # Customer 360 Unified Communication Feed
 # -----------------------------------------------------------------------------
 @customer_bp.route("/<int:customer_id>/unified-timeline", methods=["GET"])
+@customer_bp.route("/<int:customer_id>/360", methods=["GET"])
 @jwt_required()
 def get_customer_unified_timeline(customer_id):
     claims = get_jwt()
@@ -522,7 +523,10 @@ def get_customer_unified_timeline(customer_id):
         if customer.organization_id != org_id:
             return jsonify({"msg": "Unauthorized"}), 403
 
-    from app.models import ClinicalEncounter, CustomerDocument, TaskItem, FinancialLedgerEntry
+    from app.models import (
+        ClinicalEncounter, CustomerDocument, TaskItem, FinancialLedgerEntry,
+        BespokeOrder, InsurancePolicyRecord, LegalMatter, StudentReadinessScore
+    )
 
     events = []
 
@@ -551,16 +555,17 @@ def get_customer_unified_timeline(customer_id):
             "badge_color": "green" if m.status == "Sent" else "amber"
         })
 
-    # 3. Clinical Encounters
-    encounters = ClinicalEncounter.query.filter_by(patient_id=customer.id, organization_id=customer.organization_id).all()
-    for e in encounters:
-        events.append({
-            "type": "CLINICAL_ENCOUNTER",
-            "title": f"Encounter: {e.encounter_type} (Dr. {e.practitioner_name})",
-            "description": f"Chief Complaints: {e.chief_complaints}. Diagnosis: {e.diagnosis}",
-            "timestamp": e.encounter_date.isoformat(),
-            "badge_color": "purple"
-        })
+    # 3. Clinical Encounters (Role-guarded: Clinical credentials or Admin)
+    if role in ("Doctor", "Nurse", "Specialist", "Admin", "SuperAdmin", "Organization", "Manager"):
+        encounters = ClinicalEncounter.query.filter_by(patient_id=customer.id, organization_id=customer.organization_id).all()
+        for e in encounters:
+            events.append({
+                "type": "CLINICAL_ENCOUNTER",
+                "title": f"Encounter: {e.encounter_type} (Dr. {e.practitioner_name})",
+                "description": f"Chief Complaints: {e.chief_complaints}. Diagnosis: {e.diagnosis}",
+                "timestamp": e.encounter_date.isoformat(),
+                "badge_color": "purple"
+            })
 
     # 4. Uploaded Documents
     docs = CustomerDocument.query.filter_by(customer_id=customer.id, organization_id=customer.organization_id).all()
@@ -595,6 +600,37 @@ def get_customer_unified_timeline(customer_id):
             "badge_color": "amber" if t.status != "Completed" else "green"
         })
 
+    # 7. Vertical Extensions (Bespoke Orders, Insurance Policies, Legal Matters)
+    bespoke_orders = BespokeOrder.query.filter_by(customer_id=customer.id, organization_id=customer.organization_id).all()
+    for bo in bespoke_orders:
+        events.append({
+            "type": "BESPOKE_ORDER",
+            "title": f"Bespoke: {bo.garment_type} ({bo.order_number})",
+            "description": f"Stage: {bo.production_stage}. Balance Due: ₹{bo.balance_due}. Fabric: {bo.fabric_choice}",
+            "timestamp": bo.created_at.isoformat() if bo.created_at else datetime.utcnow().isoformat(),
+            "badge_color": "cyan"
+        })
+
+    policies = InsurancePolicyRecord.query.filter_by(customer_id=customer.id, organization_id=customer.organization_id).all()
+    for pol in policies:
+        events.append({
+            "type": "INSURANCE_POLICY",
+            "title": f"Policy: {pol.policy_number} ({pol.carrier_name})",
+            "description": f"Plan: {pol.plan_type}. Annual Premium: ₹{pol.annual_premium}. Expiry: {pol.expiry_date.strftime('%d %b %Y')}",
+            "timestamp": pol.created_at.isoformat() if pol.created_at else datetime.utcnow().isoformat(),
+            "badge_color": "emerald"
+        })
+
+    matters = LegalMatter.query.filter_by(client_id=customer.id, organization_id=customer.organization_id).all()
+    for mat in matters:
+        events.append({
+            "type": "LEGAL_MATTER",
+            "title": f"Legal Matter: {mat.matter_number} - {mat.title}",
+            "description": f"Practice: {mat.practice_area}. Retainer Balance: ₹{mat.retainer_balance}. Billable Hours: {mat.billable_hours_recorded}",
+            "timestamp": mat.created_at.isoformat() if mat.created_at else datetime.utcnow().isoformat(),
+            "badge_color": "amber"
+        })
+
     # Sort descending by timestamp
     events.sort(key=lambda x: x["timestamp"], reverse=True)
 
@@ -607,7 +643,8 @@ def get_customer_unified_timeline(customer_id):
             "tags": customer.tags
         },
         "total_events": len(events),
-        "events": events
+        "events": events,
+        "timeline_events": events
     }), 200
 
 

@@ -774,6 +774,8 @@ class DiagnosticLabOrder(db.Model):
     attachment_url = db.Column(db.String(255), nullable=True)
     doctor_review_notes = db.Column(db.Text, nullable=True)
     reviewed_at = db.Column(db.DateTime, nullable=True)
+    critical_flag = db.Column(db.Boolean, default=False)
+    escalated_to_clinician = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
@@ -797,6 +799,337 @@ class ABDMConsentArtifact(db.Model):
     expires_at = db.Column(db.DateTime, nullable=True)
     fhir_bundle_id = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class MedicationRefillRequest(db.Model):
+    __tablename__ = "medication_refill_requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True)
+    encounter_id = db.Column(db.Integer, db.ForeignKey("clinical_encounters.id", ondelete="SET NULL"), nullable=True)
+    medication_name = db.Column(db.String(150), nullable=False)
+    dosage = db.Column(db.String(100), nullable=True)
+    quantity_requested = db.Column(db.Integer, default=30)
+    refills_remaining = db.Column(db.Integer, default=2)
+    status = db.Column(db.String(40), default="Pending_Approval")  # Pending_Approval, Approved, Dispensed, Denied
+    approving_doctor = db.Column(db.String(150), nullable=True)
+    pharmacy_notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class RetailInventoryItem(db.Model):
+    __tablename__ = "retail_inventory_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    sku = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    category = db.Column(db.String(80), default="Retail")
+    quantity_on_hand = db.Column(db.Integer, default=0)
+    reorder_level = db.Column(db.Integer, default=5)
+    unit_cost = db.Column(db.Float, default=0.0)
+    unit_price = db.Column(db.Float, default=0.0)
+    barcode = db.Column(db.String(100), nullable=True)
+    status = db.Column(db.String(40), default="In_Stock")  # In_Stock, Low_Stock, Out_Of_Stock
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class CancellationRecoveryOffer(db.Model):
+    __tablename__ = "cancellation_recovery_offers"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    cancelled_appointment_id = db.Column(db.Integer, nullable=True)
+    waitlist_id = db.Column(db.Integer, db.ForeignKey("appointment_waitlists.id", ondelete="SET NULL"), nullable=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    customer_name = db.Column(db.String(150), nullable=False)
+    customer_phone = db.Column(db.String(20), nullable=False)
+    offered_slot = db.Column(db.DateTime, nullable=False)
+    service_name = db.Column(db.String(150), default="Service Appointment")
+    expires_at = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(40), default="Offered")  # Offered, Accepted, Expired, Declined
+    recovered_revenue = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class HouseholdRelationship(db.Model):
+    __tablename__ = "household_relationships"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    household_name = db.Column(db.String(150), nullable=False)
+    head_customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    member_customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    relationship_type = db.Column(db.String(50), default="Spouse")  # Spouse, Dependent, Child, Parent, Partner
+    consolidated_aum = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class RiskSuitabilityProfile(db.Model):
+    __tablename__ = "risk_suitability_profiles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    risk_tolerance_category = db.Column(db.String(50), default="Moderate")  # Conservative, Moderate, Growth, Aggressive
+    risk_score = db.Column(db.Integer, default=50)  # 0 - 100
+    investment_horizon_years = db.Column(db.Integer, default=5)
+    liquidity_needs = db.Column(db.String(50), default="Medium")
+    documented_objective = db.Column(db.String(255), default="Long-term capital appreciation with moderate income")
+    advisor_name = db.Column(db.String(150), nullable=True)
+    status = db.Column(db.String(40), default="Approved")  # Draft, Pending_Client_Signature, Approved
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class InsurancePolicyRecord(db.Model):
+    __tablename__ = "insurance_policy_records"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    policy_number = db.Column(db.String(100), nullable=False)
+    carrier_name = db.Column(db.String(150), nullable=False)
+    plan_type = db.Column(db.String(80), default="Comprehensive Health")  # Health, Motor, Life, Commercial, Term
+    sum_insured = db.Column(db.Float, default=500000.0)
+    annual_premium = db.Column(db.Float, nullable=False)
+    commission_rate_pct = db.Column(db.Float, default=15.0)
+    effective_date = db.Column(db.DateTime, nullable=False)
+    expiry_date = db.Column(db.DateTime, nullable=False)
+    renewal_status = db.Column(db.String(40), default="Upcoming")  # Upcoming, Re-quoted, Renewed, Lapsed
+    retention_risk_score = db.Column(db.Integer, default=20)  # 0 - 100
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class PolicyEndorsement(db.Model):
+    __tablename__ = "policy_endorsements"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    policy_id = db.Column(db.Integer, db.ForeignKey("insurance_policy_records.id", ondelete="CASCADE"), nullable=False)
+    endorsement_type = db.Column(db.String(80), default="Nominee Change")  # Address Change, Nominee Change, Sum Insured Elevation, Member Addition
+    change_summary = db.Column(db.String(255), nullable=False)
+    premium_delta = db.Column(db.Float, default=0.0)
+    status = db.Column(db.String(40), default="Approved")  # Submitted, Carrier_Review, Approved, Rejected
+    effective_date = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class BespokeOrder(db.Model):
+    __tablename__ = "bespoke_orders"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    order_number = db.Column(db.String(80), nullable=False)
+    garment_type = db.Column(db.String(100), default="Bespoke Tuxedo")
+    fabric_choice = db.Column(db.String(150), default="Super 150s Merino Wool (Navy)")
+    measurements_profile = db.Column(db.JSON, default=dict)
+    design_sketch_url = db.Column(db.String(255), nullable=True)
+    fitting_date = db.Column(db.DateTime, nullable=True)
+    production_stage = db.Column(db.String(50), default="Pattern_Cutting")  # Pattern_Cutting, In_Tailoring, First_Fitting, Alterations, Ready_For_Pickup, Delivered
+    total_price = db.Column(db.Float, default=45000.0)
+    deposit_paid = db.Column(db.Float, default=20000.0)
+    balance_due = db.Column(db.Float, default=25000.0)
+    pickup_ready = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class ClientWishlist(db.Model):
+    __tablename__ = "client_wishlists"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    item_name = db.Column(db.String(150), nullable=False)
+    sku = db.Column(db.String(80), nullable=True)
+    size_preference = db.Column(db.String(50), default="40R")
+    estimated_price = db.Column(db.Float, default=0.0)
+    stylist_notes = db.Column(db.String(255), nullable=True)
+    status = db.Column(db.String(40), default="Saved")  # Saved, Reserved, Purchased
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class UniversityProgram(db.Model):
+    __tablename__ = "university_programs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    institution_name = db.Column(db.String(150), nullable=False)
+    program_title = db.Column(db.String(150), nullable=False)
+    country = db.Column(db.String(80), default="United Kingdom")
+    intake_semester = db.Column(db.String(50), default="Fall 2027")
+    annual_tuition = db.Column(db.Float, default=24000.0)
+    currency = db.Column(db.String(10), default="GBP")
+    min_gpa = db.Column(db.Float, default=3.0)
+    min_ielts = db.Column(db.Float, default=6.5)
+    global_ranking = db.Column(db.Integer, default=120)
+    status = db.Column(db.String(40), default="Active")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class StudentReadinessScore(db.Model):
+    __tablename__ = "student_readiness_scores"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    readiness_score = db.Column(db.Integer, default=75)  # 0 - 100
+    gpa = db.Column(db.Float, default=3.4)
+    english_score = db.Column(db.String(40), default="IELTS 7.0")
+    sop_status = db.Column(db.String(40), default="Drafted")  # Missing, Drafted, Reviewed, Approved
+    lor_count = db.Column(db.Integer, default=2)
+    missing_documents = db.Column(db.JSON, default=list)
+    counselor_name = db.Column(db.String(150), default="Lead Counselor")
+    readiness_tier = db.Column(db.String(40), default="High")  # Low, Moderate, High, Ready_To_Lodge
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class LegalMatter(db.Model):
+    __tablename__ = "legal_matters"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    client_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    matter_number = db.Column(db.String(80), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    practice_area = db.Column(db.String(100), default="Commercial Litigation")
+    adverse_party = db.Column(db.String(150), nullable=True)
+    conflict_cleared = db.Column(db.Boolean, default=True)
+    limitation_date = db.Column(db.DateTime, nullable=True)
+    retainer_balance = db.Column(db.Float, default=75000.0)
+    trust_account_balance = db.Column(db.Float, default=50000.0)
+    billable_hours_recorded = db.Column(db.Float, default=12.5)
+    hourly_rate = db.Column(db.Float, default=12500.0)
+    status = db.Column(db.String(40), default="Active")  # In_Conflict_Check, Active, Suspended, Closed
+    lead_advocate = db.Column(db.String(150), default="Senior Advocate")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class AdverseConflictReview(db.Model):
+    __tablename__ = "adverse_conflict_reviews"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    matter_id = db.Column(db.Integer, db.ForeignKey("legal_matters.id", ondelete="CASCADE"), nullable=False)
+    search_term = db.Column(db.String(150), nullable=False)
+    matched_entity = db.Column(db.String(150), nullable=True)
+    similarity_score = db.Column(db.Float, default=0.0)
+    clearance_decision = db.Column(db.String(40), default="Cleared")  # Potential_Conflict, Cleared, Disqualified
+    ethical_notes = db.Column(db.Text, nullable=True)
+    reviewed_by_partner = db.Column(db.String(150), default="Managing Partner")
+    reviewed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class PropertyReservation(db.Model):
+    __tablename__ = "property_reservations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    buyer_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    property_name = db.Column(db.String(150), nullable=False)
+    unit_number = db.Column(db.String(50), default="Tower A - 1402")
+    list_price = db.Column(db.Float, default=18500000.0)
+    offer_price = db.Column(db.Float, default=17800000.0)
+    earnest_deposit = db.Column(db.Float, default=500000.0)
+    status = db.Column(db.String(40), default="Reserved")  # Site_Visited, Offer_Made, Reserved, Agreement_Signed, Closed
+    agent_name = db.Column(db.String(150), default="Senior Broker")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class ArchitectureProject(db.Model):
+    __tablename__ = "architecture_projects"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    client_id = db.Column(db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    project_title = db.Column(db.String(150), nullable=False)
+    total_budget = db.Column(db.Float, default=12500000.0)
+    actual_cost_to_date = db.Column(db.Float, default=4200000.0)
+    drawings_revision_count = db.Column(db.Integer, default=4)
+    open_rfis_count = db.Column(db.Integer, default=2)
+    variation_orders_amount = db.Column(db.Float, default=450000.0)
+    project_stage = db.Column(db.String(50), default="Design_Development")  # Schematic, Design_Development, Permitting, Construction_Admin, Handover
+    lead_architect = db.Column(db.String(150), default="Principal Architect")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class ProjectProfitability(db.Model):
+    __tablename__ = "project_profitability"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    project_code = db.Column(db.String(80), nullable=False)
+    project_name = db.Column(db.String(150), nullable=False)
+    planned_budget = db.Column(db.Float, default=2500000.0)
+    actual_cost_burn = db.Column(db.Float, default=1650000.0)
+    billable_invoiced = db.Column(db.Float, default=2100000.0)
+    target_margin_pct = db.Column(db.Float, default=35.0)
+    current_margin_pct = db.Column(db.Float, default=21.4)
+    risk_level = db.Column(db.String(30), default="Caution")  # Healthy, Caution, Critical_Overrun
+    estimate_to_complete = db.Column(db.Float, default=600000.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class ResourceCapacity(db.Model):
+    __tablename__ = "resource_capacities"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    consultant_name = db.Column(db.String(150), nullable=False)
+    role_title = db.Column(db.String(100), default="Senior Consultant")
+    skill_tags = db.Column(db.JSON, default=list)
+    weekly_capacity_hours = db.Column(db.Float, default=40.0)
+    billable_assigned_hours = db.Column(db.Float, default=34.0)
+    utilization_percentage = db.Column(db.Float, default=85.0)
+    bench_availability = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class IncidentTicket(db.Model):
+    __tablename__ = "incident_tickets"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    ticket_number = db.Column(db.String(80), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    severity = db.Column(db.String(10), default="P2")  # P1, P2, P3, P4
+    client_name = db.Column(db.String(150), default="Enterprise Client")
+    assigned_engineer = db.Column(db.String(150), default="On-Call Lead")
+    status = db.Column(db.String(40), default="Investigating")  # Triggered, Investigating, Mitigated, Resolved
+    response_deadline = db.Column(db.DateTime, nullable=False)
+    resolution_deadline = db.Column(db.DateTime, nullable=False)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    sla_breached = db.Column(db.Boolean, default=False)
+    postmortem_notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+class AutomationExecutionLog(db.Model):
+    __tablename__ = "automation_execution_logs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    rule_id = db.Column(db.Integer, db.ForeignKey("automation_rules.id", ondelete="SET NULL"), nullable=True)
+    rule_name = db.Column(db.String(150), nullable=False)
+    event_trigger = db.Column(db.String(100), nullable=False)
+    action_type = db.Column(db.String(100), nullable=False)
+    status = db.Column(db.String(40), default="Success")  # Success, Failed, Pending_Approval, Retrying
+    details = db.Column(db.JSON, default=dict)
+    executed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 
