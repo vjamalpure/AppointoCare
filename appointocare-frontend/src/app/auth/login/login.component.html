@@ -27,21 +27,80 @@
       class="balloon-item"
       [class.popping]="b.popping"
       [style.left.%]="b.leftPercent"
-      [style.width.px]="b.size"
-      [style.height.px]="b.size * 1.3"
+      [style.width.px]="b.width"
+      [style.height.px]="b.height + 36"
       [style.animation-duration]="b.durationSec + 's'"
       [style.animation-delay]="b.delaySec + 's'"
       (click)="popBalloon(b, $event)"
       title="Click to pop this balloon!">
       <!-- Inner Sway Container so sway doesn't cancel vertical fall -->
       <div class="balloon-sway-wrap" [style.animation-duration]="b.swayDuration + 's'">
-        <!-- Balloon Glossy Body -->
-        <div class="balloon-body" [style.background]="b.gradient">
-          <div class="balloon-glare"></div>
-        </div>
-        <!-- Knot & Dangling String -->
-        <div class="balloon-knot" [style.border-top-color]="b.color"></div>
-        <div class="balloon-string"></div>
+        <svg
+          class="real-balloon-svg"
+          viewBox="0 0 100 160"
+          preserveAspectRatio="xMidYMid meet"
+          xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- 3D Specular Radial Gradient for True Latex Balloon Light -->
+            <radialGradient [id]="'bgGrad_' + b.uid" cx="34%" cy="28%" r="68%" fx="30%" fy="24%">
+              <stop offset="0%" [attr.stop-color]="b.lightColor" stop-opacity="1" />
+              <stop offset="38%" [attr.stop-color]="b.midColor" stop-opacity="1" />
+              <stop offset="78%" [attr.stop-color]="b.color" stop-opacity="1" />
+              <stop offset="100%" [attr.stop-color]="b.darkColor" stop-opacity="1" />
+            </radialGradient>
+            <!-- Drop Shadow for realistic depth -->
+            <filter [id]="'bShadow_' + b.uid" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="6" stdDeviation="5" flood-opacity="0.22" flood-color="#000" />
+            </filter>
+          </defs>
+
+          <!-- Balloon Teardrop Body with Rolled Knot Neck -->
+          <g [attr.filter]="'url(#bShadow_' + b.uid + ')'">
+            <!-- True Teardrop Balloon Contour -->
+            <path
+              d="M 50,4 C 23,4 5,26 5,55 C 5,79 26,101 44,107 L 41,113 C 40,115 42,117 44,117 L 56,117 C 58,117 60,115 59,113 L 56,107 C 74,101 95,79 95,55 C 95,26 77,4 50,4 Z"
+              [attr.fill]="'url(#bgGrad_' + b.uid + ')'"
+            />
+            <!-- Glossy Curved Glare / Latex Specular Reflection -->
+            <path
+              d="M 21,24 C 14,35 14,50 19,62 C 20,64 17,65 16,63 C 11,50 11,34 18,22 C 19,20 22,22 21,24 Z"
+              fill="rgba(255, 255, 255, 0.72)"
+            />
+            <ellipse
+              cx="28"
+              cy="18"
+              rx="6"
+              ry="3"
+              transform="rotate(-28 28 18)"
+              fill="rgba(255, 255, 255, 0.82)"
+            />
+            <!-- Subtle ambient rim bounce reflection -->
+            <path
+              d="M 64,95 C 76,87 85,73 87,56"
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.28)"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            />
+            <!-- Rolled Ring / Knot Rim Lip -->
+            <ellipse
+              cx="50"
+              cy="116"
+              rx="6"
+              ry="2.5"
+              [attr.fill]="b.darkColor"
+            />
+          </g>
+
+          <!-- Dangling Wavy Curly String -->
+          <path
+            d="M 50,117 C 44,129 55,138 47,150 C 43,156 50,162 48,168"
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.7)"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
       </div>
     </div>
 

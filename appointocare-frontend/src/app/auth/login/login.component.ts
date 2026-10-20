@@ -23,10 +23,14 @@ export interface LiquidRipple {
 
 export interface InteractiveBalloon {
   id: number;
+  uid: string;
   leftPercent: number;
-  size: number;
+  width: number;
+  height: number;
   color: string;
-  gradient: string;
+  lightColor: string;
+  midColor: string;
+  darkColor: string;
   durationSec: number;
   delaySec: number;
   swayDuration: number;
@@ -67,10 +71,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   copyToastMsg = '';
   private toastTimer: any = null;
 
-  // Minimal Organic Liquid Press Ripples (Silent)
+  // Minimal Organic Liquid Press (Visual only, silent)
   ripples: LiquidRipple[] = [];
 
-  // Interactive Flowing & Poppable Balloons (Sound on pop only)
+  // Interactive Flowing Balloons with Realistic Latex Shapes & Diverse Sizes
   balloons: InteractiveBalloon[] = [];
   popEffects: PopEffect[] = [];
   poppedBalloonCount = 0;
@@ -149,7 +153,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     const savedTheme = localStorage.getItem('appointocare_theme');
     this.isDarkMode = savedTheme === 'dark';
 
-    // Start streaming flowing descending balloons immediately
+    // Start streaming diverse, realistic flowing balloons
     this.startBalloonStream();
   }
 
@@ -163,7 +167,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================================
-  // Minimal Liquid Press anywhere on page (Pure visual fluid impression, silent)
+  // Minimal Liquid Press anywhere on page (Pure fluid visual, silent)
   // =========================================================================
   onPageClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
@@ -179,53 +183,79 @@ export class LoginComponent implements OnInit, OnDestroy {
     };
     this.ripples.push(ripple);
 
-    // Fade out quickly (500ms) for a crisp, minimal liquid press
     setTimeout(() => {
       this.ripples = this.ripples.filter(r => r.id !== ripple.id);
-    }, 500);
+    }, 480);
   }
 
   // =========================================================================
-  // Interactive Flowing Balloons (Descending from top, click to pop with audio)
+  // Realistic Balloons (Diverse sizes from mini to jumbo, teardrop shape)
   // =========================================================================
   private startBalloonStream(): void {
-    // Staggered initial balloons already on screen at varied heights
+    // Immediate staggered balloons floating at various heights across screen
     const initialDelays = [-1.5, -4.5, -7.5, -10.5, -3.0, -6.0];
     for (const delay of initialDelays) {
       this.spawnBalloon(delay);
     }
 
-    // Continuously spawn fresh balloons from the top every 2 seconds
+    // Continuously spawn fresh balloons of varied sizes
     this.balloonInterval = setInterval(() => {
-      if (this.balloons.length < 12) {
+      if (this.balloons.length < 14) {
         this.spawnBalloon(0);
       }
-    }, 2000);
+    }, 1900);
   }
 
   private spawnBalloon(delaySec: number = 0): void {
     const themes = [
-      { color: '#ec4899', gradient: 'radial-gradient(circle at 35% 28%, #f472b6 0%, #db2777 55%, #9d174d 100%)' },
-      { color: '#38bdf8', gradient: 'radial-gradient(circle at 35% 28%, #7dd3fc 0%, #0284c7 55%, #0369a1 100%)' },
-      { color: '#a855f7', gradient: 'radial-gradient(circle at 35% 28%, #c084fc 0%, #9333ea 55%, #6b21a8 100%)' },
-      { color: '#10b981', gradient: 'radial-gradient(circle at 35% 28%, #34d399 0%, #059669 55%, #065f46 100%)' },
-      { color: '#f59e0b', gradient: 'radial-gradient(circle at 35% 28%, #fbbf24 0%, #d97706 55%, #92400e 100%)' },
-      { color: '#6366f1', gradient: 'radial-gradient(circle at 35% 28%, #818cf8 0%, #4f46e5 55%, #3730a3 100%)' },
-      { color: '#f43f5e', gradient: 'radial-gradient(circle at 35% 28%, #fb7185 0%, #e11d48 55%, #9f1239 100%)' }
+      // Crimson Ruby
+      { color: '#e11d48', lightColor: '#fda4af', midColor: '#f43f5e', darkColor: '#881337' },
+      // Azure Sky
+      { color: '#0284c7', lightColor: '#7dd3fc', midColor: '#0ea5e9', darkColor: '#0369a1' },
+      // Royal Indigo
+      { color: '#4f46e5', lightColor: '#a5b4fc', midColor: '#6366f1', darkColor: '#312e81' },
+      // Electric Purple
+      { color: '#9333ea', lightColor: '#d8b4fe', midColor: '#a855f7', darkColor: '#581c87' },
+      // Emerald Mint
+      { color: '#059669', lightColor: '#6ee7b7', midColor: '#10b981', darkColor: '#064e3b' },
+      // Sunset Tangerine
+      { color: '#ea580c', lightColor: '#fdba74', midColor: '#f97316', darkColor: '#7c2d12' },
+      // Vibrant Fuchsia
+      { color: '#db2777', lightColor: '#f472b6', midColor: '#ec4899', darkColor: '#831843' },
+      // Solar Gold
+      { color: '#d97706', lightColor: '#fde047', midColor: '#f59e0b', darkColor: '#78350f' },
+      // Cyan Lagoon
+      { color: '#0891b2', lightColor: '#67e8f9', midColor: '#06b6d4', darkColor: '#164e63' }
     ];
 
     const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
-    const size = Math.floor(Math.random() * 18) + 48; // 48px to 66px
-    const leftPercent = Math.floor(Math.random() * 88) + 6; // 6% to 94%
-    const durationSec = Math.floor(Math.random() * 4) + 12; // 12s to 16s
-    const swayDuration = Math.random() * 1.5 + 2.5; // 2.5s to 4.0s
+
+    // Distinct Size Tiers: Each balloon has a visibly different size!
+    const sizeTiers = [
+      { minW: 36, maxW: 46, ratio: 1.34 }, // Petite / Mini
+      { minW: 52, maxW: 66, ratio: 1.30 }, // Medium / Standard
+      { minW: 74, maxW: 90, ratio: 1.28 }, // Large
+      { minW: 98, maxW: 118, ratio: 1.26 } // Jumbo
+    ];
+    const tier = sizeTiers[Math.floor(Math.random() * sizeTiers.length)];
+    const width = Math.floor(Math.random() * (tier.maxW - tier.minW + 1)) + tier.minW;
+    const height = Math.round(width * tier.ratio);
+
+    const leftPercent = Math.floor(Math.random() * 86) + 7; // 7% to 93%
+    const durationSec = Math.floor(Math.random() * 5) + 12; // 12s to 16s
+    const swayDuration = Math.random() * 1.5 + 2.6; // 2.6s to 4.1s
+    const uid = Math.random().toString(36).substring(2, 9);
 
     const balloon: InteractiveBalloon = {
       id: Date.now() + Math.random(),
+      uid,
       leftPercent,
-      size,
+      width,
+      height,
       color: chosenTheme.color,
-      gradient: chosenTheme.gradient,
+      lightColor: chosenTheme.lightColor,
+      midColor: chosenTheme.midColor,
+      darkColor: chosenTheme.darkColor,
       durationSec,
       delaySec,
       swayDuration,
@@ -249,7 +279,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (balloon.popping) return;
     balloon.popping = true;
 
-    // Play crisp pop sound
+    // Play crisp realistic pop sound
     this.playPopSound();
     this.poppedBalloonCount++;
 
@@ -288,7 +318,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       // Realistic crisp pitch drop pop
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(640, now);
+      osc.frequency.setValueAtTime(660, now);
       osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
 
       gain.gain.setValueAtTime(0.35, now);

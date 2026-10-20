@@ -89,8 +89,8 @@
   animation-fill-mode: forwards;
 
   &:hover .balloon-sway-wrap {
-    transform: scale(1.18);
-    filter: brightness(1.18) drop-shadow(0 14px 26px rgba(0, 0, 0, 0.3));
+    transform: scale(1.16);
+    filter: brightness(1.15) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.35));
   }
 
   &.popping {
@@ -106,54 +106,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.15s ease, filter 0.15s ease;
+    transition: transform 0.16s ease, filter 0.16s ease;
     animation-name: balloonSway;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     animation-direction: alternate;
   }
 
-  /* Glossy 3D Balloon Body */
-  .balloon-body {
+  .real-balloon-svg {
     width: 100%;
-    height: 82%;
-    border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
-    position: relative;
-    box-shadow:
-      inset -5px -8px 14px rgba(0, 0, 0, 0.28),
-      inset 4px 6px 12px rgba(255, 255, 255, 0.4),
-      0 10px 22px rgba(0, 0, 0, 0.18);
-
-    .balloon-glare {
-      position: absolute;
-      top: 14%;
-      left: 18%;
-      width: 24%;
-      height: 34%;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0) 80%);
-      transform: rotate(-30deg);
-    }
-  }
-
-  /* Little Tied Triangular Knot */
-  .balloon-knot {
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid;
-    margin-top: -1px;
-    filter: brightness(0.85);
-  }
-
-  /* Dangling Curving String */
-  .balloon-string {
-    width: 1.5px;
-    height: 34px;
-    background: rgba(255, 255, 255, 0.65);
-    transform-origin: top center;
-    animation: stringWiggle 2.2s ease-in-out infinite alternate;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    pointer-events: auto;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
+    transition: filter 0.2s ease;
   }
 }
 
