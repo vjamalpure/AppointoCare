@@ -1061,15 +1061,15 @@ app.get('/api/v1/platform/reports/summary', authenticateJWT, (req, res) => {
 // ----------------------------------------------------
 // Angular Frontend Static Serving with SPA Fallback
 // ----------------------------------------------------
-const primaryDist = path.join(__dirname, 'appointocare-frontend', 'dist', 'appointocore-frontend', 'browser');
-const fallbackDist = path.join(__dirname, 'appointocare-frontend', 'dist', 'appointocare-frontend', 'browser');
+const primaryDist = path.join(__dirname, 'appointocore-frontend', 'dist', 'appointocore-frontend', 'browser');
+const fallbackDist = path.join(__dirname, 'appointocore-frontend', 'dist', 'appointocare-frontend', 'browser');
 const distPath = fs.existsSync(path.join(primaryDist, 'index.html')) ? primaryDist : fallbackDist;
 
 // If frontend has not been compiled yet, compile it now
 if (!fs.existsSync(path.join(distPath, 'index.html'))) {
   console.log('[AppointoCore] Building Angular frontend...');
   try {
-    execSync('npm --prefix appointocare-frontend run build', { stdio: 'inherit' });
+    execSync('npm --prefix appointocore-frontend run build', { stdio: 'inherit' });
     console.log('[AppointoCore] Frontend build complete.');
   } catch (err) {
     console.error('[AppointoCore] Error building frontend:', err);

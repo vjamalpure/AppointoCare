@@ -6,7 +6,7 @@
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "build": "npm --prefix appointocare-frontend run build",
+    "build": "npm --prefix appointocore-frontend run build",
     "start": "node server.js",
     "dev": "node server.js"
   },

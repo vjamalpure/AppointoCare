@@ -27,7 +27,7 @@ services:
 
   backend:
     build:
-      context: ./appointocare-backend
+      context: ./appointocore-backend
     environment:
       SECRET_KEY: ${SECRET_KEY:-appointocore-dev-secret-change-me}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-appointocore-dev-jwt-secret-change-me}
@@ -46,7 +46,7 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - ./appointocare-backend:/app
+      - ./appointocore-backend:/app
     depends_on:
       db:
         condition: service_healthy
@@ -60,7 +60,7 @@ services:
 
   celery:
     build:
-      context: ./appointocare-backend
+      context: ./appointocore-backend
     environment:
       SECRET_KEY: ${SECRET_KEY:-appointocore-dev-secret-change-me}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-appointocore-dev-jwt-secret-change-me}
@@ -78,7 +78,7 @@ services:
 
   frontend:
     build:
-      context: ./appointocare-frontend
+      context: ./appointocore-frontend
     ports:
       - '4200:80'
     depends_on:

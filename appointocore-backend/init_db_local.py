@@ -157,7 +157,7 @@ if __name__ == "__main__":
         print("\nYou can now:")
         print("  1. Start backend: python run.py")
         print("  2. In another terminal, start Celery: celery -A celery_worker.celery worker --loglevel=info")
-        print("  3. In another terminal, start frontend: cd ../appointocare-frontend && npm start")
+        print("  3. In another terminal, start frontend: cd ../appointocore-frontend && npm start")
     else:
         print("✗ Database initialization failed!")
         sys.exit(1)
