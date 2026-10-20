@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt
-from app.models import db, Appointment, AppointmentTransaction, AuditLog, Organization, PaymentConfig, ServiceStatus
+from app.models import db, Appointment, AppointmentTransaction, AuditLog, Organization, PaymentConfig, ServiceStatus, ProviderEvent
 from app.service_guards import check_razorpay_active
 from datetime import datetime
 import os
@@ -207,6 +207,25 @@ def payment_webhook():
     data = request.json or {}
     event = data.get("event", "payment.captured")
     payload = data.get("payload", {})
+
+    event_id = request.headers.get("X-Razorpay-Event-Id") or data.get("event_id") or data.get("id")
+    if event_id:
+        existing_event = ProviderEvent.query.filter_by(provider="razorpay", event_id=str(event_id)).first()
+        if existing_event:
+            return jsonify({
+                "status": "duplicate_ignored",
+                "event_id": str(event_id),
+                "msg": "Webhook event already processed"
+            }), 200
+        prov_ev = ProviderEvent(
+            provider="razorpay",
+            event_id=str(event_id),
+            event_type=event,
+            payload=data,
+            status="processed",
+            processed_at=datetime.utcnow()
+        )
+        db.session.add(prov_ev)
 
     if event == "payment.captured":
         payment_entity = payload.get("payment", {}).get("entity", {})

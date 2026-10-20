@@ -13,8 +13,16 @@ from app.security import get_organization_id, require_roles
 from datetime import datetime, timedelta
 
 industry_suite_bp = Blueprint("industry_suite_bp", __name__)
-_get_org_id = get_organization_id
- 
+
+
+def _get_org_id():
+    claims = get_jwt()
+    if claims.get("role") in ["Admin", "SuperAdmin"]:
+        data = request.json if request.is_json and request.json else {}
+        param_org = request.args.get("organization_id") or data.get("organization_id")
+        return int(param_org) if param_org else int(claims.get("organization_id") or 1)
+    return int(claims.get("organization_id") or get_jwt_identity() or 1)
+
 ORG_ROLES = (
     "Admin", "SuperAdmin", "Organization", "Manager", "Staff",
     "Doctor", "Therapist", "Stylist", "Advisor", "Underwriter",

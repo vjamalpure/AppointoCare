@@ -82,6 +82,7 @@ class TestIndustryLeadersMatrix(unittest.TestCase):
             db.session.commit()
 
         # 3. Patient/Customer
+        # 3. Patient/Customer
         self.customer = Customer.query.filter_by(organization_id=self.org.id, phone="9988776655").first()
         if not self.customer:
             self.customer = Customer(
@@ -93,6 +94,9 @@ class TestIndustryLeadersMatrix(unittest.TestCase):
             db.session.add(self.customer)
             db.session.commit()
 
+        # Tenant B for cross-tenant isolation testing (uses canonical Organization 2)
+        self.org_b = db.session.get(Organization, 2)
+
         # 4. Generate Tokens
         self.org_token = create_access_token(
             identity=str(self.org.id),
@@ -102,6 +106,10 @@ class TestIndustryLeadersMatrix(unittest.TestCase):
             identity=str(self.doctor.id),
             additional_claims={"role": "Doctor", "organization_id": self.org.id, "sub": "dr_matrix_lead"}
         )
+        self.tenant_b_token = create_access_token(
+            identity=str(self.org_b.id),
+            additional_claims={"role": "Organization", "organization_id": self.org_b.id, "sub": str(self.org_b.id)}
+        )
 
         self.org_headers = {
             "Authorization": f"Bearer {self.org_token}",
@@ -109,6 +117,10 @@ class TestIndustryLeadersMatrix(unittest.TestCase):
         }
         self.doctor_headers = {
             "Authorization": f"Bearer {self.doctor_token}",
+            "Content-Type": "application/json"
+        }
+        self.tenant_b_headers = {
+            "Authorization": f"Bearer {self.tenant_b_token}",
             "Content-Type": "application/json"
         }
 
@@ -420,6 +432,99 @@ class TestIndustryLeadersMatrix(unittest.TestCase):
         self.assertIsInstance(incidents, list)
         self.assertGreater(len(incidents), 0)
         self.assertIn("severity", incidents[0])
+
+    # ==========================================
+    # 11. SECURITY, PRIVACY & MULTI-TENANT ISOLATION
+    # ==========================================
+    def test_cross_tenant_isolation_negative(self):
+        """Verify Tenant B cannot access Tenant A's customer 360 data or private records."""
+        # Tenant B attempts to access Tenant A's customer 360 timeline
+        res = self.client.get(f"/api/v1/customers/{self.customer.id}/360", headers=self.tenant_b_headers)
+        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.get_json().get("msg"), "Unauthorized")
+
+    def test_medication_refill_exhaustion_clinical_safety(self):
+        """Verify clinician cannot approve refill when authorized refills are exhausted."""
+        refill_res = self.client.post(
+            "/api/v1/healthcare/medications/refills",
+            headers=self.doctor_headers,
+            json={
+                "customer_id": self.customer.id,
+                "prescription_id": 998,
+                "medication_name": "Metformin 500mg",
+                "quantity_requested": 60,
+                "refills_remaining": 0
+            }
+        )
+        self.assertEqual(refill_res.status_code, 201)
+        refill_id = refill_res.get_json()["refill"]["id"]
+
+        # Attempt to approve exhausted refill
+        approve_res = self.client.post(
+            f"/api/v1/healthcare/medications/refills/{refill_id}/approve",
+            headers=self.doctor_headers,
+            json={"status": "Approved"}
+        )
+        self.assertEqual(approve_res.status_code, 400)
+        self.assertEqual(approve_res.get_json().get("error"), "REFILL_LIMIT_EXCEEDED")
+
+    def test_payment_webhook_idempotency_deduplication(self):
+        """Verify Razorpay webhook deduplication via ProviderEvent."""
+        event_id = f"evt_matrix_{int(datetime.utcnow().timestamp() * 1000)}"
+        payload = {
+            "event": "payment.captured",
+            "event_id": event_id,
+            "payload": {
+                "payment": {
+                    "entity": {
+                        "id": f"pay_test_{int(datetime.utcnow().timestamp() * 1000)}",
+                        "amount": 50000,
+                        "notes": {"organization_id": str(self.org.id)}
+                    }
+                }
+            }
+        }
+        # First delivery
+        res1 = self.client.post("/api/v1/payments/webhook", json=payload)
+        self.assertEqual(res1.status_code, 200)
+        data1 = res1.get_json()
+        self.assertEqual(data1.get("status"), "processed")
+
+        # Duplicate delivery
+        res2 = self.client.post("/api/v1/payments/webhook", json=payload)
+        self.assertEqual(res2.status_code, 200)
+        data2 = res2.get_json()
+        self.assertEqual(data2.get("status"), "duplicate_ignored")
+
+    def test_automation_event_dispatcher_idempotency(self):
+        """Verify event dispatcher idempotency key prevents duplicate execution logs."""
+        idemp_key = f"idemp_evt_{int(datetime.utcnow().timestamp() * 1000)}"
+        # First dispatch
+        res1 = self.client.post(
+            "/api/v1/automation/dispatch-event",
+            headers=self.org_headers,
+            json={
+                "event_trigger": "appointment.cancelled",
+                "idempotency_key": idemp_key,
+                "payload": {"appointment_id": 102}
+            }
+        )
+        self.assertEqual(res1.status_code, 200)
+
+        # Duplicate dispatch with identical idempotency key
+        res2 = self.client.post(
+            "/api/v1/automation/dispatch-event",
+            headers=self.org_headers,
+            json={
+                "event_trigger": "appointment.cancelled",
+                "idempotency_key": idemp_key,
+                "payload": {"appointment_id": 102}
+            }
+        )
+        self.assertEqual(res2.status_code, 200)
+        data2 = res2.get_json()
+        self.assertEqual(data2.get("status"), "duplicate_ignored")
+        self.assertEqual(data2.get("executed_count"), 0)
 
 
 if __name__ == "__main__":

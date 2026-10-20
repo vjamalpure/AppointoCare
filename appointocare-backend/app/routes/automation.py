@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
-from app.models import db, AutomationRule, Organization, AuditLog, Notification, AutomationExecutionLog
+from app.models import db, AutomationRule, Organization, AuditLog, Notification, AutomationExecutionLog, ProviderEvent
 from app.security import get_organization_id, require_roles
 from datetime import datetime
 
@@ -219,6 +219,29 @@ def dispatch_event():
         return jsonify({"msg": "event_trigger is required"}), 400
 
     payload = data.get("payload", {})
+
+    idempotency_key = request.headers.get("Idempotency-Key") or data.get("idempotency_key")
+    if idempotency_key:
+        existing_prov = ProviderEvent.query.filter_by(
+            provider=f"automation_org_{org_id}",
+            event_id=str(idempotency_key)
+        ).first()
+        if existing_prov:
+            return jsonify({
+                "msg": f"Idempotent event duplicate suppressed: {idempotency_key}",
+                "event_trigger": event_trigger,
+                "executed_count": 0,
+                "status": "duplicate_ignored"
+            }), 200
+        prov_ev = ProviderEvent(
+            provider=f"automation_org_{org_id}",
+            event_id=str(idempotency_key),
+            event_type=event_trigger,
+            payload=payload,
+            status="processed",
+            processed_at=datetime.utcnow()
+        )
+        db.session.add(prov_ev)
     matching_rules = AutomationRule.query.filter_by(
         organization_id=org_id,
         event_trigger=event_trigger,

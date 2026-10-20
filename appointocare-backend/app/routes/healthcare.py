@@ -803,8 +803,14 @@ def approve_medication_refill(refill_id):
     org_id = _get_org_id()
     refill = MedicationRefillRequest.query.filter_by(id=refill_id, organization_id=org_id).first_or_404()
     data = request.json or {}
+    new_status = data.get("status", "Approved")
+    if new_status == "Approved" and refill.refills_remaining <= 0:
+        return jsonify({
+            "error": "REFILL_LIMIT_EXCEEDED",
+            "msg": "No refills remaining authorized on this prescription. Clinician re-examination required."
+        }), 400
 
-    refill.status = data.get("status", "Approved")
+    refill.status = new_status
     if refill.refills_remaining > 0:
         refill.refills_remaining -= 1
     refill.approving_doctor = claims.get("sub") or refill.approving_doctor
