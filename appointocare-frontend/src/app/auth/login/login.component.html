@@ -41,30 +41,32 @@
           preserveAspectRatio="xMidYMid meet"
           xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <!-- 3D Specular Radial Gradient for True Latex Balloon Light -->
+            <!-- 3D Specular Translucent Radial Gradient -->
             <radialGradient [id]="'bgGrad_' + b.uid" cx="34%" cy="28%" r="68%" fx="30%" fy="24%">
-              <stop offset="0%" [attr.stop-color]="b.lightColor" stop-opacity="1" />
-              <stop offset="38%" [attr.stop-color]="b.midColor" stop-opacity="1" />
-              <stop offset="78%" [attr.stop-color]="b.color" stop-opacity="1" />
-              <stop offset="100%" [attr.stop-color]="b.darkColor" stop-opacity="1" />
+              <stop offset="0%" [attr.stop-color]="b.lightColor" stop-opacity="0.60" />
+              <stop offset="38%" [attr.stop-color]="b.midColor" stop-opacity="0.42" />
+              <stop offset="78%" [attr.stop-color]="b.color" stop-opacity="0.50" />
+              <stop offset="100%" [attr.stop-color]="b.darkColor" stop-opacity="0.65" />
             </radialGradient>
             <!-- Drop Shadow for realistic depth -->
             <filter [id]="'bShadow_' + b.uid" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="6" stdDeviation="5" flood-opacity="0.22" flood-color="#000" />
+              <feDropShadow dx="0" dy="6" stdDeviation="5" flood-opacity="0.16" flood-color="#000" />
             </filter>
           </defs>
 
           <!-- Balloon Teardrop Body with Rolled Knot Neck -->
           <g [attr.filter]="'url(#bShadow_' + b.uid + ')'">
-            <!-- True Teardrop Balloon Contour -->
+            <!-- True Teardrop Balloon Contour (Translucent with light rim) -->
             <path
               d="M 50,4 C 23,4 5,26 5,55 C 5,79 26,101 44,107 L 41,113 C 40,115 42,117 44,117 L 56,117 C 58,117 60,115 59,113 L 56,107 C 74,101 95,79 95,55 C 95,26 77,4 50,4 Z"
               [attr.fill]="'url(#bgGrad_' + b.uid + ')'"
+              stroke="rgba(255, 255, 255, 0.45)"
+              stroke-width="1.2"
             />
             <!-- Glossy Curved Glare / Latex Specular Reflection -->
             <path
               d="M 21,24 C 14,35 14,50 19,62 C 20,64 17,65 16,63 C 11,50 11,34 18,22 C 19,20 22,22 21,24 Z"
-              fill="rgba(255, 255, 255, 0.72)"
+              fill="rgba(255, 255, 255, 0.82)"
             />
             <ellipse
               cx="28"
@@ -72,13 +74,13 @@
               rx="6"
               ry="3"
               transform="rotate(-28 28 18)"
-              fill="rgba(255, 255, 255, 0.82)"
+              fill="rgba(255, 255, 255, 0.92)"
             />
             <!-- Subtle ambient rim bounce reflection -->
             <path
               d="M 64,95 C 76,87 85,73 87,56"
               fill="none"
-              stroke="rgba(255, 255, 255, 0.28)"
+              stroke="rgba(255, 255, 255, 0.35)"
               stroke-width="2.5"
               stroke-linecap="round"
             />
@@ -89,6 +91,7 @@
               rx="6"
               ry="2.5"
               [attr.fill]="b.darkColor"
+              fill-opacity="0.85"
             />
           </g>
 
@@ -96,7 +99,7 @@
           <path
             d="M 50,117 C 44,129 55,138 47,150 C 43,156 50,162 48,168"
             fill="none"
-            stroke="rgba(255, 255, 255, 0.7)"
+            stroke="rgba(255, 255, 255, 0.65)"
             stroke-width="1.5"
             stroke-linecap="round"
           />
