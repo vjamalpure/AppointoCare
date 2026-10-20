@@ -1,96 +1,69 @@
-# AppointoCore — Enterprise Multi-Industry SaaS Platform
+﻿# AppointoCore - Next-Gen Multi-Industry Enterprise Booking & Practice Management SaaS
 
-<div align="center">
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)](https://palletsprojects.com/p/flask/)
+[![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
+[![License](https://img.shields.io/badge/License-Proprietary-blue.svg)]()
 
-![AppointoCore Platform](https://img.shields.io/badge/Platform-AppointoCore-4f46e5?style=for-the-badge&logo=shield)
-![Angular](https://img.shields.io/badge/Angular_18-DD0031?style=for-the-badge&logo=angular&logoColor=white)
-![Flask](https://img.shields.io/badge/Python_Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis_7-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-
-**The Intelligent Operating System for Modern Appointments, Multi-Industry CRM & Operations.**
-
-*Engineered for Healthcare, Salon & Wellness, Finance, Insurance, Retail, Education, Legal Consulting, Real Estate, and Enterprise Services.*
-
-</div>
+**AppointoCore** is a multi-tenant, market-leading appointment booking, practice management, and ERP platform engineered for 9 high-value industry verticals. Featuring zero-friction tenant onboarding, dynamic terminology adaption, deep enterprise integrations (**Meta WhatsApp Business API** & **Razorpay Route 5%/95% Partner Split**), encrypted tenant credential vaults, and market parity with leading industry platforms.
 
 ---
 
-## 📌 Table of Contents
-1. [Overview](#-overview)
-2. [Supported Industry Sectors](#-supported-industry-sectors)
-3. [Key Platform Features](#-key-platform-features)
-4. [Enterprise Integrations (Meta & Razorpay)](#-enterprise-integrations-meta--razorpay)
-5. [Quick Start (Docker Setup)](#-quick-start-docker-setup)
-6. [Demo Accounts & Credentials](#-demo-accounts--credentials)
-7. [Core REST API Endpoints](#-core-rest-api-endpoints)
-8. [Automated Verification & Testing](#-automated-verification--testing)
-9. [Environment Configuration](#-environment-configuration)
+## 🏢 9 Supported Industry Verticals
+
+AppointoCore dynamically adapts its workflows, data models, nomenclature, queue boards, and domain calculators to each tenant's sector:
+
+| # | Sector | Code | Anchor Tenant | Key Parity Benchmark | Specialized Workflows |
+|---|---|---|---|---|---|
+| 1 | **Healthcare** | `ORG1` | City Care Health & Dental | *Clinicea / Practo* | E-Prescriptions (PDF), SOAP Notes, OPD Queue, Vitals Matrix, Refill Dispensing, ABDM Consent |
+| 2 | **Salon & Wellness** | `ORG2` | Apex Aesthetics & Wellness Spa | *Zenoti / Fresha* | Balayage Formulas, Multi-Session Ritual Passes, Suite Allocation, Cancellation Recovery, Retail POS |
+| 3 | **Finance & Wealth** | `ORG3` | Vanguard Wealth & Asset Advisory | *Salesforce FSC / Investwell* | Form ADV Disclosures, FINRA 2111 Suitability, Asset Allocation Drift, Household Wealth Mapping |
+| 4 | **Insurance Brokerage** | `ORG4` | Sovereign Life & Risk Insurance | *EZLynx / Applied Systems* | Actuarial Premium Engine, Policy Dossiers, FNOL Claims Adjudication, Policy Endorsements |
+| 5 | **Retail & Bespoke** | `ORG5` | Aura Haute Couture & Styling Lounge | *Clientbook / Shopify POS* | Anatomical Sizing Matrix, Bespoke Garment Pipeline, Client Wishlists, Private Chambre Privée Lounge |
+| 6 | **Education & Counseling** | `ORG6` | Beacon Global University Counseling | *ApplyBoard / Naviance* | Global Degree Catalog, Student Admissions Scorecards, SOP Review Rubrics, Merit Scholarship Match |
+| 7 | **Legal & Advisory** | `ORG7` | Sterling & Blackwood Legal Partners | *Clio / MyCase* | Retainer Depletion Ledgers, Adverse Party Conflict Checks, Ethical Wall Clearance, Privileged Dockets |
+| 8 | **Real Estate & Architecture** | `ORG8` | Sovereign Realty & Architectural Partners | *Buildertrend / Follow Up Boss* | Escrow Deposit Tracking, Cap-Rate / ROI Evaluator, Architectural Drawings Revisions, VIP Penthouse Tours |
+| 9 | **Professional & IT Services** | `ORG9` | Vanguard Global Enterprise Solutions | *Accelo / Mavenlink* | SOC2 Cloud Dossiers, Project Margin Warning Engine, P1–P4 SLA Escalations, Resource Capacity Planning |
 
 ---
 
-## 🚀 Overview
+## ⚡ Key Platform Architecture & Features
 
-**AppointoCore** is a production-ready, multi-tenant scheduling and CRM platform designed for modern service enterprises. The system dynamically adapts its terminology, custom dossier fields, WhatsApp reception bots, service catalogs, and live queue boards across **9 distinct industry sectors**.
-
-### Tech Stack
-- **Frontend**: Angular 18, Angular Material, RxJS, Responsive Design System (auto-adjusts to viewport).
-- **Backend API**: Python 3.12, Flask, Flask-JWT-Extended, Flask-SQLAlchemy, Marshmallow.
-- **Database**: PostgreSQL 16 (Relational schemas, JSONB support for sector dossiers, B-tree indexes).
-- **Caching & Async**: Redis 7, Celery Worker for background tasks and automated messaging.
-- **Containerization**: Docker Compose with automatic database provisioning and schema auto-healing.
-
----
-
-## 🏢 Supported Industry Sectors
-
-| Sector | Organization Code | Default Admin | Specialist Role | Specialized Capabilities |
-|---|---|---|---|---|
-| **Healthcare** | `ORG1` | `org1` | `doc_sarah` (Doctor) | OPD Queue, Clinical E-Rx, Vitals Triage, Lab Records |
-| **Salon & Wellness** | `ORG2` | `org2` | `olivia_spa` (Therapist) | Treatment Suites, Chemical Color Cards, Ritual Passes |
-| **Finance** | `ORG3` | `org3` | `alex_wealth` (Advisor) | Investor KYC, Risk Profiling, Yield Optimizers |
-| **Insurance** | `ORG4` | `org4` | `victoria_insur` (Underwriter) | Actuarial Premium Calculator, Underwriting Queue, Policy Vault |
-| **Retail** | `ORG5` | `org5` | `rachel_retail` (Stylist) | VIP Fitting Suites, Bespoke Sizing Cards, Lookbooks |
-| **Education** | `ORG6` | `org6` | `elena_edu` (Specialist) | Admissions Roadmap, SOP Vault, Milestone Deadlines |
-| **Consultancy** | `ORG7` | `org7` | `david_cons` (Consultant) | Conflict Check, Billable Retainer Hours, Legal Contracts |
-| **Real Estate** | `ORG8` | `org8` | `marcus_broker` (Broker) | Cap Rate / ROI Calculator, Showings Queue, Title Deeds |
-| **Professional Services** | `ORG9` | `org9` | `sophia_law` (Specialist) | SOW Milestones, Architecture Reviews, SLA Tracking |
-
----
-
-## ⚡ Key Platform Features
-
-- **Multi-Tenant Isolation**: Cryptographic tenant boundaries enforced via validated JWT claims (`organization_id`).
-- **Dynamic Terminology Engine**: Reactive UI seamlessly switches between Patients, Guests, Investors, Policyholders, Students, and Clients.
-- **Live Queue Board**: Real-time token issuance, status transitions (`Waiting` ➔ `In Consultation` ➔ `Completed`), and queue counters.
-- **Digital Records Vault**: Secure, persistent dossier storage tailored per sector (E-Prescriptions, Deeds, SOPs, KYC files).
-- **Calculators & Engines**: Built-in actuarial insurance premium calculator, real estate cap-rate / ROI engine, and revenue optimizer.
-- **Notification Center**: Multi-category in-app notifications with unread badges, mark-read, and role-scoped filtering.
-- **Custom Service Catalog**: Sector-specific catalog presets with custom service creation, price adjustments, and duration rules.
+- **Multi-Tenant Isolation**: Cryptographic tenant boundaries enforced at database, ORM, and middleware layers via validated JWT claims (`organization_id`).
+- **Dynamic Terminology Engine**: Reactive Angular UI dynamically morphs between Patients, Guests, Investors, Policyholders, Students, and Clients.
+- **Enterprise Speed & Gzip Compression**: Both Nginx frontend proxy and Flask backend enable dynamic Gzip compression for instantaneous payload transfer.
+- **Interactive Quick-Fill Credentials Modal**: Built-in login screen modal allowing instant one-click switching across SuperAdmin, all 9 Org Admins, and Specialist accounts.
+- **Live Queue & Token Board**: Real-time token issuance, status transitions (`Waiting` ➔ `In Consultation` ➔ `Completed`), and estimated wait times.
+- **Digital Records Vault**: Secure, persistent dossier storage tailored per sector (E-Prescriptions, Deeds, SOPs, KYC files, Lab Orders).
+- **Domain Calculators**: Built-in actuarial insurance premium calculator, real estate cap-rate / ROI engine, and revenue optimizer.
+- **Modular Add-On Marketplace**: SuperAdmin and Org Admins can toggle industry add-ons on demand with granular per-tenant feature flags.
+- **Comprehensive Notification Center**: Multi-channel in-app notifications with unread counters, category filtering, and tenant segregation.
 
 ---
 
 ## 💳 Enterprise Integrations (Meta & Razorpay)
 
 ### 1. Meta WhatsApp Business API (Shared Master Billing)
-- **Centralized Billing**: The platform SuperAdmin connects a master credit line to Meta Business Manager to cover all usage centrally.
-- **Tenant Isolation**: Each client tenant is onboarded via Meta Embedded Signup with an isolated `waba_id`, `phone_number_id`, and display phone number.
-- **Token Security**: Meta System User Access Tokens are encrypted at rest using an authenticated cipher (`app/utils/crypto_helper.py`).
-- **Outbound Template Engine**: Native template dispatch handler utilizing each tenant's isolated credentials.
+- **Centralized Line-of-Credit**: The platform SuperAdmin connects a single master Meta credit line to cover all tenant messaging volume centrally.
+- **Embedded Tenant Signup**: Each tenant connects an isolated WABA (`waba_id`, `phone_number_id`, and verified phone number) via official Embedded Signup.
+- **Token Security at Rest**: Meta System User Access Tokens are encrypted using AES-GCM-256 authenticated ciphers (`app/utils/crypto_helper.py`).
+- **Outbound Template Engine**: Native template dispatch handler utilizing isolated tenant credentials.
 
 ### 2. Razorpay Route (Partner Split Payment Model)
-- **Connected Sub-Accounts**: Tenants link their Razorpay accounts (`razorpay_account_id`).
+- **Connected Sub-Accounts**: Tenants link their Razorpay merchant accounts (`razorpay_account_id`).
 - **Dynamic 5% Platform Fee Split**: When an order is created, the system generates the Razorpay Route `transfers` payload, retaining a 5% commission in the platform master gateway and routing 95% net to the tenant's account.
-- **Cryptographic Webhook Controller**: Verifies HMAC-SHA256 signatures (`X-Razorpay-Signature`) and handles `payment.captured`, `transfer.processed`, and `transfer.failed` events.
+- **Idempotent Webhook Controller**: Verifies HMAC-SHA256 signatures (`X-Razorpay-Signature`) and handles `payment.captured`, `transfer.processed`, and `transfer.failed` events with deduplication.
 
-### 3. SuperAdmin Service Controls (Feature Flags)
+### 3. SuperAdmin Service Controls (Independent Feature Flags)
 - Superadmin can independently set any tenant's service status to `ACTIVE`, `SUSPENDED`, or `INACTIVE` via `PATCH /admin/tenants/:id/toggle-service`.
 - **Backend Route Guards**: `@check_whatsapp_active` and `@check_razorpay_active` immediately halt API execution with HTTP `403 Forbidden` if a tenant's service is suspended.
 
 ---
 
-## 🐳 Quick Start (Docker Setup)
+## 🚀 Quick Start (Docker Setup)
 
 ### Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/macOS) or Docker Engine + Docker Compose (Linux).
@@ -116,12 +89,14 @@ All migrations and multi-industry sample data seed automatically on first launch
 
 ## 🔑 Demo Accounts & Credentials
 
+*(You can also click the **"View Demo Accounts"** button on the web login screen for instant auto-fill!)*
+
 ### SuperAdmin
 | Role | Username | Password | Access Scope |
 |---|---|---|---|
 | **SuperAdmin** | `superadmin` | `Admin@12345` | Global oversight, tenant provisioning, subscriptions, broadcast notifications, and service toggles |
 
-### Organization Admins (All Sectors)
+### Organization Admins (All 9 Sectors)
 *Password for all organization admins is `Org@12345`*
 - Healthcare (`ORG1`): `org1`
 - Salon & Spa (`ORG2`): `org2`
@@ -135,50 +110,15 @@ All migrations and multi-industry sample data seed automatically on first launch
 
 ### Staff & Industry Specialists
 *Password for all specialists is `Staff@12345`*
-- Healthcare: `doc_sarah` (Doctor), `staff1` (Staff)
-- Salon & Spa: `olivia_spa` (Therapist)
-- Wealth Advisory: `alex_wealth` (Advisor)
-- Insurance: `victoria_insur` (Underwriter)
-- Retail: `rachel_retail` (Stylist)
-- Education: `elena_edu` (Specialist)
-- Consultancy: `david_cons` (Consultant)
-- Real Estate: `marcus_broker` (Broker)
-- Professional Services: `sophia_law` (Specialist)
-
----
-
-## 📡 Core REST API Endpoints
-
-### Authentication
-- `POST /auth/login` — Login for SuperAdmin, Organization Admins, and Specialists.
-
-### SuperAdmin Controls
-- `GET /admin/organizations` — List all registered tenant organizations.
-- `GET /admin/subscriptions` — View organization subscription tiers.
-- `PATCH /admin/tenants/<id>/toggle-service` — Toggle WhatsApp or Razorpay service status (`ACTIVE`, `SUSPENDED`, `INACTIVE`).
-- `GET /admin/tenants/<id>/services-status` — Inspect real-time status of tenant integrations.
-- `POST /api/v1/admin/broadcast-notification` — Send platform-wide announcement to tenants.
-- `GET /api/v1/admin/analytics-reports` — Cross-sector aggregated business performance.
-
-### Multi-Industry Suite
-- `GET /api/v1/industry-suite/addons` — View active & available sector addons.
-- `POST /api/v1/industry-suite/addons/toggle` — Enable / disable modular addon.
-- `GET /api/v1/industry-suite/queue` — Live OPD & client queue board tokens.
-- `POST /api/v1/industry-suite/queue/create` — Issue next queue token.
-- `POST /api/v1/industry-suite/queue/advance` — Advance client token state.
-- `GET /api/v1/industry-suite/records` — Sector dossier records vault.
-- `POST /api/v1/industry-suite/calculate-insurance-premium` — Actuarial premium calculation.
-- `POST /api/v1/industry-suite/calculate-real-estate-roi` — Cap rate & yield evaluator.
-
-### Meta WhatsApp Business API
-- `POST /api/v1/whatsapp/embedded-signup-callback` — Onboard client WABA via Meta Embedded Signup.
-- `POST /api/v1/whatsapp/send-template` — Send official template message via Meta Cloud API.
-- `POST /whatsapp/send` — Send outbound direct WhatsApp message.
-
-### Razorpay Route Payments
-- `POST /api/v1/payments/create-split-order` — Create Razorpay Route order with 5% platform split.
-- `POST /api/v1/payments/verify` — Verify payment signature and log transaction.
-- `POST /api/v1/payments/webhook` — Process `payment.captured` & `transfer.processed` events.
+- Healthcare (`ORG1`): `doc_sarah` (Doctor), `staff1` (Staff Specialist)
+- Salon & Spa (`ORG2`): `olivia_spa` (Therapist)
+- Wealth Advisory (`ORG3`): `alex_wealth` (Advisor)
+- Insurance (`ORG4`): `victoria_insur` (Underwriter)
+- Retail (`ORG5`): `jeanluc_style` (Stylist)
+- Education (`ORG6`): `elena_counsel` (Counselor)
+- Consultancy (`ORG7`): `eleanor_legal` (Partner)
+- Real Estate (`ORG8`): `marcus_realty` (Broker)
+- Professional Services (`ORG9`): `elizabeth_exec` (Consultant)
 
 ---
 
@@ -187,35 +127,45 @@ All migrations and multi-industry sample data seed automatically on first launch
 The project includes end-to-end automated verification suites runnable directly inside Docker:
 
 ```bash
-# 1. Run 4-Layer Integration Suite (Meta WABA, Razorpay Route, Guards, Token Crypto)
-docker exec appointocare-backend-1 python test_integration_layers.py
+# 1. Complete Unit & Integration Test Suite (98 test methods across all services)
+docker exec appointocore-backend-1 python -m unittest discover -s tests -p "test_*.py"
 
-# 2. Run Comprehensive Multi-Industry Audit (All 9 sectors, 191 checkpoints)
-docker exec appointocare-backend-1 python test_audit.py
+# 2. Industry Leaders Competitor Matrix Verification Suite (16 Parity Checks)
+docker exec appointocore-backend-1 python -m unittest tests/test_industry_leaders_matrix.py
+
+# 3. 4-Layer Integration Suite (Meta WABA, Razorpay Route, Guards, Token Crypto)
+docker exec appointocore-backend-1 python test_integration_layers.py
+
+# 4. Comprehensive Multi-Industry Audit (All 9 sectors, 191 checkpoints)
+docker exec appointocore-backend-1 python test_audit.py
+
+# 5. Multi-Tenant Authentication & Add-On Migration Suite
+docker exec appointocore-backend-1 python tests/test_migration_suite.py
 ```
 
 ### Reseeding Demo Data
-To reset or re-populate the sample data at any time:
+To re-populate or reset sample data across all 58 domain models at any time:
 ```bash
-docker exec appointocare-backend-1 python sample_data.py
-# Or wipe and re-seed completely:
-docker exec appointocare-backend-1 python sample_data.py --reset
+docker exec appointocore-backend-1 python sample_data.py
+
+# Or wipe and re-seed completely with cascading reset:
+docker exec appointocore-backend-1 python sample_data.py --reset
 ```
 
 ---
 
-## ⚙️ Environment Configuration
+## 🛠️ Environment Configuration
 
-Configuration variables (`appointocare-backend/.env`):
+Configuration variables (`appointocore-backend/.env`):
 
 ```dotenv
 # Application
 APP_ENV=development
-SECRET_KEY=appointocare-master-secret-key-2026
-JWT_SECRET_KEY=appointocare-jwt-secret-key-2026
+SECRET_KEY=appointocore-master-secret-key-2026
+JWT_SECRET_KEY=appointocore-jwt-secret-key-2026
 
 # Database & Broker
-DATABASE_URL=postgresql://postgres:password@db:5432/appointocare
+DATABASE_URL=postgresql://postgres:password@db:5432/appointocore
 CELERY_BROKER_URL=redis://redis:6379/0
 
 # Demo Seeding

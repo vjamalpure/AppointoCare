@@ -37,7 +37,32 @@ from app.models import (
     IndustryRecord,
     WhatsAppConfig,
     PaymentConfig,
-    ServiceStatus
+    ServiceStatus,
+    GlobalSetting,
+    Campaign,
+    ClientWishlist,
+    PolicyEndorsement,
+    ABDMConsentArtifact,
+    AdverseConflictReview,
+    ResourceCapacity,
+    InsurancePolicyRecord,
+    LegalMatter,
+    ClinicalEncounter,
+    MedicationRefillRequest,
+    DiagnosticLabOrder,
+    AppointmentWaitlist,
+    ResourceRoomSchedule,
+    CancellationRecoveryOffer,
+    RetailInventoryItem,
+    HouseholdRelationship,
+    RiskSuitabilityProfile,
+    BespokeOrder,
+    UniversityProgram,
+    StudentReadinessScore,
+    PropertyReservation,
+    ArchitectureProject,
+    ProjectProfitability,
+    IncidentTicket
 )
 from app.utils.hash_helper import hash_password
 from app.utils.crypto_helper import encrypt_token
@@ -1002,12 +1027,39 @@ def seed_all_sample_data(reset=False):
             'appointment_transactions', 'organization_transactions',
             'appointments', 'patients', 'customers', 'services', 'branches',
             'users', 'subscriptions', 'subscription_plans', 'sector_templates',
+            'global_settings', 'client_wishlists', 'policy_endorsements',
+            'abdm_consent_artifacts', 'adverse_conflict_reviews', 'resource_capacities',
+            'insurance_policy_records', 'legal_matters', 'clinical_encounters',
+            'medication_refill_requests', 'diagnostic_lab_orders', 'appointment_waitlists',
+            'resource_room_schedules', 'cancellation_recovery_offers', 'retail_inventory_items',
+            'household_relationships', 'risk_suitability_profiles', 'bespoke_orders',
+            'university_programs', 'student_readiness_scores', 'property_reservations',
+            'architecture_projects', 'project_profitability', 'incident_tickets',
             'organizations', 'admins'
         ]
         truncate_sql = f"TRUNCATE TABLE {', '.join(table_list)} RESTART IDENTITY CASCADE;"
         db.session.execute(db.text(truncate_sql))
         db.session.commit()
         print("âœ“ Previous domain records cleared.")
+
+    # 0. Global Platform Settings
+    global_configs = [
+        ("platform_name", "AppointoCore", "Primary multi-industry platform brand name"),
+        ("platform_version", "2.4.0-enterprise", "Active release version"),
+        ("system_currency", "USD", "Default platform transaction and billing currency"),
+        ("meta_waba_shared_credit", "ACTIVE", "Global Meta WABA line-of-credit status"),
+        ("razorpay_route_partner_split", "0.05", "Platform commission split rate (5%)"),
+        ("security_mfa_policy", "OPTIONAL", "Platform multi-factor authentication enforcement policy")
+    ]
+    for key, val, desc in global_configs:
+        gs = GlobalSetting.query.filter_by(key=key).first()
+        if not gs:
+            db.session.add(GlobalSetting(key=key, value=val, description=desc))
+        else:
+            gs.value = val
+            gs.description = desc
+    db.session.commit()
+    print("? Global Platform Settings synchronized.")
 
     # 1. SuperAdmin User
     admin_user = os.getenv("ADMIN_USERNAME", "superadmin")
@@ -1337,6 +1389,398 @@ def seed_all_sample_data(reset=False):
         else:
             p_cfg.service_status = ServiceStatus.ACTIVE
             p_cfg.platform_commission_rate = 0.05
+
+        # Active Subscription Model Record
+        existing_sub = Subscription.query.filter_by(organization_id=org.id).first()
+        if not existing_sub:
+            plan_amt = 149.0 if org_data["plan"] == "Professional" else (499.0 if org_data["plan"] == "Enterprise" else 49.0)
+            db.session.add(Subscription(
+                organization_id=org.id,
+                plan_name=org_data["plan"],
+                status="Active",
+                start_date=org.subscription_start or (now - timedelta(days=60)),
+                end_date=org.subscription_end or (now + timedelta(days=300)),
+                next_billing_date=org.next_billing_date or (now + timedelta(days=30)),
+                amount=plan_amt,
+                remarks=f"Active subscription for {org.name} ({org.subscription_plan})"
+            ))
+
+        # Active WhatsApp Campaign Model Record
+        camp = Campaign.query.filter_by(organization_id=org.id).first()
+        if not camp:
+            svc_name = org_data['services'][0]['name'] if org_data.get('services') else 'specialist appointment'
+            db.session.add(Campaign(
+                organization_id=org.id,
+                name=f"{org.name} VIP Client Engagement Campaign",
+                channel="WhatsApp",
+                message=f"Exclusive offer from {org.name}: Book your {svc_name} this month to receive priority scheduling and complimentary onboarding consultation.",
+                audience_filter={"sector": org.sector, "status": "Active"},
+                status="Scheduled",
+                scheduled_at=now + timedelta(days=3),
+                created_at=now - timedelta(days=1)
+            ))
+
+        # Specialized Industry Sector Domain Models
+        first_cid = next(iter(cust_map.values())) if cust_map else None
+
+        # Healthcare (ORG1)
+        if org.sector == "Healthcare" and first_cid:
+            enc = ClinicalEncounter.query.filter_by(organization_id=org.id).first()
+            if not enc:
+                enc = ClinicalEncounter(
+                    organization_id=org.id,
+                    patient_id=first_cid,
+                    provider_id=1,
+                    encounter_type="Outpatient Consultation",
+                    soap_notes={"subjective": "Follow-up checkup", "assessment": "Stable"},
+                    vital_signs={"bp": "120/80", "pulse": 72, "spo2": 98},
+                    status="Completed",
+                    signed_at=now - timedelta(days=2)
+                )
+                db.session.add(enc)
+                db.session.flush()
+
+            refill = MedicationRefillRequest.query.filter_by(organization_id=org.id).first()
+            if not refill:
+                db.session.add(MedicationRefillRequest(
+                    organization_id=org.id,
+                    encounter_id=enc.id,
+                    patient_id=first_cid,
+                    medication_name="Amoxicillin 500mg",
+                    dosage="1 tablet 3x daily",
+                    quantity_requested=21,
+                    remaining_refills=2,
+                    status="Approved",
+                    approved_by_provider_id=1
+                ))
+
+            lab = DiagnosticLabOrder.query.filter_by(organization_id=org.id).first()
+            if not lab:
+                db.session.add(DiagnosticLabOrder(
+                    organization_id=org.id,
+                    patient_id=first_cid,
+                    test_name="Comprehensive Metabolic Panel",
+                    status="Report_Received",
+                    result_summary="All hepatic and renal indicators within nominal limits."
+                ))
+
+            wlist = AppointmentWaitlist.query.filter_by(organization_id=org.id).first()
+            if not wlist:
+                db.session.add(AppointmentWaitlist(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    service_id=1,
+                    preferred_date=now + timedelta(days=2),
+                    status="Waiting"
+                ))
+
+            rsched = ResourceRoomSchedule.query.filter_by(organization_id=org.id).first()
+            if not rsched:
+                db.session.add(ResourceRoomSchedule(
+                    organization_id=org.id,
+                    room_number="Exam Suite 101",
+                    start_time=now + timedelta(hours=2),
+                    end_time=now + timedelta(hours=3),
+                    is_available=False
+                ))
+
+            abdm = ABDMConsentArtifact.query.filter_by(organization_id=org.id).first()
+            if not abdm:
+                db.session.add(ABDMConsentArtifact(
+                    organization_id=org.id,
+                    patient_id=first_cid,
+                    consent_request_id=f"ABDM-CONSENT-{org.code}-001",
+                    hiu_id=f"HIU-{org.code}",
+                    hip_id=f"HIP-{org.code}",
+                    purpose_code="CAREMGT",
+                    status="GRANTED",
+                    granted_at=now - timedelta(days=5),
+                    expires_at=now + timedelta(days=360),
+                    fhir_bundle_id=f"FHIR-BUNDLE-{org.code}-9001"
+                ))
+
+        # Salon & Wellness (ORG2)
+        if org.sector in ["Salon", "Salon & Wellness"] and first_cid:
+            cust_info = org_data["customers"][0]
+            rec_offer = CancellationRecoveryOffer.query.filter_by(organization_id=org.id).first()
+            if not rec_offer:
+                db.session.add(CancellationRecoveryOffer(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    customer_name=cust_info["name"],
+                    customer_phone=cust_info["phone"],
+                    offered_slot=now + timedelta(days=1),
+                    service_name="Signature Aromatherapy Spa Ritual",
+                    expires_at=now + timedelta(hours=24),
+                    status="Offered",
+                    recovered_revenue=180.0
+                ))
+
+            inv = RetailInventoryItem.query.filter_by(organization_id=org.id).first()
+            if not inv:
+                db.session.add(RetailInventoryItem(
+                    organization_id=org.id,
+                    sku="SKU-SPA-LOTION-01",
+                    name="Organic Rosehip & Argan Hydrating Elixir",
+                    category="Skin Care",
+                    quantity_on_hand=38,
+                    reorder_level=10,
+                    unit_cost=22.0,
+                    unit_price=65.0,
+                    status="In_Stock"
+                ))
+
+            wish = ClientWishlist.query.filter_by(organization_id=org.id, customer_id=first_cid).first()
+            if not wish:
+                db.session.add(ClientWishlist(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    item_name="Hydra-Infusion Botanical Elixir",
+                    sku="SKU-HYDRA-01",
+                    size_preference="100ml",
+                    estimated_price=85.0,
+                    stylist_notes="High-priority wishlist item requested by client.",
+                    status="Saved"
+                ))
+
+        # Finance & Wealth (ORG3)
+        if org.sector == "Finance" and first_cid:
+            risk = RiskSuitabilityProfile.query.filter_by(organization_id=org.id).first()
+            if not risk:
+                db.session.add(RiskSuitabilityProfile(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    risk_tolerance_category="Growth",
+                    risk_score=72,
+                    investment_horizon_years=10,
+                    liquidity_needs="Low",
+                    documented_objective="Long-term wealth accumulation with index equity growth",
+                    advisor_name="Alex Vance, Senior Advisor",
+                    status="Approved"
+                ))
+
+            hh = HouseholdRelationship.query.filter_by(organization_id=org.id).first()
+            if not hh:
+                second_cid = list(cust_map.values())[1] if len(cust_map) > 1 else first_cid
+                db.session.add(HouseholdRelationship(
+                    organization_id=org.id,
+                    household_name="The Harrison Household",
+                    head_customer_id=first_cid,
+                    member_customer_id=second_cid,
+                    relationship_type="Spouse",
+                    consolidated_aum=1250000.0
+                ))
+
+        # Insurance Brokerage (ORG4)
+        if org.sector == "Insurance" and first_cid:
+            pol = InsurancePolicyRecord.query.filter_by(organization_id=org.id).first()
+            if not pol:
+                pol = InsurancePolicyRecord(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    policy_number=f"POL-{org.code}-8821",
+                    carrier_name="Sovereign Risk Underwriters",
+                    plan_type="Comprehensive Life & Health",
+                    sum_insured=1000000.0,
+                    annual_premium=2400.0,
+                    effective_date=now - timedelta(days=60),
+                    expiry_date=now + timedelta(days=305),
+                    renewal_status="Upcoming"
+                )
+                db.session.add(pol)
+                db.session.flush()
+
+            endorsement = PolicyEndorsement.query.filter_by(policy_id=pol.id).first()
+            if not endorsement:
+                db.session.add(PolicyEndorsement(
+                    organization_id=org.id,
+                    policy_id=pol.id,
+                    endorsement_type="Nominee Elevation",
+                    change_summary="Updated primary nominee allocation to 100% spouse following family milestone.",
+                    premium_delta=0.0,
+                    status="Approved",
+                    effective_date=now - timedelta(days=10)
+                ))
+
+        # Retail & Bespoke (ORG5)
+        if org.sector == "Retail" and first_cid:
+            bespoke = BespokeOrder.query.filter_by(organization_id=org.id).first()
+            if not bespoke:
+                db.session.add(BespokeOrder(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    order_number=f"BESPOKE-{org.code}-001",
+                    garment_type="Bespoke Midnight Tuxedo",
+                    fabric_choice="Super 160s Vitale Barberis Wool",
+                    production_stage="Pattern_Cutting",
+                    total_price=3200.0,
+                    deposit_paid=1600.0,
+                    balance_due=1600.0,
+                    pickup_ready=False
+                ))
+
+            inv = RetailInventoryItem.query.filter_by(organization_id=org.id).first()
+            if not inv:
+                db.session.add(RetailInventoryItem(
+                    organization_id=org.id,
+                    sku="SKU-LUXE-TIE-01",
+                    name="Hand-rolled Mulberry Silk Bowtie",
+                    category="Accessories",
+                    quantity_on_hand=25,
+                    reorder_level=5,
+                    unit_cost=35.0,
+                    unit_price=120.0,
+                    status="In_Stock"
+                ))
+
+            wish = ClientWishlist.query.filter_by(organization_id=org.id, customer_id=first_cid).first()
+            if not wish:
+                db.session.add(ClientWishlist(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    item_name="Bespoke Italian Silk Dinner Jacket",
+                    sku="SKU-SILK-40R",
+                    size_preference="40R / Slim",
+                    estimated_price=450.0,
+                    stylist_notes="High-priority wishlist item requested by VIP client.",
+                    status="Saved"
+                ))
+
+        # Education & Counseling (ORG6)
+        if org.sector == "Education" and first_cid:
+            prog = UniversityProgram.query.filter_by(organization_id=org.id).first()
+            if not prog:
+                db.session.add(UniversityProgram(
+                    organization_id=org.id,
+                    institution_name="Imperial College London",
+                    program_title="MSc Advanced Computing & Machine Intelligence",
+                    country="United Kingdom",
+                    annual_tuition=38500.0,
+                    currency="GBP",
+                    min_gpa=3.6,
+                    min_ielts=7.0,
+                    global_ranking=8,
+                    status="Active"
+                ))
+
+            score = StudentReadinessScore.query.filter_by(organization_id=org.id).first()
+            if not score:
+                db.session.add(StudentReadinessScore(
+                    organization_id=org.id,
+                    customer_id=first_cid,
+                    readiness_score=88,
+                    gpa=3.8,
+                    english_score="IELTS 7.5",
+                    sop_status="Approved",
+                    lor_count=3,
+                    counselor_name="Elena Rostova, Senior Counselor",
+                    readiness_tier="Ready_To_Lodge"
+                ))
+
+        # Legal & Consultancy (ORG7)
+        if org.sector in ["Consultancy", "Legal"] and first_cid:
+            matter = LegalMatter.query.filter_by(organization_id=org.id).first()
+            if not matter:
+                matter = LegalMatter(
+                    organization_id=org.id,
+                    client_id=first_cid,
+                    matter_number=f"MAT-{org.code}-0042",
+                    title="Cross-Border Joint Venture & IP Licensing",
+                    practice_area="Commercial Transactions",
+                    adverse_party="Apex Global Holdings",
+                    conflict_cleared=True,
+                    retainer_balance=150000.0,
+                    hourly_rate=450.0,
+                    status="Active",
+                    lead_advocate="Eleanor Blackwood, Partner"
+                )
+                db.session.add(matter)
+                db.session.flush()
+
+            conflict = AdverseConflictReview.query.filter_by(matter_id=matter.id).first()
+            if not conflict:
+                db.session.add(AdverseConflictReview(
+                    organization_id=org.id,
+                    matter_id=matter.id,
+                    search_term="Apex Global Holdings",
+                    matched_entity="Apex Corporation Subsidiary (Former 2021 Client)",
+                    similarity_score=0.88,
+                    clearance_decision="Cleared",
+                    ethical_notes="Adverse conflict search executed against international firm databases. Ethical wall established.",
+                    reviewed_by_partner="Eleanor Blackwood, Managing Partner",
+                    reviewed_at=now - timedelta(days=7)
+                ))
+
+        # Real Estate & Architecture (ORG8)
+        if org.sector in ["Real Estate", "RealEstate"] and first_cid:
+            prop = PropertyReservation.query.filter_by(organization_id=org.id).first()
+            if not prop:
+                db.session.add(PropertyReservation(
+                    organization_id=org.id,
+                    buyer_id=first_cid,
+                    property_name="The Sovereign Penthouse Collection",
+                    unit_number="Penthouse 42B",
+                    list_price=4200000.0,
+                    offer_price=4050000.0,
+                    earnest_deposit=200000.0,
+                    status="Reserved",
+                    agent_name="Marcus Vance, Broker"
+                ))
+
+            arch = ArchitectureProject.query.filter_by(organization_id=org.id).first()
+            if not arch:
+                db.session.add(ArchitectureProject(
+                    organization_id=org.id,
+                    client_id=first_cid,
+                    project_title="Hudson River Waterfront Villa Concept",
+                    total_budget=1850000.0,
+                    actual_cost_to_date=420000.0,
+                    project_stage="Design_Development",
+                    lead_architect="Sovereign Design Studio"
+                ))
+
+        # Professional Services (ORG9)
+        if org.sector == "Professional Services" and first_cid:
+            profit = ProjectProfitability.query.filter_by(organization_id=org.id).first()
+            if not profit:
+                db.session.add(ProjectProfitability(
+                    organization_id=org.id,
+                    project_code="PRJ-CLOUD-MIG",
+                    project_name="Global Enterprise Multi-Region Cloud Migration",
+                    planned_budget=850000.0,
+                    actual_cost_burn=410000.0,
+                    billable_invoiced=520000.0,
+                    target_margin_pct=35.0,
+                    current_margin_pct=26.8,
+                    risk_level="Healthy",
+                    estimate_to_complete=300000.0
+                ))
+
+            inc = IncidentTicket.query.filter_by(organization_id=org.id).first()
+            if not inc:
+                db.session.add(IncidentTicket(
+                    organization_id=org.id,
+                    ticket_number=f"INC-{org.code}-001",
+                    title="Primary API Gateway Latency Anomaly",
+                    severity="P2",
+                    client_name="Global Enterprise Client",
+                    status="Investigating",
+                    response_deadline=now + timedelta(hours=1),
+                    resolution_deadline=now + timedelta(hours=4)
+                ))
+
+            rc = ResourceCapacity.query.filter_by(organization_id=org.id).first()
+            if not rc:
+                db.session.add(ResourceCapacity(
+                    organization_id=org.id,
+                    consultant_name="Elizabeth Reed",
+                    role_title="Principal Cloud Architect",
+                    skill_tags=["Kubernetes", "AWS", "Terraform", "SOC2"],
+                    weekly_capacity_hours=40.0,
+                    billable_assigned_hours=32.0,
+                    utilization_percentage=80.0,
+                    bench_availability=True
+                ))
 
         db.session.commit()
 
