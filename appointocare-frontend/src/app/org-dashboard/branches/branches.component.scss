@@ -41,25 +41,38 @@
 
 .branch-card {
   background: #ffffff;
-  border: 1px solid var(--slate-200);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition: all 0.2s ease;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-brand);
+    opacity: 0.85;
+  }
 
   &:hover {
     border-color: var(--primary-300);
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-3px);
   }
 
   &.main-hq {
-    border-color: var(--primary-500);
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+    border-color: var(--primary-400);
+    background: linear-gradient(180deg, #ffffff 0%, var(--surface-secondary) 100%);
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
   }
 
   .card-header {
@@ -68,20 +81,21 @@
     gap: 14px;
 
     .branch-avatar {
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       border-radius: var(--radius-md);
-      background: var(--primary-50);
-      color: var(--primary-600);
+      background: var(--surface-tinted);
+      color: var(--brand-primary);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.15);
 
       mat-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
       }
     }
 
@@ -91,26 +105,34 @@
 
       h4 {
         font-size: 16px;
-        font-weight: 700;
-        color: var(--slate-900);
+        font-weight: 800;
+        color: var(--text-primary);
         line-height: 1.3;
+        margin: 0;
+        letter-spacing: -0.015em;
       }
 
       .hq-badge {
         font-size: 11px;
-        font-weight: 600;
-        color: var(--primary-700);
-        background: var(--primary-100);
-        padding: 2px 8px;
-        border-radius: 4px;
+        font-weight: 700;
+        color: var(--brand-deep);
+        background: var(--surface-tinted);
+        border: 1px solid #c7d2fe;
+        padding: 2px 10px;
+        border-radius: var(--radius-full);
         width: fit-content;
         margin-top: 4px;
       }
 
       .satellite-badge {
         font-size: 11px;
-        font-weight: 500;
-        color: var(--slate-500);
+        font-weight: 600;
+        color: var(--text-muted);
+        background: #f1f5f9;
+        padding: 2px 10px;
+        border-radius: var(--radius-full);
+        width: fit-content;
+        margin-top: 4px;
       }
     }
   }
@@ -119,21 +141,21 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-top: 12px;
-    border-top: 1px solid var(--slate-100);
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
 
     .detail-item {
       display: flex;
       align-items: center;
       gap: 10px;
       font-size: 13px;
-      color: var(--slate-600);
+      color: var(--text-secondary);
 
       mat-icon {
         font-size: 16px;
         width: 16px;
         height: 16px;
-        color: var(--slate-400);
+        color: var(--brand-primary);
         flex-shrink: 0;
       }
     }

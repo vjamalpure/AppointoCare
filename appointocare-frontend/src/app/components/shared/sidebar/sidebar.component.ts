@@ -9,6 +9,8 @@ interface NavItem {
   route: string;
   icon: string;
   exact?: boolean;
+  badge?: string;
+  badgeColor?: string;
 }
 
 @Component({
@@ -65,9 +67,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (role === 'Admin' || role === 'SuperAdmin') {
       return [
         { label: 'Platform Overview', route: '/admin-dashboard', icon: 'dashboard', exact: true },
-        { label: 'Notifications Center', route: '/admin-dashboard/notifications', icon: 'notifications_active' },
+        { label: 'Notifications Center', route: '/admin-dashboard/notifications', icon: 'notifications_active', badge: 'New', badgeColor: 'badge-rose' },
         { label: 'Global Appointments', route: '/admin-dashboard/appointments', icon: 'event' },
-        { label: 'Tenants & Organizations', route: '/admin-dashboard/organizations', icon: 'business' },
+        { label: 'Tenants & Organizations', route: '/admin-dashboard/organizations', icon: 'business', badge: '9', badgeColor: 'badge-indigo' },
         { label: 'Subscriptions & Tiers', route: '/admin-dashboard/subscriptions', icon: 'credit_card' },
         { label: 'Platform Transactions', route: '/admin-dashboard/transactions', icon: 'payments' },
         { label: 'Platform Configuration', route: '/admin-dashboard/platform', icon: 'tune' },
@@ -77,9 +79,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     } else if (role === 'Organization' || role === 'Manager') {
       return [
         { label: 'Overview', route: '/org-dashboard', icon: 'dashboard', exact: true },
-        { label: 'Notifications', route: '/org-dashboard/notifications', icon: 'notifications_active' },
-        { label: `${terms.appointmentPluralLabel} & Schedule`, route: '/org-dashboard/bookings', icon: 'calendar_month' },
-        { label: `${this.sector} Suite & Add-ons`, route: '/org-dashboard/industry-suite', icon: 'extension' },
+        { label: 'Notifications', route: '/org-dashboard/notifications', icon: 'notifications_active', badge: '3', badgeColor: 'badge-rose' },
+        { label: `${terms.appointmentPluralLabel} & Schedule`, route: '/org-dashboard/bookings', icon: 'calendar_month', badge: '14', badgeColor: 'badge-emerald' },
+        { label: `${this.sector} Suite & Add-ons`, route: '/org-dashboard/industry-suite', icon: 'extension', badge: 'Pro', badgeColor: 'badge-violet' },
         { label: `${terms.customerPluralLabel} CRM`, route: '/org-dashboard/customers', icon: 'people' },
         { label: `${terms.servicePluralLabel} Catalog`, route: '/org-dashboard/services', icon: 'medical_services' },
         { label: 'WhatsApp & Reception Bot', route: '/org-dashboard/whatsapp', icon: 'chat' },
@@ -94,8 +96,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       // Specialized Staff, Doctors, Stylists, Advisors, Realtors, Consultants
       return [
         { label: 'Overview', route: '/org-dashboard', icon: 'dashboard', exact: true },
-        { label: 'Duty Notifications', route: '/org-dashboard/notifications', icon: 'notifications_active' },
-        { label: `My ${terms.appointmentPluralLabel}`, route: '/org-dashboard/bookings', icon: 'event_available' },
+        { label: 'Duty Notifications', route: '/org-dashboard/notifications', icon: 'notifications_active', badge: '2', badgeColor: 'badge-rose' },
+        { label: `My ${terms.appointmentPluralLabel}`, route: '/org-dashboard/bookings', icon: 'event_available', badge: '8', badgeColor: 'badge-emerald' },
         { label: `${this.sector} Tool & Records`, route: '/org-dashboard/industry-suite', icon: 'extension' },
         { label: `${terms.customerPluralLabel} Directory`, route: '/org-dashboard/customers', icon: 'people' },
         { label: `${terms.servicePluralLabel}`, route: '/org-dashboard/services', icon: 'medical_services' },

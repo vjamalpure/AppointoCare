@@ -39,7 +39,24 @@
     </span>
   </div>
 
+  <div class="toolbar-center">
+    <div class="toolbar-search-pill">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        placeholder="Quick search appointments, clients, services..."
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onQuickSearch()"
+      />
+    </div>
+  </div>
+
   <div class="toolbar-right">
+    <div class="date-pill" *ngIf="currentDate">
+      <mat-icon>calendar_today</mat-icon>
+      <span>{{ currentDate }}</span>
+    </div>
+
     <!-- Notification Bell with Role-Based Badge & Menu -->
     <button
       mat-icon-button

@@ -19,6 +19,8 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   role: string | null = null;
   notifications: AppNotification[] = [];
   unreadCount: number = 0;
+  currentDate: string = '';
+  searchQuery: string = '';
   private subs: Subscription = new Subscription();
 
   readonly isProduction: boolean = environment.production;
@@ -44,6 +46,9 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.role = this.authService.getUserRole();
 
+    const now = new Date();
+    this.currentDate = now.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+
     this.subs.add(
       this.notificationService.notifications$.subscribe(notifs => {
         this.notifications = notifs;
@@ -58,6 +63,16 @@ export class ToolbarComponent implements OnInit, OnDestroy {
 
     // Initial load
     this.notificationService.refreshNotifications();
+  }
+
+  onQuickSearch(): void {
+    if (this.searchQuery && this.searchQuery.trim()) {
+      if (this.role === 'Admin' || this.role === 'SuperAdmin') {
+        this.router.navigate(['/admin-dashboard/appointments']);
+      } else {
+        this.router.navigate(['/org-dashboard/bookings']);
+      }
+    }
   }
 
   ngOnDestroy(): void {

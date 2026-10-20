@@ -1,26 +1,20 @@
 <div class="page-container clinic-dashboard-page">
-  <!-- Page Header & Organization Status -->
-  <div class="page-header">
-    <div class="page-header-text">
-      <div class="clinic-title-row">
-        <h1>{{ dashboardData.organization.name || 'Executive Dashboard' }}</h1>
-        <span class="status-badge status-active" *ngIf="dashboardData.organization.subscription_status">
-          {{ dashboardData.organization.subscription_status }}
-        </span>
-      </div>
-      <p>
-        {{ dashboardData.organization.sector || sector }} Enterprise Suite ·
-        Operational workload, client journeys, and financial settlements
+  <!-- Cure.Med Style Hero Welcome Banner -->
+  <div class="hero-welcome-banner">
+    <div class="banner-text">
+      <h2 class="banner-greeting">
+        Welcome back, {{ username ? ('Dr. ' + username) : (dashboardData.organization.name || 'Practitioner') }}
+        <span class="waving-hand">👋</span>
+      </h2>
+      <p class="banner-subtext">
+        You have <strong>{{ getBookedCount() }} active {{ terms?.appointmentPluralLabel || 'appointments' }}</strong> and <strong>{{ sectorStats?.total_records || 3 }} tasks</strong> today across {{ dashboardData.organization.name || 'your workspace' }}.
       </p>
     </div>
-    <div class="page-actions">
-      <button mat-stroked-button (click)="loadDashboard()">
-        <mat-icon>refresh</mat-icon> Refresh
+    <div class="banner-actions">
+      <button class="banner-btn" (click)="loadDashboard()">
+        <mat-icon>refresh</mat-icon> Sync Data
       </button>
-      <button mat-stroked-button color="primary" routerLink="/org-dashboard/workspace">
-        <mat-icon>auto_fix_high</mat-icon> Workspace Tools
-      </button>
-      <button mat-raised-button color="primary" routerLink="/org-dashboard/bookings">
+      <button class="banner-btn banner-btn-primary" routerLink="/org-dashboard/bookings">
         <mat-icon>add</mat-icon> New {{ terms?.appointmentLabel || 'Booking' }}
       </button>
     </div>
@@ -73,6 +67,67 @@
         <div class="kpi-data">
           <span class="kpi-number">{{ sectorBenchmarks.industry_rebooking_rate || '92.4%' }}</span>
           <span class="kpi-label">Benchmark Rebooking</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cure.Med Inspired Top Spotlight: Big Metric + To-Do List + Overview Stat Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-bottom: 18px;">
+    <!-- Big Highlight Metric Card -->
+    <div class="glass-stat-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <span class="stat-label" style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Appointments Today</span>
+          <span class="status-badge status-active">Active Today</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px;">
+          <span style="font-size: clamp(38px, 3.5vw, 48px); font-weight: 800; font-family: var(--font-display); color: var(--brand-primary); line-height: 1;">
+            {{ getBookedCount() }}
+          </span>
+          <span style="font-size: 13px; font-weight: 600; color: var(--color-success); display: inline-flex; align-items: center; gap: 3px;">
+            <mat-icon style="font-size: 16px; width: 16px; height: 16px;">trending_up</mat-icon> +14% vs avg
+          </span>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+        <div class="avatar-stack">
+          <div class="avatar-item avatar-more">+{{ (dashboardData.appointments.length || 10) > 4 ? (dashboardData.appointments.length - 3) : 3 }}</div>
+          <div class="avatar-item">C</div>
+          <div class="avatar-item">B</div>
+          <div class="avatar-item">A</div>
+        </div>
+        <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Patients Scheduled</span>
+      </div>
+    </div>
+
+    <!-- Cure.Med Style To-do Action Card -->
+    <div class="todo-action-card">
+      <div class="todo-header">
+        <h3>Clinical & Operational Checklist</h3>
+        <mat-icon class="todo-icon">checklist</mat-icon>
+      </div>
+      <div class="todo-list">
+        <div class="todo-item">
+          <div class="todo-left">
+            <mat-icon>check_circle</mat-icon>
+            <span>Practice Vitals & Triage Monitoring</span>
+          </div>
+          <span class="todo-tag delegate">Delegate</span>
+        </div>
+        <div class="todo-item">
+          <div class="todo-left">
+            <mat-icon>check_circle</mat-icon>
+            <span>Digital Prescription & EMR Verification</span>
+          </div>
+          <span class="todo-tag urgent">Urgent</span>
+        </div>
+        <div class="todo-item">
+          <div class="todo-left">
+            <mat-icon>check_circle</mat-icon>
+            <span>WhatsApp Bot Broadcast Follow-ups</span>
+          </div>
+          <span class="todo-tag event">Event</span>
         </div>
       </div>
     </div>
@@ -149,16 +204,23 @@
 
   <!-- Operational Insights Grid: 30-Day Trend & Conversion Funnel -->
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 16px;">
-    <!-- 30-Day Trend Line Chart -->
+    <!-- 30-Day Trend Line Chart with Period Toggle -->
     <div class="glass-chart-card">
       <div class="chart-header-row">
         <div class="chart-titles">
-          <h3>30-Day {{ terms?.appointmentPluralLabel || 'Booking' }} Velocity</h3>
-          <p>Daily volume trajectory over the past calendar month</p>
+          <h3>Analytics & {{ terms?.appointmentPluralLabel || 'Booking' }} Velocity</h3>
+          <p>Daily volume trajectory over the selected time horizon</p>
         </div>
-        <span class="liquid-glass-pill" style="font-size: 11px;">
-          <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #4f46e5;">show_chart</mat-icon> 30-Day Window
-        </span>
+        <div class="period-toggle-group">
+          <button
+            *ngFor="let p of periodOptions"
+            type="button"
+            class="period-btn"
+            [class.active]="activePeriod === p"
+            (click)="setPeriod(p)">
+            {{ p }}
+          </button>
+        </div>
       </div>
       <div class="chart-canvas-container" *ngIf="trendChartLabels?.length; else emptyTrend">
         <canvas

@@ -3,8 +3,7 @@
   <div class="sidebar-header">
     <div class="sidebar-brand" *ngIf="!isCollapsed">
       <div class="brand-mini-row">
-        <mat-icon class="pulse-spark">auto_awesome</mat-icon>
-        <span class="brand-portal">PORTAL NAVIGATION</span>
+        <span class="brand-portal">Workspace</span>
       </div>
     </div>
     <button mat-icon-button class="toggle-btn" (click)="toggleSidebar()" [matTooltip]="isCollapsed ? 'Expand Menu' : 'Collapse Menu'">
@@ -28,6 +27,9 @@
             <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
           </div>
           <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
+          <span class="nav-badge" [ngClass]="item.badgeColor || 'badge-indigo'" *ngIf="item.badge && !isCollapsed">
+            {{ item.badge }}
+          </span>
         </a>
       </li>
     </ul>

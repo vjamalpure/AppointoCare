@@ -47,6 +47,10 @@ export class DashboardComponent implements OnInit {
   role: string | null = null;
   sector = 'Healthcare';
   terms: any = null;
+  username: string = '';
+
+  activePeriod: string = 'Month';
+  periodOptions: string[] = ['Week', 'Month', '6 months', 'Year', 'All'];
 
   showModal = false;
   editAppointment: Appointment | null = null;
@@ -113,11 +117,17 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.role = this.authService.getUserRole();
+    const decoded = this.authService.getDecodedToken();
+    this.username = decoded?.username || '';
     this.sector = this.authService.getSector() || 'Healthcare';
     this.terms = this.industryService.getTerms(this.sector);
     this.loadDashboard();
     this.loadSectorStats();
     this.loadOperationalKpis();
+  }
+
+  setPeriod(period: string): void {
+    this.activePeriod = period;
   }
 
   loadSectorStats(): void {
