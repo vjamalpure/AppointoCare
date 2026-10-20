@@ -1,8 +1,58 @@
-<div class="login-page-container" [class.dark-mode]="isDarkMode">
+<div class="login-page-container" [class.dark-mode]="isDarkMode" (click)="onPageClick($event)">
   <!-- Toast Notification when credentials are copied or theme changed -->
   <div class="copy-toast" *ngIf="copyToastMsg" role="status">
     <mat-icon class="toast-icon">check_circle</mat-icon>
     <span>{{ copyToastMsg }}</span>
+  </div>
+
+  <!-- =========================================================================
+       LIQUID PRESS WAVES LAYER (Spawns wherever user clicks on the page)
+       ========================================================================= -->
+  <div class="liquid-press-container" aria-hidden="true">
+    <div
+      *ngFor="let ripple of ripples"
+      class="liquid-ripple"
+      [style.left.px]="ripple.x"
+      [style.top.px]="ripple.y">
+      <div class="droplet-inner-glow"></div>
+      <div class="droplet-wave-ring"></div>
+      <div class="droplet-outer-shimmer"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       INTERACTIVE BALLOONS LAYER (Descend from top, click to pop!)
+       ========================================================================= -->
+  <div class="interactive-balloons-layer" aria-label="Interactive poppable celebration balloons">
+    <div
+      *ngFor="let b of balloons"
+      class="balloon-item"
+      [class.popping]="b.popping"
+      [style.left.%]="b.leftPercent"
+      [style.width.px]="b.size"
+      [style.height.px]="b.size * 1.25"
+      [style.--fall-duration]="b.durationSec + 's'"
+      [style.--fall-delay]="b.delaySec + 's'"
+      (click)="popBalloon(b, $event)"
+      title="Click to pop this balloon!">
+      <!-- Balloon Glossy Body -->
+      <div class="balloon-body" [style.background]="b.gradient">
+        <div class="balloon-glare"></div>
+      </div>
+      <!-- Knot & Dangling String -->
+      <div class="balloon-knot" [style.border-top-color]="b.color"></div>
+      <div class="balloon-string"></div>
+    </div>
+
+    <!-- Pop Floating Burst Scores -->
+    <div
+      *ngFor="let pop of popEffects"
+      class="pop-floating-badge"
+      [style.left.px]="pop.x"
+      [style.top.px]="pop.y"
+      [style.color]="pop.color">
+      <span>{{ pop.label }}</span>
+    </div>
   </div>
 
   <!-- =========================================================================
@@ -62,7 +112,7 @@
       </div>
     </div>
 
-    <!-- Bottom Bar: Working Links + Night Mode Moon Toggle -->
+    <!-- Bottom Bar: Working Links + Only ONE Night Mode Moon Toggle -->
     <div class="showcase-bottom-row">
       <div class="footer-navigation-links">
         <button type="button" class="nav-item-btn" (click)="openInfoModal('integrations')">Integrations</button>
@@ -71,7 +121,7 @@
         <button type="button" class="nav-item-btn" (click)="openInfoModal('blog')">Updates / Blog</button>
       </div>
 
-      <!-- Floating Glass Moon Toggle (Switches between Night & Day mode) -->
+      <!-- Floating Glass Moon Toggle (Single theme toggle on the entire page) -->
       <button
         type="button"
         class="floating-moon-toggle"
@@ -90,17 +140,8 @@
     <!-- Centered Form Container -->
     <div class="auth-form-wrapper">
       <div class="auth-header">
-        <div class="title-with-theme-toggle">
-          <h1 class="auth-title">Sign In</h1>
-          <!-- Secondary Theme Toggle for Mobile / Quick Access -->
-          <button
-            type="button"
-            class="header-theme-toggle"
-            (click)="toggleTheme()"
-            [title]="isDarkMode ? 'Switch to Day Mode' : 'Switch to Night Mode'">
-            <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
-          </button>
-        </div>
+        <!-- Clean Title without the duplicate theme toggle -->
+        <h1 class="auth-title">Sign In</h1>
         <p class="auth-subtitle">Enter your email and password to sign in!</p>
       </div>
 

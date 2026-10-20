@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { IndustryService } from '../../services/industry.service';
 import { Router } from '@angular/router';
@@ -15,12 +15,37 @@ export interface SampleCredential {
   sector?: string;
 }
 
+export interface LiquidRipple {
+  id: number;
+  x: number;
+  y: number;
+}
+
+export interface InteractiveBalloon {
+  id: number;
+  leftPercent: number;
+  size: number;
+  color: string;
+  gradient: string;
+  durationSec: number;
+  delaySec: number;
+  popping?: boolean;
+}
+
+export interface PopEffect {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  label: string;
+}
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   organization_code = 'ORG1';
   username = 'org1';
   password = 'Org@12345';
@@ -32,7 +57,7 @@ export class LoginComponent implements OnInit {
   selectedRole: 'organization' | 'staff' | 'superadmin' = 'organization';
   currentYear: number = new Date().getFullYear();
 
-  // Dark / Night Mode Support
+  // Dark / Night Mode Support (Single floating moon toggle on showcase)
   isDarkMode = false;
 
   // Modals & Popups
@@ -40,6 +65,16 @@ export class LoginComponent implements OnInit {
   activeInfoModal: 'integrations' | 'license' | 'terms' | 'blog' | 'register' | 'features' | null = null;
   copyToastMsg = '';
   private toastTimer: any = null;
+
+  // Interactive Liquid Press Ripples
+  ripples: LiquidRipple[] = [];
+
+  // Interactive Falling & Poppable Balloons
+  balloons: InteractiveBalloon[] = [];
+  popEffects: PopEffect[] = [];
+  poppedBalloonCount = 0;
+  private balloonInterval: any = null;
+  private audioCtx: any = null;
 
   // New Demo Registration Form State
   registerData = {
@@ -112,8 +147,188 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     const savedTheme = localStorage.getItem('appointocare_theme');
     this.isDarkMode = savedTheme === 'dark';
+
+    // Start streaming interactive descending balloons
+    this.startBalloonStream();
   }
 
+  ngOnDestroy(): void {
+    if (this.balloonInterval) {
+      clearInterval(this.balloonInterval);
+    }
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+  }
+
+  // =========================================================================
+  // Interactive Liquid Press Anywhere on Page
+  // =========================================================================
+  onPageClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    // Don't trigger liquid ripple if clicking directly on a balloon (handled by popBalloon)
+    if (target && target.closest('.balloon-item')) {
+      return;
+    }
+
+    const ripple: LiquidRipple = {
+      id: Date.now() + Math.random(),
+      x: event.clientX,
+      y: event.clientY
+    };
+    this.ripples.push(ripple);
+    this.playLiquidPressSound();
+
+    setTimeout(() => {
+      this.ripples = this.ripples.filter(r => r.id !== ripple.id);
+    }, 850);
+  }
+
+  private playLiquidPressSound(): void {
+    try {
+      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtxClass) return;
+      if (!this.audioCtx) {
+        this.audioCtx = new AudioCtxClass();
+      }
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      const now = this.audioCtx.currentTime;
+
+      // Soft water droplet press tone
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(540, now + 0.08);
+
+      gain.gain.setValueAtTime(0.045, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch {}
+  }
+
+  // =========================================================================
+  // Interactive Descending Balloons with Popping Mechanics
+  // =========================================================================
+  private startBalloonStream(): void {
+    // Initial staggered balloons
+    for (let i = 0; i < 4; i++) {
+      this.spawnBalloon(true);
+    }
+
+    // Continuously spawn descending balloons from top
+    this.balloonInterval = setInterval(() => {
+      if (this.balloons.length < 10) {
+        this.spawnBalloon(false);
+      }
+    }, 2400);
+  }
+
+  private spawnBalloon(initialSpread: boolean = false): void {
+    const themes = [
+      { color: '#ec4899', gradient: 'radial-gradient(circle at 35% 28%, #f472b6 0%, #db2777 55%, #9d174d 100%)' },
+      { color: '#38bdf8', gradient: 'radial-gradient(circle at 35% 28%, #7dd3fc 0%, #0284c7 55%, #0369a1 100%)' },
+      { color: '#a855f7', gradient: 'radial-gradient(circle at 35% 28%, #c084fc 0%, #9333ea 55%, #6b21a8 100%)' },
+      { color: '#10b981', gradient: 'radial-gradient(circle at 35% 28%, #34d399 0%, #059669 55%, #065f46 100%)' },
+      { color: '#f59e0b', gradient: 'radial-gradient(circle at 35% 28%, #fbbf24 0%, #d97706 55%, #92400e 100%)' },
+      { color: '#6366f1', gradient: 'radial-gradient(circle at 35% 28%, #818cf8 0%, #4f46e5 55%, #3730a3 100%)' },
+      { color: '#f43f5e', gradient: 'radial-gradient(circle at 35% 28%, #fb7185 0%, #e11d48 55%, #9f1239 100%)' }
+    ];
+
+    const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
+    const size = Math.floor(Math.random() * 20) + 48; // 48px to 68px
+    const leftPercent = Math.floor(Math.random() * 88) + 6; // 6% to 94%
+    const durationSec = Math.floor(Math.random() * 5) + 12; // 12s to 17s
+    const delaySec = initialSpread ? Math.random() * -8 : 0;
+
+    const balloon: InteractiveBalloon = {
+      id: Date.now() + Math.random(),
+      leftPercent,
+      size,
+      color: chosenTheme.color,
+      gradient: chosenTheme.gradient,
+      durationSec,
+      delaySec,
+      popping: false
+    };
+
+    this.balloons.push(balloon);
+
+    // Clean up when descent completes
+    setTimeout(() => {
+      this.balloons = this.balloons.filter(b => b.id !== balloon.id);
+    }, (durationSec + 2) * 1000);
+  }
+
+  popBalloon(balloon: InteractiveBalloon, event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (balloon.popping) return;
+    balloon.popping = true;
+
+    this.playPopSound();
+    this.poppedBalloonCount++;
+
+    // Celebratory score label at pop position
+    const popEffect: PopEffect = {
+      id: Date.now() + Math.random(),
+      x: event.clientX,
+      y: event.clientY,
+      color: balloon.color,
+      label: this.poppedBalloonCount % 5 === 0 ? '✨ Combo! 🎈' : '+1 🎈'
+    };
+    this.popEffects.push(popEffect);
+
+    setTimeout(() => {
+      this.popEffects = this.popEffects.filter(p => p.id !== popEffect.id);
+    }, 900);
+
+    setTimeout(() => {
+      this.balloons = this.balloons.filter(b => b.id !== balloon.id);
+    }, 280);
+  }
+
+  private playPopSound(): void {
+    try {
+      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtxClass) return;
+      if (!this.audioCtx) {
+        this.audioCtx = new AudioCtxClass();
+      }
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      const now = this.audioCtx.currentTime;
+
+      // Realistic crisp pitch drop pop
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(620, now);
+      osc.frequency.exponentialRampToValueAtTime(130, now + 0.08);
+
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch {}
+  }
+
+  // =========================================================================
+  // Theme & Auth Controls
+  // =========================================================================
   toggleTheme(): void {
     this.isDarkMode = !this.isDarkMode;
     localStorage.setItem('appointocare_theme', this.isDarkMode ? 'dark' : 'light');
@@ -210,13 +425,6 @@ export class LoginComponent implements OnInit {
       document.execCommand('copy');
       document.body.removeChild(el);
     } catch {}
-  }
-
-  copyQuickSuperAdmin(): void {
-    const superAdminCred = this.sampleCredentials.find(c => c.role === 'superadmin');
-    if (superAdminCred) {
-      this.copyAndApply(superAdminCred);
-    }
   }
 
   private showToast(msg: string): void {
