@@ -6,7 +6,80 @@
   </div>
 
   <!-- =========================================================================
-       LEFT COLUMN: Clean, Elegant White Auth Canvas (Matching Reference)
+       LEFT COLUMN: 3D Iridescent Fluid Gradient Wave (Flipped to Left Side)
+       ========================================================================= -->
+  <div class="showcase-column">
+    <!-- Fluid Wave Decorative Shapes & Lights -->
+    <div class="wave-mesh-backdrop">
+      <div class="fluid-orb orb-aurora-pink"></div>
+      <div class="fluid-orb orb-cyan-glow"></div>
+      <div class="fluid-orb orb-deep-blue"></div>
+      <div class="wave-silk-layer"></div>
+    </div>
+
+    <!-- Content Over Wave -->
+    <div class="showcase-content-wrapper">
+      <!-- Stylized Wordmark (Exact Truet Style) -->
+      <div class="brand-wordmark-strip">
+        <h2 class="truet-logo-text">AppointoCare</h2>
+      </div>
+
+      <!-- Headline & Tagline -->
+      <div class="showcase-headline-section">
+        <h3 class="platform-headline">Clinical & Enterprise Scheduling that adapts in Real Time</h3>
+        <p class="platform-description">
+          Cutting-edge Healthcare & Multi-Industry Platform designed to provide doctors and clinic teams with real-time and AI-powered assistance. AppointoCare ensures that doctors and staff get instant, accurate scheduling and patient info whenever and wherever they need it.
+        </p>
+      </div>
+
+      <!-- 4 Square Bullet Points -->
+      <div class="bullets-section">
+        <h4 class="bullets-header">Automate enablement for efficiency and maximize impact</h4>
+        <ul class="clean-bullets-list">
+          <li class="bullet-row">
+            <span class="square-bullet-icon">■</span>
+            <span>Seamlessly centralizes and delivers patient records and schedules to every clinic branch</span>
+          </li>
+          <li class="bullet-row">
+            <span class="square-bullet-icon">■</span>
+            <span>Syncs effortlessly with WhatsApp reception bot, telehealth, and automated reminders</span>
+          </li>
+          <li class="bullet-row">
+            <span class="square-bullet-icon">■</span>
+            <span>Tracks every appointment and patient interaction, offering real-time insights for continuous care</span>
+          </li>
+          <li class="bullet-row">
+            <span class="square-bullet-icon">■</span>
+            <span>Automates clinical governance to ensure HIPAA, DPDP, and regulatory compliance</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Frosted Glass Promo Card -->
+      <div class="frosted-glass-card">
+        <span class="card-pretitle">Learn more about AppointoCare features on</span>
+        <span class="card-domain-link">AppointoCare.net</span>
+      </div>
+    </div>
+
+    <!-- Bottom Bar: Links + Dark Mode Moon -->
+    <div class="showcase-bottom-row">
+      <div class="footer-navigation-links">
+        <a href="#integrations" class="nav-item">Integrations</a>
+        <a href="#license" class="nav-item">License</a>
+        <a href="#terms" class="nav-item">Terms of Use</a>
+        <a href="#blog" class="nav-item">Blog</a>
+      </div>
+
+      <!-- Floating Glass Moon Toggle -->
+      <div class="floating-moon-toggle" title="Display Theme">
+        <mat-icon class="moon-svg-icon">dark_mode</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       RIGHT COLUMN: Clean, Elegant White Auth Canvas (Flipped to Right Side)
        ========================================================================= -->
   <div class="auth-column">
     <!-- Centered Form Container -->
@@ -68,7 +141,7 @@
           </div>
         </div>
 
-        <!-- Username or Email (Placeholder matching reference style) -->
+        <!-- Username or Email -->
         <div class="form-row">
           <label for="username" class="input-label">
             {{ selectedRole === 'superadmin' ? 'SuperAdmin Username*' : 'Email or Username*' }}
@@ -129,7 +202,7 @@
           <a routerLink="/forgot-password" class="forget-password-link">Forget password?</a>
         </div>
 
-        <!-- Solid Vibrant Blue 'Sign In' Button (Exact match to reference) -->
+        <!-- Solid Vibrant Blue 'Sign In' Button -->
         <button
           type="submit"
           [disabled]="loading || loginForm.invalid"
@@ -156,84 +229,11 @@
       </div>
     </div>
 
-    <!-- Left Column Bottom Footer -->
+    <!-- Right Column Bottom Footer -->
     <div class="auth-legal-footer">
       <p class="legal-text">
         © {{ currentYear }} AppointoCare. All Rights Reserved for the usage of terms related to AppointoCare.
       </p>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       RIGHT COLUMN: 3D Iridescent Fluid Gradient Wave (Exact Match to Reference)
-       ========================================================================= -->
-  <div class="showcase-column">
-    <!-- Fluid Wave Decorative Shapes & Lights -->
-    <div class="wave-mesh-backdrop">
-      <div class="fluid-orb orb-aurora-pink"></div>
-      <div class="fluid-orb orb-cyan-glow"></div>
-      <div class="fluid-orb orb-deep-blue"></div>
-      <div class="wave-silk-layer"></div>
-    </div>
-
-    <!-- Content Over Wave -->
-    <div class="showcase-content-wrapper">
-      <!-- Stylized Wordmark (Exact Truet Style) -->
-      <div class="brand-wordmark-strip">
-        <h2 class="truet-logo-text">AppointoCare</h2>
-      </div>
-
-      <!-- Headline & Tagline -->
-      <div class="showcase-headline-section">
-        <h3 class="platform-headline">Clinical & Enterprise Scheduling that adapts in Real Time</h3>
-        <p class="platform-description">
-          Cutting-edge Healthcare & Multi-Industry Platform designed to provide doctors and clinic teams with real-time and AI-powered assistance. AppointoCare ensures that doctors and staff get instant, accurate scheduling and patient info whenever and wherever they need it.
-        </p>
-      </div>
-
-      <!-- 4 Square Bullet Points -->
-      <div class="bullets-section">
-        <h4 class="bullets-header">Automate enablement for efficiency and maximize impact</h4>
-        <ul class="clean-bullets-list">
-          <li class="bullet-row">
-            <span class="square-bullet-icon">■</span>
-            <span>Seamlessly centralizes and delivers patient records and schedules to every clinic branch</span>
-          </li>
-          <li class="bullet-row">
-            <span class="square-bullet-icon">■</span>
-            <span>Syncs effortlessly with WhatsApp reception bot, telehealth, and automated reminders</span>
-          </li>
-          <li class="bullet-row">
-            <span class="square-bullet-icon">■</span>
-            <span>Tracks every appointment and patient interaction, offering real-time insights for continuous care</span>
-          </li>
-          <li class="bullet-row">
-            <span class="square-bullet-icon">■</span>
-            <span>Automates clinical governance to ensure HIPAA, DPDP, and regulatory compliance</span>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Frosted Glass Promo Card (Exact Match to Reference) -->
-      <div class="frosted-glass-card">
-        <span class="card-pretitle">Learn more about AppointoCare features on</span>
-        <span class="card-domain-link">AppointoCare.net</span>
-      </div>
-    </div>
-
-    <!-- Bottom Bar: Links + Dark Mode Moon -->
-    <div class="showcase-bottom-row">
-      <div class="footer-navigation-links">
-        <a href="#integrations" class="nav-item">Integrations</a>
-        <a href="#license" class="nav-item">License</a>
-        <a href="#terms" class="nav-item">Terms of Use</a>
-        <a href="#blog" class="nav-item">Blog</a>
-      </div>
-
-      <!-- Floating Glass Moon Toggle (Exact reference) -->
-      <div class="floating-moon-toggle" title="Display Theme">
-        <mat-icon class="moon-svg-icon">dark_mode</mat-icon>
-      </div>
     </div>
   </div>
 

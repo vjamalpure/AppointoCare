@@ -421,7 +421,7 @@
 }
 
 /* ==========================================================================
-   RIGHT COLUMN: 3D Iridescent Fluid Gradient Wave Canvas
+   LEFT COLUMN: 3D Iridescent Fluid Gradient Wave Canvas (Flipped to Left)
    ========================================================================== */
 .showcase-column {
   flex: 0 0 52%;
@@ -436,8 +436,9 @@
   color: #ffffff;
   box-sizing: border-box;
 
-  /* Massive curved wave on bottom-left, matching the Truet reference image */
-  border-bottom-left-radius: 120px;
+  /* Massive curved wave on bottom-right (facing the right auth column) */
+  border-bottom-right-radius: 120px;
+  border-bottom-left-radius: 0;
 
   /* Base rich ultramarine royal blue gradient */
   background: linear-gradient(135deg, #1837f8 0%, #244df9 28%, #3858f6 52%, #6366f1 78%, #7c3aed 100%);
