@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { IndustryService } from '../../services/industry.service';
 import { Router } from '@angular/router';
@@ -20,7 +20,7 @@ export interface SampleCredential {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   organization_code = 'ORG1';
   username = 'org1';
   password = 'Org@12345';
@@ -32,9 +32,24 @@ export class LoginComponent {
   selectedRole: 'organization' | 'staff' | 'superadmin' = 'organization';
   currentYear: number = new Date().getFullYear();
 
+  // Dark / Night Mode Support
+  isDarkMode = false;
+
+  // Modals & Popups
   showCredentialsModal = false;
+  activeInfoModal: 'integrations' | 'license' | 'terms' | 'blog' | 'register' | 'features' | null = null;
   copyToastMsg = '';
   private toastTimer: any = null;
+
+  // New Demo Registration Form State
+  registerData = {
+    clinicName: '',
+    ownerName: '',
+    email: '',
+    sector: 'Healthcare',
+    phone: '',
+    submitted: false
+  };
 
   sampleCredentials: SampleCredential[] = [
     {
@@ -94,6 +109,17 @@ export class LoginComponent {
     private router: Router
   ) {}
 
+  ngOnInit(): void {
+    const savedTheme = localStorage.getItem('appointocare_theme');
+    this.isDarkMode = savedTheme === 'dark';
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('appointocare_theme', this.isDarkMode ? 'dark' : 'light');
+    this.showToast(this.isDarkMode ? '🌙 Night mode activated' : '☀️ Day mode activated');
+  }
+
   setRole(role: 'organization' | 'staff' | 'superadmin'): void {
     this.selectedRole = role;
     this.errorMsg = '';
@@ -122,6 +148,25 @@ export class LoginComponent {
 
   toggleCredentialsModal(open?: boolean): void {
     this.showCredentialsModal = open !== undefined ? open : !this.showCredentialsModal;
+  }
+
+  openInfoModal(modalType: 'integrations' | 'license' | 'terms' | 'blog' | 'register' | 'features'): void {
+    this.activeInfoModal = modalType;
+  }
+
+  closeInfoModal(): void {
+    this.activeInfoModal = null;
+  }
+
+  handleRegisterSubmit(): void {
+    if (!this.registerData.clinicName || !this.registerData.email) return;
+    this.registerData.submitted = true;
+    setTimeout(() => {
+      this.showToast('✓ Demo workspace created! Please sign in with sample credentials.');
+      this.closeInfoModal();
+      this.registerData.submitted = false;
+      this.setRole('organization');
+    }, 1200);
   }
 
   copyAndApply(cred: SampleCredential): void {

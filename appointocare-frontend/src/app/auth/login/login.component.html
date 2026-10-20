@@ -1,12 +1,12 @@
-<div class="login-page-container">
-  <!-- Toast Notification when credentials are copied -->
+<div class="login-page-container" [class.dark-mode]="isDarkMode">
+  <!-- Toast Notification when credentials are copied or theme changed -->
   <div class="copy-toast" *ngIf="copyToastMsg" role="status">
     <mat-icon class="toast-icon">check_circle</mat-icon>
     <span>{{ copyToastMsg }}</span>
   </div>
 
   <!-- =========================================================================
-       LEFT COLUMN: 3D Iridescent Fluid Gradient Wave (Flipped to Left Side)
+       LEFT COLUMN: 3D Iridescent Fluid Gradient Wave (Features Showcase)
        ========================================================================= -->
   <div class="showcase-column">
     <!-- Fluid Wave Decorative Shapes & Lights -->
@@ -24,68 +24,83 @@
         <h2 class="truet-logo-text">AppointoCare</h2>
       </div>
 
-      <!-- Headline & Tagline -->
+      <!-- Headline & Tagline Relevant to Real Product Features -->
       <div class="showcase-headline-section">
-        <h3 class="platform-headline">Clinical & Enterprise Scheduling that adapts in Real Time</h3>
+        <h3 class="platform-headline">Clinical & Enterprise Multi-Industry SaaS Platform</h3>
         <p class="platform-description">
-          Cutting-edge Healthcare & Multi-Industry Platform designed to provide doctors and clinic teams with real-time and AI-powered assistance. AppointoCare ensures that doctors and staff get instant, accurate scheduling and patient info whenever and wherever they need it.
+          A production-grade multi-tenant operating system orchestrating clinical appointments, doctor schedules, patient CRM, automated Razorpay billing, and 24/7 WhatsApp AI receptionist across 9 specialized industries.
         </p>
       </div>
 
-      <!-- 4 Square Bullet Points -->
+      <!-- 4 Real Product Feature Updates -->
       <div class="bullets-section">
-        <h4 class="bullets-header">Automate enablement for efficiency and maximize impact</h4>
+        <h4 class="bullets-header">Enterprise SaaS platform capabilities & recent updates</h4>
         <ul class="clean-bullets-list">
           <li class="bullet-row">
             <span class="square-bullet-icon">■</span>
-            <span>Seamlessly centralizes and delivers patient records and schedules to every clinic branch</span>
+            <span><strong>9 Specialized Industry Suites:</strong> Standardized custom catalogs, sector custom intakes, and isolated tenant databases</span>
           </li>
           <li class="bullet-row">
             <span class="square-bullet-icon">■</span>
-            <span>Syncs effortlessly with WhatsApp reception bot, telehealth, and automated reminders</span>
+            <span><strong>WhatsApp Meta Cloud AI Bot:</strong> 24/7 self-service triage, automated slot bookings, and real-time appointment reminders</span>
           </li>
           <li class="bullet-row">
             <span class="square-bullet-icon">■</span>
-            <span>Tracks every appointment and patient interaction, offering real-time insights for continuous care</span>
+            <span><strong>Clinical CRM & Patient Timeline:</strong> Multi-visit history, clinical intake notes, E-prescriptions, and lookbooks</span>
           </li>
           <li class="bullet-row">
             <span class="square-bullet-icon">■</span>
-            <span>Automates clinical governance to ensure HIPAA, DPDP, and regulatory compliance</span>
+            <span><strong>Automated Invoices & Razorpay:</strong> Instant checkout collection, GST invoices, transaction ledgers, and subscriptions</span>
           </li>
         </ul>
       </div>
 
-      <!-- Frosted Glass Promo Card -->
-      <div class="frosted-glass-card">
+      <!-- Frosted Glass Promo Card (Clickable, opens feature overview) -->
+      <div class="frosted-glass-card" (click)="openInfoModal('features')" role="button" tabindex="0" title="Click to view AppointoCare feature matrix">
         <span class="card-pretitle">Learn more about AppointoCare features on</span>
         <span class="card-domain-link">AppointoCare.net</span>
       </div>
     </div>
 
-    <!-- Bottom Bar: Links + Dark Mode Moon -->
+    <!-- Bottom Bar: Working Links + Night Mode Moon Toggle -->
     <div class="showcase-bottom-row">
       <div class="footer-navigation-links">
-        <a href="#integrations" class="nav-item">Integrations</a>
-        <a href="#license" class="nav-item">License</a>
-        <a href="#terms" class="nav-item">Terms of Use</a>
-        <a href="#blog" class="nav-item">Blog</a>
+        <button type="button" class="nav-item-btn" (click)="openInfoModal('integrations')">Integrations</button>
+        <button type="button" class="nav-item-btn" (click)="openInfoModal('license')">License</button>
+        <button type="button" class="nav-item-btn" (click)="openInfoModal('terms')">Terms of Use</button>
+        <button type="button" class="nav-item-btn" (click)="openInfoModal('blog')">Updates / Blog</button>
       </div>
 
-      <!-- Floating Glass Moon Toggle -->
-      <div class="floating-moon-toggle" title="Display Theme">
-        <mat-icon class="moon-svg-icon">dark_mode</mat-icon>
-      </div>
+      <!-- Floating Glass Moon Toggle (Switches between Night & Day mode) -->
+      <button
+        type="button"
+        class="floating-moon-toggle"
+        (click)="toggleTheme()"
+        [title]="isDarkMode ? 'Switch to Day Mode' : 'Switch to Night Mode'"
+        aria-label="Toggle Night/Day Display Mode">
+        <mat-icon class="moon-svg-icon">{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
     </div>
   </div>
 
   <!-- =========================================================================
-       RIGHT COLUMN: Clean, Elegant White Auth Canvas (Flipped to Right Side)
+       RIGHT COLUMN: Clean, Scrollable White / Dark Auth Canvas
        ========================================================================= -->
   <div class="auth-column">
     <!-- Centered Form Container -->
     <div class="auth-form-wrapper">
       <div class="auth-header">
-        <h1 class="auth-title">Sign In</h1>
+        <div class="title-with-theme-toggle">
+          <h1 class="auth-title">Sign In</h1>
+          <!-- Secondary Theme Toggle for Mobile / Quick Access -->
+          <button
+            type="button"
+            class="header-theme-toggle"
+            (click)="toggleTheme()"
+            [title]="isDarkMode ? 'Switch to Day Mode' : 'Switch to Night Mode'">
+            <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          </button>
+        </div>
         <p class="auth-subtitle">Enter your email and password to sign in!</p>
       </div>
 
@@ -215,7 +230,7 @@
       <!-- Registration & Sample Credentials Copy Hub (Requested feature) -->
       <div class="auth-action-prompts">
         <p class="register-prompt">
-          Not registered yet? <a routerLink="/register" class="create-account-text">Create an Account</a>
+          Not registered yet? <button type="button" class="create-account-btn" (click)="openInfoModal('register')">Create an Account</button>
         </p>
 
         <!-- Prompt to copy sample credentials (including SuperAdmin) -->
@@ -232,7 +247,7 @@
     <!-- Right Column Bottom Footer -->
     <div class="auth-legal-footer">
       <p class="legal-text">
-        © {{ currentYear }} AppointoCare. All Rights Reserved for the usage of terms related to AppointoCare.
+        © {{ currentYear }} AppointoCare Enterprise Multi-Industry Platform. All Rights Reserved.
       </p>
     </div>
   </div>
@@ -277,6 +292,177 @@
       <div class="modal-dialog-footer">
         <span class="footer-note">🔒 Sandboxed Enterprise Demonstration Accounts</span>
         <button type="button" class="btn-modal-close" (click)="toggleCredentialsModal(false)">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       WORKING INFO MODALS (Integrations, License, Terms, Blog, Register)
+       ========================================================================= -->
+  <div class="credentials-modal-overlay" *ngIf="activeInfoModal" (click)="closeInfoModal()">
+    <div class="credentials-modal-dialog info-dialog" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="modal-dialog-header">
+        <div class="dialog-titles">
+          <h3 *ngIf="activeInfoModal === 'integrations'">Platform Integrations</h3>
+          <h3 *ngIf="activeInfoModal === 'license'">Enterprise Licensing & Compliance</h3>
+          <h3 *ngIf="activeInfoModal === 'terms'">Terms of Service & Data Governance</h3>
+          <h3 *ngIf="activeInfoModal === 'blog'">Product Release Updates (v2.4)</h3>
+          <h3 *ngIf="activeInfoModal === 'register'">Register a Clinic / Demo Workspace</h3>
+          <h3 *ngIf="activeInfoModal === 'features'">AppointoCare Multi-Industry Matrix</h3>
+          <p>AppointoCare Enterprise Multi-Tenant SaaS Platform</p>
+        </div>
+        <button type="button" class="close-dialog-btn" (click)="closeInfoModal()">×</button>
+      </div>
+
+      <!-- Modal Body: Integrations -->
+      <div class="modal-body-content" *ngIf="activeInfoModal === 'integrations'">
+        <div class="integration-grid">
+          <div class="integration-card">
+            <div class="int-icon whatsapp"><mat-icon>chat</mat-icon></div>
+            <div class="int-info">
+              <h4>WhatsApp Meta Cloud API</h4>
+              <p>24/7 automated slot reservations, interactive confirmations, cancellation triage, and bulk customer broadcasts.</p>
+            </div>
+          </div>
+          <div class="integration-card">
+            <div class="int-icon razorpay"><mat-icon>payments</mat-icon></div>
+            <div class="int-info">
+              <h4>Razorpay Payment Gateway</h4>
+              <p>Sandbox & live checkout, instant receipts, UPI/Card processing, itemized GST tax invoices, and payment tracking.</p>
+            </div>
+          </div>
+          <div class="integration-card">
+            <div class="int-icon postgres"><mat-icon>storage</mat-icon></div>
+            <div class="int-info">
+              <h4>PostgreSQL Multi-Tenancy</h4>
+              <p>Row-level security and schema isolation for clinical organizations, doctors, and staff with full audit trails.</p>
+            </div>
+          </div>
+          <div class="integration-card">
+            <div class="int-icon redis"><mat-icon>speed</mat-icon></div>
+            <div class="int-info">
+              <h4>Celery & Redis 7 Asynchronous Queue</h4>
+              <p>Sub-second background task processing for automated WhatsApp notifications, reminders, and report generation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Body: License -->
+      <div class="modal-body-content" *ngIf="activeInfoModal === 'license'">
+        <div class="text-content-card">
+          <h4>Enterprise Software License Agreement</h4>
+          <p>AppointoCare Enterprise Platform is licensed for commercial multi-industry operations with tenant-isolated database partitions.</p>
+          <ul>
+            <li><strong>HIPAA Alignment:</strong> End-to-end encrypted clinical records, E-prescriptions, and appointment intake forms.</li>
+            <li><strong>DPDP Act 2023:</strong> Patient and client data sovereignty with granular practitioner consent management.</li>
+            <li><strong>SLA & Availability:</strong> 99.99% high-availability uptime backed by redundant containerized microservices.</li>
+            <li><strong>256-Bit SSL:</strong> All API and WebSocket sessions are secured with TLS 1.3 encryption.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Modal Body: Terms -->
+      <div class="modal-body-content" *ngIf="activeInfoModal === 'terms'">
+        <div class="text-content-card">
+          <h4>Terms of Service & Usage Policy</h4>
+          <p>By using the AppointoCare platform, clinical organizations and specialists agree to the following terms:</p>
+          <ul>
+            <li>Tenant workspaces remain isolated with zero cross-tenant data leakage.</li>
+            <li>SuperAdmin audit controls preserve immutability of financial transactions and payment receipts.</li>
+            <li>WhatsApp messaging limits adhere to Meta Cloud Business messaging compliance guidelines.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Modal Body: Product Updates / Blog -->
+      <div class="modal-body-content" *ngIf="activeInfoModal === 'blog'">
+        <div class="release-notes-list">
+          <div class="release-item">
+            <div class="release-tag">v2.4 Latest Release</div>
+            <h4>Cure.Med Executive Dashboard & Truet Auth Experience</h4>
+            <p>Complete product modernization introducing ambient radial mesh gradients, waving welcome banner, patient avatar stacks, operational checklist delegation, and quick-credentials copy hub.</p>
+          </div>
+          <div class="release-item">
+            <div class="release-tag">v2.3 Feature</div>
+            <h4>WhatsApp AI Receptionist & Interactive Bot Simulator</h4>
+            <p>Live interactive smartphone simulator allowing clinic staff to preview patient chats, broadcast templates, and test slot reservation workflows.</p>
+          </div>
+          <div class="release-item">
+            <div class="release-tag">v2.2 Feature</div>
+            <h4>9 Standardized Multi-Industry Suites</h4>
+            <p>Dedicated dynamic custom modules for Healthcare, Salon & Wellness, Wealth Advisory, Insurance, Legal, Real Estate, and Education.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Body: Register New Workspace -->
+      <div class="modal-body-content" *ngIf="activeInfoModal === 'register'">
+        <form (ngSubmit)="handleRegisterSubmit()" class="register-form" novalidate>
+          <div class="reg-desc">Register a new organization workspace to experience AppointoCare:</div>
+          <div class="form-row">
+            <label class="input-label">Clinic / Organization Name*</label>
+            <input type="text" [(ngModel)]="registerData.clinicName" name="clinicName" class="text-input" placeholder="e.g. Metro Care Dental" required>
+          </div>
+          <div class="form-row">
+            <label class="input-label">Administrator Full Name*</label>
+            <input type="text" [(ngModel)]="registerData.ownerName" name="ownerName" class="text-input" placeholder="e.g. Dr. Rajesh Kumar" required>
+          </div>
+          <div class="form-row">
+            <label class="input-label">Work Email Address*</label>
+            <input type="email" [(ngModel)]="registerData.email" name="email" class="text-input" placeholder="doctor@metrocare.com" required>
+          </div>
+          <div class="form-row">
+            <label class="input-label">Industry Vertical</label>
+            <select [(ngModel)]="registerData.sector" name="sector" class="text-input select-input">
+              <option value="Healthcare">Healthcare & Clinical Practice</option>
+              <option value="Salon">Salon & Wellness Spa</option>
+              <option value="Finance">Wealth & Financial Advisory</option>
+              <option value="Insurance">Insurance & Claims</option>
+              <option value="Retail">Luxury Retail & Styling</option>
+              <option value="Legal">Legal & Consultative Services</option>
+              <option value="RealEstate">Real Estate & Architecture</option>
+              <option value="Education">Education & Counseling</option>
+              <option value="Enterprise">Global Corporate Enterprise</option>
+            </select>
+          </div>
+          <button type="submit" class="signin-cta-button" [disabled]="!registerData.clinicName || !registerData.email">
+            <span>{{ registerData.submitted ? 'Creating Workspace...' : 'Launch Free Demo Workspace' }}</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Modal Body: Feature Matrix -->
+      <div class="modal-body-content" *ngIf="activeInfoModal === 'features'">
+        <div class="feature-matrix-grid">
+          <div class="matrix-card">
+            <mat-icon class="mat-ic">medical_services</mat-icon>
+            <h4>Clinical Catalog</h4>
+            <p>Configurable categories, service cards, duration slots, and GST-compliant pricing.</p>
+          </div>
+          <div class="matrix-card">
+            <mat-icon class="mat-ic">location_on</mat-icon>
+            <h4>Practice Locations</h4>
+            <p>Multi-branch clinic setups with room capacity, operating hours, and localized staff.</p>
+          </div>
+          <div class="matrix-card">
+            <mat-icon class="mat-ic">groups</mat-icon>
+            <h4>Doctor & Staff Management</h4>
+            <p>Granular RBAC roles, specialist schedules, working days, and commission ledgers.</p>
+          </div>
+          <div class="matrix-card">
+            <mat-icon class="mat-ic">receipt_long</mat-icon>
+            <h4>Billing & Invoices</h4>
+            <p>Automated payment links, simulated Razorpay checkout, and transaction reconciliation.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-dialog-footer">
+        <span class="footer-note">⚡ AppointoCare Cloud Architecture</span>
+        <button type="button" class="btn-modal-close" (click)="closeInfoModal()">Close</button>
       </div>
     </div>
   </div>
