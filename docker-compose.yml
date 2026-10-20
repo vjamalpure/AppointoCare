@@ -1,3 +1,5 @@
+name: appointocore
+
 services:
   db:
     image: postgres:16
@@ -28,6 +30,7 @@ services:
   backend:
     build:
       context: ./appointocore-backend
+    image: appointocore-backend:latest
     environment:
       SECRET_KEY: ${SECRET_KEY:-appointocore-dev-secret-change-me}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-appointocore-dev-jwt-secret-change-me}
@@ -61,6 +64,7 @@ services:
   celery:
     build:
       context: ./appointocore-backend
+    image: appointocore-celery:latest
     environment:
       SECRET_KEY: ${SECRET_KEY:-appointocore-dev-secret-change-me}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-appointocore-dev-jwt-secret-change-me}
@@ -79,6 +83,7 @@ services:
   frontend:
     build:
       context: ./appointocore-frontend
+    image: appointocore-frontend:latest
     ports:
       - '4200:80'
     depends_on:
@@ -87,3 +92,4 @@ services:
 
 volumes:
   postgres_data:
+    name: appointocare_postgres_data
