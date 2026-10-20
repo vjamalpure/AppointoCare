@@ -18,16 +18,16 @@
   transform: translateX(-50%);
   background: #0f172a;
   color: #ffffff;
-  padding: 12px 22px;
+  padding: 12px 24px;
   border-radius: 9999px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 13.5px;
   font-weight: 600;
   z-index: 9999;
-  animation: slideDownFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideDownSmooth 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   .toast-icon {
     color: #10b981;
@@ -37,10 +37,10 @@
   }
 }
 
-@keyframes slideDownFade {
+@keyframes slideDownSmooth {
   from {
     opacity: 0;
-    transform: translate(-50%, -16px);
+    transform: translate(-50%, -18px);
   }
   to {
     opacity: 1;
@@ -49,7 +49,7 @@
 }
 
 /* ==========================================================================
-   LEFT COLUMN: Clean White Form Canvas
+   LEFT COLUMN: Clean, Spacious White Auth Canvas
    ========================================================================== */
 .auth-column {
   flex: 0 0 48%;
@@ -59,7 +59,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(24px, 3.5vw, 44px) clamp(28px, 4.5vw, 64px);
+  padding: clamp(28px, 4vw, 52px) clamp(32px, 5vw, 84px);
   box-sizing: border-box;
   overflow-y: auto;
 
@@ -70,47 +70,50 @@
   }
 }
 
+/* Back to Website Link */
 .top-nav-bar {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 
   .back-link {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     color: #64748b;
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 500;
     text-decoration: none;
     transition: color 0.15s ease;
 
     .chevron {
-      font-size: 16px;
+      font-size: 18px;
       line-height: 1;
+      font-weight: 600;
     }
 
     &:hover {
-      color: #1e293b;
+      color: #0f172a;
     }
   }
 }
 
+/* Centered Form Wrapper */
 .auth-form-wrapper {
   width: 100%;
-  max-width: 400px;
+  max-width: 390px;
   margin: auto;
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 .auth-header {
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 
   .auth-title {
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 800;
     color: #111827;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
     margin: 0 0 6px 0;
-    line-height: 1.2;
+    line-height: 1.15;
   }
 
   .auth-subtitle {
@@ -121,10 +124,10 @@
   }
 }
 
-/* Google Sign-In Button */
+/* Sign In with Google Button */
 .google-signin-btn {
   width: 100%;
-  height: 46px;
+  height: 48px;
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
   border-radius: 12px;
@@ -137,6 +140,7 @@
   color: #1e293b;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 
   .google-icon {
     width: 18px;
@@ -147,15 +151,15 @@
   &:hover {
     background: #ffffff;
     border-color: #cbd5e1;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   }
 }
 
-/* Centered 'or' Divider */
+/* 'or' Divider */
 .or-divider {
   display: flex;
   align-items: center;
-  margin: 18px 0;
+  margin: 20px 0;
 
   .divider-line {
     flex: 1;
@@ -164,87 +168,23 @@
   }
 
   .divider-label {
-    padding: 0 14px;
+    padding: 0 16px;
     font-size: 12.5px;
     color: #94a3b8;
     font-weight: 500;
   }
 }
 
-/* Quick Credentials Pill Bar */
-.credentials-quick-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  background: #f8fafc;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-
-  .bar-lbl {
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-right: 2px;
-  }
-
-  .quick-chip {
-    background: #eef2ff;
-    color: #4f46e5;
-    border: 1px solid rgba(79, 70, 229, 0.25);
-    border-radius: 9999px;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: #e0e7ff;
-      border-color: #4f46e5;
-    }
-
-    &.admin-chip {
-      background: #fef3c7;
-      color: #b45309;
-      border-color: rgba(217, 119, 6, 0.35);
-
-      &:hover {
-        background: #fde68a;
-      }
-    }
-  }
-
-  .view-all-link {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: #2563eb;
-    font-size: 11.5px;
-    font-weight: 700;
-    cursor: pointer;
-    padding: 0;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-/* Role Selector Strip */
-.role-selector-strip {
+/* Role Segment Selector */
+.role-segment-selector {
   display: flex;
   background: #f1f5f9;
   border-radius: 10px;
   padding: 3px;
   gap: 3px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 
-  .role-tab {
+  .segment-btn {
     flex: 1;
     height: 34px;
     border: none;
@@ -260,20 +200,24 @@
     justify-content: center;
 
     &:hover {
-      color: #111827;
+      color: #0f172a;
     }
 
     &.active {
       background: #ffffff;
-      color: #111827;
+      color: #0f172a;
       font-weight: 700;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    &.super-tab.active {
+      color: #b45309;
     }
   }
 }
 
 /* Error Alert */
-.error-alert {
+.error-alert-banner {
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #dc2626;
@@ -296,48 +240,48 @@
     flex: 1;
   }
 
-  .close-err {
+  .close-err-btn {
     background: none;
     border: none;
     color: #dc2626;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     padding: 0;
     line-height: 1;
   }
 }
 
-/* Form Fields */
+/* Form Styles */
 .signin-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.input-field-group {
+.form-row {
   display: flex;
   flex-direction: column;
   gap: 6px;
 
-  .field-label {
+  .input-label {
     font-size: 13px;
     font-weight: 600;
     color: #1e293b;
   }
 
-  .input-container {
+  .input-box {
     position: relative;
     width: 100%;
 
-    .form-control-input {
+    .text-input {
       width: 100%;
-      height: 44px;
+      height: 48px;
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
       border-radius: 12px;
-      padding: 0 16px;
+      padding: 0 18px;
       font-size: 14px;
-      color: #111827;
+      color: #0f172a;
       outline: none;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       box-sizing: border-box;
@@ -351,19 +295,19 @@
         box-shadow: 0 0 0 3px rgba(55, 66, 250, 0.12);
       }
 
-      &.is-invalid {
+      &.has-error {
         border-color: #dc2626;
       }
     }
 
-    &.password-container {
+    &.password-box {
       .password-input {
-        padding-right: 44px;
+        padding-right: 48px;
       }
 
-      .eye-btn {
+      .eye-toggle-icon {
         position: absolute;
-        right: 12px;
+        right: 14px;
         top: 50%;
         transform: translateY(-50%);
         background: none;
@@ -389,33 +333,36 @@
   }
 }
 
-/* Options Row: Checkbox & Forgot Password */
-.options-row {
+/* Checkbox & Forgot Password (Exact match to reference) */
+.options-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2px;
-  font-size: 13.5px;
+  margin: 4px 0 2px 0;
 
-  .remember-checkbox-label {
+  .remember-checkbox-item {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #475569;
-    font-size: 13px;
     cursor: pointer;
     user-select: none;
 
-    .checkbox-elem {
+    .checkbox-element {
       width: 16px;
       height: 16px;
       accent-color: #3742fa;
       border-radius: 4px;
       cursor: pointer;
     }
+
+    .check-label {
+      color: #475569;
+      font-size: 13px;
+      font-weight: 500;
+    }
   }
 
-  .forgot-pwd-link {
+  .forget-password-link {
     color: #3742fa;
     font-size: 13px;
     font-weight: 600;
@@ -423,16 +370,16 @@
     transition: color 0.15s ease;
 
     &:hover {
-      color: #2f35e0;
+      color: #262ee0;
       text-decoration: underline;
     }
   }
 }
 
-/* Primary Sign In Button (Vibrant Blue matching reference) */
-.primary-signin-btn {
+/* Sign In CTA Button (Vibrant Blue matching reference) */
+.signin-cta-button {
   width: 100%;
-  height: 48px;
+  height: 50px;
   background: #3742fa;
   color: #ffffff;
   border: none;
@@ -442,11 +389,11 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 14px rgba(55, 66, 250, 0.28);
-  margin-top: 6px;
+  margin-top: 8px;
 
   &:hover:not([disabled]) {
-    background: #2f35e0;
-    box-shadow: 0 6px 18px rgba(55, 66, 250, 0.38);
+    background: #2b35ec;
+    box-shadow: 0 6px 20px rgba(55, 66, 250, 0.38);
     transform: translateY(-1px);
   }
 
@@ -461,17 +408,17 @@
   }
 }
 
-/* Bottom Action Links */
-.bottom-action-links {
+/* Registration Prompt & Sample Credentials Hub Link */
+.auth-action-prompts {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 22px;
 
-  .signup-prompt {
+  .register-prompt {
     font-size: 13.5px;
     color: #64748b;
-    margin: 0 0 10px 0;
+    margin: 0 0 12px 0;
 
-    .create-account-link {
+    .create-account-text {
       color: #3742fa;
       font-weight: 700;
       text-decoration: none;
@@ -482,39 +429,46 @@
     }
   }
 
-  .sample-creds-hub-link {
-    .copy-creds-trigger-btn {
+  .sample-credentials-banner {
+    .sample-creds-trigger-link {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: none;
-      border: none;
-      color: #4f46e5;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #3742fa;
       font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
       transition: all 0.15s ease;
 
-      .icon-inline {
+      .link-icon {
         font-size: 15px;
         width: 15px;
         height: 15px;
+        color: #f59e0b;
+      }
+
+      .arrow {
+        font-size: 14px;
+        color: #94a3b8;
       }
 
       &:hover {
         background: #eef2ff;
-        text-decoration: underline;
+        border-color: rgba(55, 66, 250, 0.3);
       }
     }
   }
 }
 
-.auth-bottom-footer {
-  margin-top: 24px;
+/* Bottom Legal Footer */
+.auth-legal-footer {
+  margin-top: 28px;
 
-  .legal-copy {
+  .legal-text {
     font-size: 11.5px;
     color: #94a3b8;
     margin: 0;
@@ -523,7 +477,7 @@
 }
 
 /* ==========================================================================
-   RIGHT COLUMN: 3D Vibrant Gradient Wave Canvas
+   RIGHT COLUMN: 3D Iridescent Fluid Gradient Wave Canvas
    ========================================================================== */
 .showcase-column {
   flex: 0 0 52%;
@@ -534,116 +488,125 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(36px, 4.5vw, 64px) clamp(40px, 5vw, 76px);
+  padding: clamp(40px, 4.5vw, 64px) clamp(44px, 5.5vw, 84px);
   color: #ffffff;
   box-sizing: border-box;
 
   /* Massive curved wave on bottom-left, matching the Truet reference image */
   border-bottom-left-radius: 120px;
 
-  /* Fluid ultramarine royal blue to electric violet and cyan gradient */
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 25%, #3b82f6 50%, #6366f1 75%, #7c3aed 100%);
+  /* Base rich ultramarine royal blue gradient */
+  background: linear-gradient(135deg, #1837f8 0%, #244df9 28%, #3858f6 52%, #6366f1 78%, #7c3aed 100%);
 
   @media (max-width: 1024px) {
     display: none;
   }
 }
 
-/* Ambient Radial Mesh Lights & Ribbons */
-.wave-glow {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(80px);
-
-  &.glow-1 {
-    top: -100px;
-    left: -100px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(124, 58, 237, 0.65) 0%, transparent 70%);
-  }
-
-  &.glow-2 {
-    bottom: -100px;
-    right: -80px;
-    width: 650px;
-    height: 650px;
-    background: radial-gradient(circle, rgba(6, 182, 212, 0.55) 0%, transparent 70%);
-  }
-
-  &.glow-3 {
-    top: 25%;
-    right: 5%;
-    width: 480px;
-    height: 480px;
-    background: radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, transparent 65%);
-  }
-}
-
-.wave-sheen-overlay {
+/* Mesh Backdrop Orbs creating the 3D Liquid Light */
+.wave-mesh-backdrop {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at 80% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
   pointer-events: none;
+  overflow: hidden;
+
+  .fluid-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+
+    &.orb-aurora-pink {
+      top: -120px;
+      left: -80px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(233, 179, 251, 0.75) 0%, rgba(192, 132, 252, 0.5) 35%, transparent 70%);
+    }
+
+    &.orb-cyan-glow {
+      bottom: -100px;
+      right: -80px;
+      width: 650px;
+      height: 650px;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(6, 182, 212, 0.35) 40%, transparent 70%);
+    }
+
+    &.orb-deep-blue {
+      top: 35%;
+      right: 15%;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(11, 30, 232, 0.7) 0%, transparent 65%);
+    }
+  }
+
+  .wave-silk-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at 80% 25%, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
+  }
 }
 
-.showcase-inner-content {
+.showcase-content-wrapper {
   position: relative;
   z-index: 10;
-  max-width: 580px;
+  max-width: 560px;
   width: 100%;
   margin: auto 0;
 }
 
 /* Truet-Style Brand Wordmark */
-.brand-wordmark-container {
+.brand-wordmark-strip {
   margin-bottom: 24px;
 
-  .brand-wordmark {
-    font-size: 48px;
+  .truet-logo-text {
+    font-size: 52px;
     font-weight: 800;
     color: #ffffff;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.04em;
     margin: 0;
     line-height: 1;
     text-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
   }
 }
 
-.showcase-tagline-group {
+.showcase-headline-section {
   margin-bottom: 24px;
 
-  .tagline-headline {
+  .platform-headline {
     font-size: 15px;
     font-weight: 700;
     color: #ffffff;
     margin: 0 0 8px 0;
   }
 
-  .tagline-description {
+  .platform-description {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.88);
     line-height: 1.55;
     margin: 0;
-    max-width: 540px;
+    max-width: 530px;
   }
 }
 
-.bullets-group {
+/* 4 Bullets Section */
+.bullets-section {
   margin-bottom: 32px;
 
-  .bullets-title {
+  .bullets-header {
     font-size: 13.5px;
     font-weight: 700;
     color: #ffffff;
     margin: 0 0 12px 0;
   }
 
-  .bullet-list {
+  .clean-bullets-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -651,7 +614,7 @@
     flex-direction: column;
     gap: 8px;
 
-    .bullet-item {
+    .bullet-row {
       display: flex;
       align-items: flex-start;
       gap: 8px;
@@ -659,7 +622,7 @@
       color: rgba(255, 255, 255, 0.9);
       line-height: 1.45;
 
-      .square-bullet {
+      .square-bullet-icon {
         font-size: 9px;
         color: rgba(255, 255, 255, 0.7);
         margin-top: 3px;
@@ -669,36 +632,36 @@
   }
 }
 
-/* Glassmorphism Promotion Card (Exact reference) */
-.glass-promo-card {
+/* Frosted Glass Promotion Card */
+.frosted-glass-card {
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
   border-radius: 18px;
-  padding: 22px 32px;
+  padding: 22px 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
   max-width: 380px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.16);
   text-align: center;
   transition: transform 0.2s ease, border-color 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.45);
   }
 
-  .promo-pre {
+  .card-pretitle {
     font-size: 13.5px;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
   }
 
-  .promo-domain {
+  .card-domain-link {
     font-size: 20px;
     font-weight: 800;
     color: #ffffff;
@@ -706,8 +669,8 @@
   }
 }
 
-/* Bottom Bar: Links + Moon Icon */
-.showcase-bottom-bar {
+/* Showcase Bottom Row: Links + Moon */
+.showcase-bottom-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -716,12 +679,12 @@
   z-index: 10;
   padding-top: 20px;
 
-  .footer-links-group {
+  .footer-navigation-links {
     display: flex;
     gap: 24px;
     flex-wrap: wrap;
 
-    .footer-link {
+    .nav-item {
       color: rgba(255, 255, 255, 0.85);
       font-size: 12px;
       font-weight: 500;
@@ -735,7 +698,7 @@
     }
   }
 
-  .theme-moon-pill {
+  .floating-moon-toggle {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -749,9 +712,9 @@
     color: #ffffff;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 
-    .moon-icon {
+    .moon-svg-icon {
       font-size: 20px;
       width: 20px;
       height: 20px;
@@ -767,7 +730,7 @@
 /* ==========================================================================
    SAMPLE CREDENTIALS MODAL
    ========================================================================== */
-.credentials-modal-backdrop {
+.credentials-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -781,19 +744,19 @@
   justify-content: center;
   z-index: 10000;
   padding: 20px;
-  animation: fadeIn 0.2s ease;
+  animation: modalFadeIn 0.2s ease;
 }
 
-@keyframes fadeIn {
+@keyframes modalFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.credentials-modal-card {
+.credentials-modal-dialog {
   background: #ffffff;
   border-radius: 20px;
   width: 100%;
-  max-width: 600px;
+  max-width: 620px;
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
   border: 1px solid #e2e8f0;
   overflow: hidden;
@@ -801,15 +764,15 @@
   display: flex;
   flex-direction: column;
 
-  .modal-card-header {
+  .modal-dialog-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 20px 24px;
+    padding: 22px 26px;
     border-bottom: 1px solid #e2e8f0;
     background: #f8fafc;
 
-    .header-titles {
+    .dialog-titles {
       h3 {
         margin: 0 0 4px 0;
         font-size: 18px;
@@ -824,10 +787,10 @@
       }
     }
 
-    .close-modal-btn {
+    .close-dialog-btn {
       background: none;
       border: none;
-      font-size: 22px;
+      font-size: 24px;
       line-height: 1;
       color: #94a3b8;
       cursor: pointer;
@@ -839,18 +802,18 @@
     }
   }
 
-  .credentials-list {
-    padding: 16px 20px;
+  .credentials-cards-list {
+    padding: 18px 24px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
 
-    .credential-item-card {
+    .cred-card-item {
       background: #f8fafc;
       border: 1.5px solid #e2e8f0;
       border-radius: 14px;
-      padding: 14px 18px;
+      padding: 16px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -862,7 +825,7 @@
         background: #f0f4ff;
       }
 
-      &.superadmin-card {
+      &.superadmin-item {
         background: #fffbeb;
         border-color: #fde68a;
 
@@ -872,25 +835,25 @@
         }
       }
 
-      .cred-left {
+      .cred-info-side {
         flex: 1;
 
-        .cred-title-row {
+        .title-and-badge {
           display: flex;
           align-items: center;
           gap: 8px;
           margin-bottom: 4px;
 
-          .cred-title {
-            font-size: 14px;
+          .item-title {
+            font-size: 14.5px;
             font-weight: 800;
             color: #111827;
           }
 
-          .cred-badge {
+          .item-badge {
             font-size: 11px;
             font-weight: 700;
-            padding: 2px 8px;
+            padding: 3px 9px;
             border-radius: 9999px;
             background: #eef2ff;
             color: #4f46e5;
@@ -902,19 +865,19 @@
           }
         }
 
-        .cred-desc {
+        .item-desc {
           margin: 0 0 8px 0;
           font-size: 12px;
           color: #64748b;
           line-height: 1.4;
         }
 
-        .cred-details {
+        .item-fields {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
 
-          .detail-tag {
+          .field-pill {
             font-size: 11.5px;
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -926,13 +889,13 @@
         }
       }
 
-      .copy-apply-btn {
+      .copy-and-fill-btn {
         background: #3742fa;
         color: #ffffff;
         border: none;
         border-radius: 10px;
-        padding: 8px 14px;
-        font-size: 12.5px;
+        padding: 9px 15px;
+        font-size: 13px;
         font-weight: 700;
         cursor: pointer;
         display: inline-flex;
@@ -942,40 +905,40 @@
         transition: all 0.15s ease;
         box-shadow: 0 2px 8px rgba(55, 66, 250, 0.25);
 
-        mat-icon {
+        .btn-icon {
           font-size: 15px;
           width: 15px;
           height: 15px;
         }
 
         &:hover {
-          background: #2f35e0;
+          background: #2b35ec;
           transform: translateY(-1px);
         }
       }
     }
   }
 
-  .modal-card-footer {
+  .modal-dialog-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 24px;
+    padding: 16px 26px;
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
 
-    .secure-notice {
+    .footer-note {
       font-size: 12px;
       color: #64748b;
       font-weight: 500;
     }
 
-    .dismiss-btn {
+    .btn-modal-close {
       background: #e2e8f0;
       color: #334155;
       border: none;
       border-radius: 8px;
-      padding: 6px 16px;
+      padding: 6px 18px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;

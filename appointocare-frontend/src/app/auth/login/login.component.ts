@@ -139,12 +139,32 @@ export class LoginComponent {
       ? `Username: ${cred.user} | Password: ${cred.pass}`
       : `Org Code: ${cred.code} | Username: ${cred.user} | Password: ${cred.pass}`;
 
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(copyText).catch(() => {});
-    }
-
+    this.copyToClipboard(copyText);
     this.showToast(`✓ Copied ${cred.title} credentials and filled into form!`);
     this.showCredentialsModal = false;
+  }
+
+  copyToClipboard(text: string): void {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {
+        this.fallbackCopy(text);
+      });
+    } else {
+      this.fallbackCopy(text);
+    }
+  }
+
+  private fallbackCopy(text: string): void {
+    try {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    } catch {}
   }
 
   copyQuickSuperAdmin(): void {
