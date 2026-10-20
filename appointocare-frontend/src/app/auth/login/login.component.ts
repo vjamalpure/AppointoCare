@@ -4,6 +4,17 @@ import { IndustryService } from '../../services/industry.service';
 import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 
+export interface SampleCredential {
+  title: string;
+  role: 'organization' | 'staff' | 'superadmin';
+  roleBadge: string;
+  code: string;
+  user: string;
+  pass: string;
+  desc: string;
+  sector?: string;
+}
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -18,23 +29,63 @@ export class LoginComponent {
   errorMsg = '';
   showPassword = false;
 
-  selectedRole: 'organization' | 'staff' = 'organization';
-  demoFilter: 'all' | 'organization' | 'staff' = 'all';
+  selectedRole: 'organization' | 'staff' | 'superadmin' = 'organization';
   currentYear: number = new Date().getFullYear();
 
-  industryPresets = [
-    { label: '🏥 Healthcare (ORG1)', sector: 'Healthcare', org: 'City Care Health & Dental', user: 'org1', pass: 'Org@12345', code: 'ORG1', role: 'organization' as const },
-    { label: '💇 Salon & Spa (ORG2)', sector: 'Salon', org: 'Apex Aesthetics & Wellness Spa', user: 'org2', pass: 'Org@12345', code: 'ORG2', role: 'organization' as const },
-    { label: '📈 Wealth & Finance (ORG3)', sector: 'Finance', org: 'Vanguard Wealth Advisory', user: 'org3', pass: 'Org@12345', code: 'ORG3', role: 'organization' as const },
-    { label: '🛡️ Insurance (ORG4)', sector: 'Insurance', org: 'Sovereign Life Insurance', user: 'org4', pass: 'Org@12345', code: 'ORG4', role: 'organization' as const },
-    { label: '👔 Luxury Retail (ORG5)', sector: 'Retail', org: 'Aura Haute Couture & Styling', user: 'org5', pass: 'Org@12345', code: 'ORG5', role: 'organization' as const },
-    { label: '🎓 Education (ORG6)', sector: 'Education', org: 'Beacon Global University Counseling', user: 'org6', pass: 'Org@12345', code: 'ORG6', role: 'organization' as const },
-    { label: '⚖️ Legal & Consult (ORG7)', sector: 'Legal', org: 'Sterling & Blackwood Legal', user: 'org7', pass: 'Org@12345', code: 'ORG7', role: 'organization' as const },
-    { label: '🏛️ Real Estate (ORG8)', sector: 'RealEstate', org: 'Sovereign Realty & Architecture', user: 'org8', pass: 'Org@12345', code: 'ORG8', role: 'organization' as const },
-    { label: '🌐 Enterprise (ORG9)', sector: 'Enterprise', org: 'Vanguard Global Enterprise', user: 'org9', pass: 'Org@12345', code: 'ORG9', role: 'organization' as const },
-    { label: '🩺 Dr. Sarah (Doctor)', sector: 'Healthcare', org: 'Chief Surgeon', user: 'doc_sarah', pass: 'Staff@12345', code: 'ORG1', role: 'staff' as const },
-    { label: '🏛️ Marcus (Realtor)', sector: 'RealEstate', org: 'Managing Broker', user: 'marcus_realty', pass: 'Staff@12345', code: 'ORG8', role: 'staff' as const },
-    { label: '🌐 Elizabeth (Consultant)', sector: 'Enterprise', org: 'Principal Consultant', user: 'elizabeth_exec', pass: 'Staff@12345', code: 'ORG9', role: 'staff' as const }
+  showCredentialsModal = false;
+  copyToastMsg = '';
+  private toastTimer: any = null;
+
+  sampleCredentials: SampleCredential[] = [
+    {
+      title: 'Platform SuperAdmin',
+      role: 'superadmin',
+      roleBadge: 'SuperAdmin Master',
+      code: '',
+      user: 'superadmin',
+      pass: 'Admin@12345',
+      desc: 'Master platform controls, analytics, multi-tenant governance & audit.'
+    },
+    {
+      title: 'Healthcare Clinic Admin (ORG1)',
+      role: 'organization',
+      roleBadge: 'Clinic Owner / Admin',
+      code: 'ORG1',
+      user: 'org1',
+      pass: 'Org@12345',
+      desc: 'City Care Health & Dental: services, staff schedules, patients & billing.',
+      sector: 'Healthcare'
+    },
+    {
+      title: 'Dr. Sarah (Clinical Specialist)',
+      role: 'staff',
+      roleBadge: 'Doctor / Specialist',
+      code: 'ORG1',
+      user: 'doc_sarah',
+      pass: 'Staff@12345',
+      desc: 'Chief Surgeon / Specialist schedule, active bookings & consult notes.',
+      sector: 'Healthcare'
+    },
+    {
+      title: 'Aesthetics & Wellness Spa (ORG2)',
+      role: 'organization',
+      roleBadge: 'Salon & Spa Admin',
+      code: 'ORG2',
+      user: 'org2',
+      pass: 'Org@12345',
+      desc: 'Apex Aesthetics Spa: stylist bookings, formulation lookbooks & packages.',
+      sector: 'Salon'
+    },
+    {
+      title: 'Vanguard Wealth Advisory (ORG3)',
+      role: 'organization',
+      roleBadge: 'Finance & Wealth Admin',
+      code: 'ORG3',
+      user: 'org3',
+      pass: 'Org@12345',
+      desc: 'Financial advisory client consultations, retainer ledgers & reviews.',
+      sector: 'Finance'
+    }
   ];
 
   constructor(
@@ -43,22 +94,14 @@ export class LoginComponent {
     private router: Router
   ) {}
 
-  get filteredPresets() {
-    if (this.demoFilter === 'all') {
-      return this.industryPresets;
-    }
-    return this.industryPresets.filter(p => p.role === this.demoFilter);
-  }
-
-  setDemoFilter(filter: 'all' | 'organization' | 'staff'): void {
-    this.demoFilter = filter;
-  }
-
-  setRole(role: 'organization' | 'staff'): void {
+  setRole(role: 'organization' | 'staff' | 'superadmin'): void {
     this.selectedRole = role;
     this.errorMsg = '';
-    this.demoFilter = role;
-    if (role === 'organization') {
+    if (role === 'superadmin') {
+      this.username = 'superadmin';
+      this.password = 'Admin@12345';
+      this.organization_code = '';
+    } else if (role === 'organization') {
       this.username = 'org1';
       this.password = 'Org@12345';
       this.organization_code = 'ORG1';
@@ -66,17 +109,6 @@ export class LoginComponent {
       this.username = 'doc_sarah';
       this.password = 'Staff@12345';
       this.organization_code = 'ORG1';
-    }
-  }
-
-  selectPreset(preset: any): void {
-    this.selectedRole = preset.role;
-    this.username = preset.user;
-    this.password = preset.pass;
-    this.organization_code = preset.code;
-    this.errorMsg = '';
-    if (preset.sector) {
-      this.industry.setSector(preset.sector);
     }
   }
 
@@ -88,15 +120,59 @@ export class LoginComponent {
     this.errorMsg = '';
   }
 
+  toggleCredentialsModal(open?: boolean): void {
+    this.showCredentialsModal = open !== undefined ? open : !this.showCredentialsModal;
+  }
+
+  copyAndApply(cred: SampleCredential): void {
+    this.selectedRole = cred.role;
+    this.username = cred.user;
+    this.password = cred.pass;
+    this.organization_code = cred.code;
+    this.errorMsg = '';
+
+    if (cred.sector) {
+      this.industry.setSector(cred.sector);
+    }
+
+    const copyText = cred.role === 'superadmin'
+      ? `Username: ${cred.user} | Password: ${cred.pass}`
+      : `Org Code: ${cred.code} | Username: ${cred.user} | Password: ${cred.pass}`;
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(copyText).catch(() => {});
+    }
+
+    this.showToast(`✓ Copied ${cred.title} credentials and filled into form!`);
+    this.showCredentialsModal = false;
+  }
+
+  copyQuickSuperAdmin(): void {
+    const superAdminCred = this.sampleCredentials.find(c => c.role === 'superadmin');
+    if (superAdminCred) {
+      this.copyAndApply(superAdminCred);
+    }
+  }
+
+  private showToast(msg: string): void {
+    this.copyToastMsg = msg;
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout(() => {
+      this.copyToastMsg = '';
+    }, 3500);
+  }
+
   onSubmit(loginForm: NgForm): void {
     if (!loginForm.valid) return;
 
     this.loading = true;
     this.errorMsg = '';
 
-    const orgCode = this.organization_code?.trim();
     const cleanUsername = this.username?.trim();
     const cleanPassword = this.password;
+    const orgCode = this.selectedRole === 'superadmin' ? undefined : (this.organization_code?.trim() || undefined);
 
     this.auth.login(cleanUsername, cleanPassword, orgCode, this.rememberMe)
       .subscribe({
@@ -116,7 +192,6 @@ export class LoginComponent {
           }
 
           const role = this.auth.getUserRole();
-
           if (role === 'Admin' || role === 'SuperAdmin') {
             this.router.navigate(['/admin-dashboard']);
           } else {
@@ -131,13 +206,5 @@ export class LoginComponent {
           this.loading = false;
         }
       });
-  }
-
-  fillOrgDemo(): void {
-    this.setRole('organization');
-  }
-
-  fillStaffDemo(): void {
-    this.setRole('staff');
   }
 }

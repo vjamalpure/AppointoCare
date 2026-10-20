@@ -1,314 +1,313 @@
 <div class="login-page-container">
-  <!-- Left Column: Product & Technology Showcase -->
+  <!-- Toast Notification when credentials are copied -->
+  <div class="copy-toast" *ngIf="copyToastMsg" role="status">
+    <mat-icon class="toast-icon">check_circle</mat-icon>
+    <span>{{ copyToastMsg }}</span>
+  </div>
+
+  <!-- LEFT COLUMN: Clean White Auth Canvas (Matching Reference) -->
+  <div class="auth-column">
+    <!-- Top Bar: Back to Website Link -->
+    <div class="top-nav-bar">
+      <a routerLink="/" class="back-link">
+        <span class="chevron">‹</span>
+        <span>Back to website</span>
+      </a>
+    </div>
+
+    <!-- Main Auth Form Container -->
+    <div class="auth-form-wrapper">
+      <div class="auth-header">
+        <h1 class="auth-title">Sign In</h1>
+        <p class="auth-subtitle">Enter your email and password to sign in!</p>
+      </div>
+
+      <!-- Sign in with Google (Reference button) -->
+      <button type="button" class="google-signin-btn" (click)="copyQuickSuperAdmin()" title="Simulate SSO authentication or quick superadmin access">
+        <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Sign in with Google</span>
+      </button>
+
+      <!-- Centered Divider -->
+      <div class="or-divider">
+        <span class="divider-line"></span>
+        <span class="divider-label">or</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <!-- Quick Credentials Copier Bar -->
+      <div class="credentials-quick-bar">
+        <span class="bar-lbl">Sample Logins:</span>
+        <button type="button" class="quick-chip admin-chip" (click)="copyQuickSuperAdmin()" title="Click to copy & fill SuperAdmin credentials">
+          👑 SuperAdmin
+        </button>
+        <button type="button" class="quick-chip" (click)="copyAndApply(sampleCredentials[1])" title="Click to copy & fill Clinic Admin credentials">
+          🏢 Clinic (ORG1)
+        </button>
+        <button type="button" class="quick-chip" (click)="copyAndApply(sampleCredentials[2])" title="Click to copy & fill Doctor credentials">
+          🩺 Doctor
+        </button>
+        <button type="button" class="view-all-link" (click)="toggleCredentialsModal(true)">
+          View All ›
+        </button>
+      </div>
+
+      <!-- 3-Way Role Selector Tabs -->
+      <div class="role-selector-strip" role="tablist">
+        <button
+          type="button"
+          class="role-tab"
+          [class.active]="selectedRole === 'organization'"
+          (click)="setRole('organization')">
+          <span>🏢 Organization</span>
+        </button>
+        <button
+          type="button"
+          class="role-tab"
+          [class.active]="selectedRole === 'staff'"
+          (click)="setRole('staff')">
+          <span>👥 Staff</span>
+        </button>
+        <button
+          type="button"
+          class="role-tab"
+          [class.active]="selectedRole === 'superadmin'"
+          (click)="setRole('superadmin')">
+          <span>👑 SuperAdmin</span>
+        </button>
+      </div>
+
+      <!-- Error Alert Message -->
+      <div class="error-alert" *ngIf="errorMsg" role="alert">
+        <mat-icon class="err-icon">error_outline</mat-icon>
+        <span class="err-text">{{ errorMsg }}</span>
+        <button type="button" class="close-err" (click)="clearError()">×</button>
+      </div>
+
+      <!-- The Sign In Form -->
+      <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="signin-form" novalidate>
+        <!-- Organization Code (Only for Organization & Staff roles) -->
+        <div class="input-field-group" *ngIf="selectedRole !== 'superadmin'">
+          <label for="orgCode" class="field-label">Organization Code*</label>
+          <div class="input-container">
+            <input
+              type="text"
+              id="orgCode"
+              name="organization_code"
+              [(ngModel)]="organization_code"
+              #orgCodeInput="ngModel"
+              required
+              autocomplete="organization"
+              placeholder="e.g. ORG1, ORG2..."
+              class="form-control-input"
+              [class.is-invalid]="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
+          </div>
+        </div>
+
+        <!-- Username / Email -->
+        <div class="input-field-group">
+          <label for="username" class="field-label">
+            {{ selectedRole === 'superadmin' ? 'SuperAdmin Username*' : 'Username or Email*' }}
+          </label>
+          <div class="input-container">
+            <input
+              type="text"
+              id="username"
+              name="username"
+              [(ngModel)]="username"
+              #usernameInput="ngModel"
+              required
+              autocomplete="username"
+              [placeholder]="selectedRole === 'superadmin' ? 'superadmin' : 'mail@appointocare.net'"
+              class="form-control-input"
+              [class.is-invalid]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
+          </div>
+        </div>
+
+        <!-- Password with Eye Icon -->
+        <div class="input-field-group">
+          <label for="password" class="field-label">Password*</label>
+          <div class="input-container password-container">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              name="password"
+              [(ngModel)]="password"
+              #passwordInput="ngModel"
+              required
+              autocomplete="current-password"
+              placeholder="Min. 8 characters"
+              class="form-control-input password-input"
+              [class.is-invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+            <button
+              type="button"
+              class="eye-btn"
+              (click)="togglePasswordVisibility()"
+              tabindex="-1"
+              aria-label="Toggle password visibility">
+              <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Keep me logged in & Forgot password -->
+        <div class="options-row">
+          <label class="remember-checkbox-label">
+            <input
+              type="checkbox"
+              name="rememberMe"
+              [(ngModel)]="rememberMe"
+              class="checkbox-elem">
+            <span>Keep me logged in</span>
+          </label>
+
+          <a routerLink="/forgot-password" class="forgot-pwd-link">Forget password?</a>
+        </div>
+
+        <!-- Sign In Button (Vibrant Royal Blue matching reference) -->
+        <button
+          type="submit"
+          [disabled]="loading || loginForm.invalid"
+          class="primary-signin-btn"
+          [class.loading-state]="loading">
+          <span>{{ loading ? 'Signing in...' : 'Sign In' }}</span>
+        </button>
+      </form>
+
+      <!-- Account Registration & Sample Credentials Action Links -->
+      <div class="bottom-action-links">
+        <p class="signup-prompt">
+          Not registered yet? <a routerLink="/register" class="create-account-link">Create an Account</a>
+        </p>
+
+        <div class="sample-creds-hub-link">
+          <button type="button" class="copy-creds-trigger-btn" (click)="toggleCredentialsModal(true)">
+            <mat-icon class="icon-inline">content_copy</mat-icon>
+            <span>Copy sample credentials to login (includes SuperAdmin)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Left Column Bottom Footer -->
+    <div class="auth-bottom-footer">
+      <p class="legal-copy">
+        © {{ currentYear }} AppointoCare. All Rights Reserved for the usage of terms related to AppointoCare.
+      </p>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: 3D Vibrant Fluid Wave (Exact Match to Reference) -->
   <div class="showcase-column">
-    <div class="ambient-mesh-glow glow-top"></div>
-    <div class="ambient-mesh-glow glow-center"></div>
-    <div class="ambient-mesh-glow glow-bottom"></div>
+    <!-- Fluid Wave Decorative Shapes & Lights -->
+    <div class="wave-glow glow-1"></div>
+    <div class="wave-glow glow-2"></div>
+    <div class="wave-glow glow-3"></div>
+    <div class="wave-sheen-overlay"></div>
 
-    <div class="showcase-content">
-      <!-- App Brand Header -->
-      <div class="showcase-brand">
-        <div class="brand-logo-large">
-          <svg class="logo-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="loginLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#4f46e5" />
-                <stop offset="60%" stop-color="#7c3aed" />
-                <stop offset="100%" stop-color="#06b6d4" />
-              </linearGradient>
-              <linearGradient id="loginAccentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff" />
-                <stop offset="100%" stop-color="#e0e7ff" />
-              </linearGradient>
-            </defs>
-            <rect x="2" y="2" width="32" height="32" rx="9" fill="url(#loginLogoGrad)" />
-            <path d="M10 14H26M10 19H19M10 24H16" stroke="url(#loginAccentGrad)" stroke-width="2.2" stroke-linecap="round" />
-            <path d="M13 9.5V12M23 9.5V12" stroke="url(#loginAccentGrad)" stroke-width="2.2" stroke-linecap="round" />
-            <circle cx="23.5" cy="22.5" r="5" fill="#10b981" />
-            <path d="M21.5 22.5L22.8 23.8L25.5 21" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-        <div class="brand-titles">
-          <span class="brand-name">AppointoCare</span>
-          <span class="brand-tag">Enterprise Multi-Industry Platform</span>
-        </div>
+    <div class="showcase-inner-content">
+      <!-- Truet-Style Brand Wordmark -->
+      <div class="brand-wordmark-container">
+        <h2 class="brand-wordmark">AppointoCare</h2>
       </div>
 
-      <!-- Showcase Headline -->
-      <div class="showcase-headline">
-        <h2>The Intelligent Operating System for Modern Appointments & Operations.</h2>
-        <p>A unified SaaS platform serving Healthcare, Wealth, Salons, Luxury Retail, Legal, Insurance, and Enterprise Consulting with zero friction.</p>
+      <!-- Headline & Tagline -->
+      <div class="showcase-tagline-group">
+        <h3 class="tagline-headline">Clinical & Healthcare Operations that adapt in Real Time</h3>
+        <p class="tagline-description">
+          Cutting-edge Multi-Industry & Healthcare Platform designed to provide clinic and hospital teams with real-time AI-powered assistance. AppointoCare ensures that doctors, staff, and appointments stay synchronized wherever they are.
+        </p>
       </div>
 
-      <!-- Feature Capability Cards -->
-      <div class="capabilities-list">
-        <div class="cap-card">
-          <div class="cap-icon-box indigo">
-            <mat-icon>domain</mat-icon>
-          </div>
-          <div class="cap-text">
-            <h4>Multi-Industry Architecture</h4>
-            <p>9 standardized verticals with dynamic terminology, sector custom intakes, and isolated tenant databases.</p>
-          </div>
-        </div>
-
-        <div class="cap-card">
-          <div class="cap-icon-box emerald">
-            <mat-icon>chat</mat-icon>
-          </div>
-          <div class="cap-text">
-            <h4>WhatsApp AI Receptionist</h4>
-            <p>24/7 automated slot reservations, real-time reminders, and intelligent triage receptionist bot.</p>
-          </div>
-        </div>
-
-        <div class="cap-card">
-          <div class="cap-icon-box cyan">
-            <mat-icon>extension</mat-icon>
-          </div>
-          <div class="cap-text">
-            <h4>Modular SaaS Add-on Suites</h4>
-            <p>Digital E-Prescriptions, Formulation cards, Retainer ledgers, and VIP lookbooks with peer benchmarking.</p>
-          </div>
-        </div>
-
-        <div class="cap-card">
-          <div class="cap-icon-box amber">
-            <mat-icon>payments</mat-icon>
-          </div>
-          <div class="cap-text">
-            <h4>Automated Payments & Billing</h4>
-            <p>Razorpay checkout sandbox, automated receipts, invoice ledgers, and multi-tier subscriptions.</p>
-          </div>
-        </div>
+      <!-- Feature Bullets with Square Marks -->
+      <div class="bullets-group">
+        <h4 class="bullets-title">Automate enablement for efficiency and maximize impact</h4>
+        <ul class="bullet-list">
+          <li class="bullet-item">
+            <span class="square-bullet">■</span>
+            <span>Seamlessly centralizes patient CRM, appointments, and multi-branch operations</span>
+          </li>
+          <li class="bullet-item">
+            <span class="square-bullet">■</span>
+            <span>Syncs effortlessly with WhatsApp reception bot, telehealth, and calendar reminders</span>
+          </li>
+          <li class="bullet-item">
+            <span class="square-bullet">■</span>
+            <span>Tracks every appointment and interaction, offering real-time insights for continuous care</span>
+          </li>
+          <li class="bullet-item">
+            <span class="square-bullet">■</span>
+            <span>Automates regulatory compliance to ensure HIPAA & DPDP data protection</span>
+          </li>
+        </ul>
       </div>
 
-      <!-- Live Uptime & Compliance Badge -->
-      <div class="trust-strip">
-        <div class="trust-item">
-          <span class="status-live-dot"></span>
-          <span>99.99% Cloud Uptime</span>
-        </div>
-        <div class="trust-divider">·</div>
-        <div class="trust-item">
-          <mat-icon>verified_user</mat-icon>
-          <span>End-to-End Encrypted</span>
-        </div>
-        <div class="trust-divider">·</div>
-        <div class="trust-item">
-          <mat-icon>security</mat-icon>
-          <span>Multi-Tenant RBAC</span>
-        </div>
+      <!-- Glassmorphism Promotion Card (Exact reference) -->
+      <div class="glass-promo-card">
+        <span class="promo-pre">Learn more about AppointoCare features on</span>
+        <span class="promo-domain">AppointoCare.io</span>
+      </div>
+    </div>
+
+    <!-- Right Column Bottom Bar: Links + Dark Mode Moon -->
+    <div class="showcase-bottom-bar">
+      <div class="footer-links-group">
+        <a href="#integrations" class="footer-link">Integrations</a>
+        <a href="#license" class="footer-link">License</a>
+        <a href="#terms" class="footer-link">Terms of Use</a>
+        <a href="#blog" class="footer-link">Blog</a>
+      </div>
+
+      <!-- Dark Mode Floating Pill -->
+      <div class="theme-moon-pill" title="Theme Display">
+        <mat-icon class="moon-icon">dark_mode</mat-icon>
       </div>
     </div>
   </div>
 
-  <!-- Right Column: Authentication Card -->
-  <div class="auth-column">
-    <div class="auth-card-wrapper">
-      <div class="auth-card">
-        <!-- Auth Header -->
-        <div class="auth-header">
-          <h2>Welcome back</h2>
-          <p>Please enter your access credentials or select a 1-click industry demo account below.</p>
+  <!-- SAMPLE CREDENTIALS MODAL (Requested link feature) -->
+  <div class="credentials-modal-backdrop" *ngIf="showCredentialsModal" (click)="toggleCredentialsModal(false)">
+    <div class="credentials-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-card-header">
+        <div class="header-titles">
+          <h3>Sample Login Credentials</h3>
+          <p>Click any credential to copy to clipboard & auto-fill directly into the login form.</p>
         </div>
+        <button type="button" class="close-modal-btn" (click)="toggleCredentialsModal(false)">×</button>
+      </div>
 
-        <!-- 2-Tier Tenant Role Selector Tabs -->
-        <div class="role-tabs-nav" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            class="role-pill-btn"
-            [class.active]="selectedRole === 'organization'"
-            (click)="setRole('organization')">
-            <mat-icon>corporate_fare</mat-icon>
-            <span>Organization Admin</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            class="role-pill-btn"
-            [class.active]="selectedRole === 'staff'"
-            (click)="setRole('staff')">
-            <mat-icon>badge</mat-icon>
-            <span>Staff Specialist</span>
+      <div class="credentials-list">
+        <div
+          *ngFor="let cred of sampleCredentials"
+          class="credential-item-card"
+          [class.superadmin-card]="cred.role === 'superadmin'">
+          <div class="cred-left">
+            <div class="cred-title-row">
+              <span class="cred-title">{{ cred.title }}</span>
+              <span class="cred-badge" [class.badge-super]="cred.role === 'superadmin'">{{ cred.roleBadge }}</span>
+            </div>
+            <p class="cred-desc">{{ cred.desc }}</p>
+            <div class="cred-details">
+              <span class="detail-tag" *ngIf="cred.code"><strong>Org:</strong> {{ cred.code }}</span>
+              <span class="detail-tag"><strong>Username:</strong> {{ cred.user }}</span>
+              <span class="detail-tag"><strong>Password:</strong> {{ cred.pass }}</span>
+            </div>
+          </div>
+          <button type="button" class="copy-apply-btn" (click)="copyAndApply(cred)">
+            <mat-icon>content_copy</mat-icon>
+            <span>Copy & Fill</span>
           </button>
         </div>
+      </div>
 
-        <!-- Error Alert Banner -->
-        <div class="alert-banner error-banner" *ngIf="errorMsg" role="alert">
-          <mat-icon class="alert-icon">error_outline</mat-icon>
-          <span class="alert-text">{{ errorMsg }}</span>
-          <button type="button" class="alert-dismiss" (click)="clearError()">×</button>
-        </div>
-
-        <!-- Login Form -->
-        <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="login-form" novalidate>
-          <!-- Organization Code -->
-          <div class="form-group">
-            <label for="orgCode">
-              <span>Organization Code</span>
-              <span class="field-badge req-badge">Required</span>
-            </label>
-            <div class="input-with-icon">
-              <mat-icon class="field-icon">domain</mat-icon>
-              <input
-                type="text"
-                id="orgCode"
-                name="organization_code"
-                [(ngModel)]="organization_code"
-                #orgCodeInput="ngModel"
-                required
-                autocomplete="organization"
-                placeholder="e.g. ORG1, ORG2... ORG9"
-                class="std-input"
-                [class.has-error]="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
-            </div>
-            <div class="field-error" *ngIf="orgCodeInput.invalid && (orgCodeInput.dirty || orgCodeInput.touched)">
-              Organization code is required for tenant isolation.
-            </div>
-          </div>
-
-          <!-- Username Input -->
-          <div class="form-group">
-            <label for="username">
-              <span>Username</span>
-              <span class="field-badge req-badge">Required</span>
-            </label>
-            <div class="input-with-icon">
-              <mat-icon class="field-icon">person</mat-icon>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                [(ngModel)]="username"
-                #usernameInput="ngModel"
-                required
-                autocomplete="username"
-                placeholder="Enter username"
-                class="std-input"
-                [class.has-error]="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
-            </div>
-            <div class="field-error" *ngIf="usernameInput.invalid && (usernameInput.dirty || usernameInput.touched)">
-              Username is required.
-            </div>
-          </div>
-
-          <!-- Password Input with Eye Toggle -->
-          <div class="form-group">
-            <div class="label-with-link">
-              <label for="password">Password</label>
-              <a routerLink="/forgot-password" class="forgot-link">Forgot password?</a>
-            </div>
-            <div class="input-with-icon">
-              <mat-icon class="field-icon">lock</mat-icon>
-              <input
-                [type]="showPassword ? 'text' : 'password'"
-                id="password"
-                name="password"
-                [(ngModel)]="password"
-                #passwordInput="ngModel"
-                required
-                autocomplete="current-password"
-                placeholder="Enter password"
-                class="std-input"
-                [class.has-error]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
-              <button
-                type="button"
-                class="eye-toggle-btn"
-                (click)="togglePasswordVisibility()"
-                tabindex="-1">
-                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-            </div>
-            <div class="field-error" *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
-              Password is required.
-            </div>
-          </div>
-
-          <!-- Remember Me -->
-          <div class="remember-row">
-            <label class="remember-label">
-              <input
-                type="checkbox"
-                name="rememberMe"
-                [(ngModel)]="rememberMe"
-                class="checkbox-input">
-              <span>Keep me signed in</span>
-            </label>
-          </div>
-
-          <!-- Submit Button -->
-          <button
-            type="submit"
-            [disabled]="loading || loginForm.invalid"
-            class="submit-btn"
-            [class.is-loading]="loading">
-            <mat-icon *ngIf="!loading">login</mat-icon>
-            <span>{{ loading ? 'Authenticating...' : 'Sign In to Workspace' }}</span>
-          </button>
-        </form>
-
-        <!-- 1-Click Multi-Industry Demo Access -->
-        <div class="demo-section">
-          <div class="demo-header">
-            <span class="divider-text">1-Click Multi-Industry Demo Access</span>
-            <div class="demo-filter-pills">
-              <button
-                type="button"
-                class="filter-pill"
-                [class.active]="demoFilter === 'all'"
-                (click)="setDemoFilter('all')">
-                All (13)
-              </button>
-              <button
-                type="button"
-                class="filter-pill"
-                [class.active]="demoFilter === 'organization'"
-                (click)="setDemoFilter('organization')">
-                🏢 Tenants (9)
-              </button>
-              <button
-                type="button"
-                class="filter-pill"
-                [class.active]="demoFilter === 'staff'"
-                (click)="setDemoFilter('staff')">
-                👥 Staff (3)
-              </button>
-              </div>
-            </div>
-
-            <div class="demo-grid">
-              <button
-                *ngFor="let preset of filteredPresets"
-                type="button"
-                class="demo-card-chip"
-                [class.chip-active]="selectedRole === preset.role && username === preset.user && organization_code === preset.code"
-                (click)="selectPreset(preset)"
-                [title]="preset.org">
-                <div class="chip-info">
-                  <span class="chip-title">{{ preset.label }}</span>
-                  <span class="chip-user">{{ preset.user }} · {{ preset.code }}</span>
-                </div>
-                <span class="chip-select-mark" *ngIf="selectedRole === preset.role && username === preset.user && organization_code === preset.code">✓ Active</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Security & Legal Footer -->
-          <div class="auth-footer">
-            <div class="secure-badge">
-              <mat-icon>lock</mat-icon>
-              <span>256-Bit SSL Encrypted Session</span>
-            </div>
-            <div class="admin-portal-link-wrap" style="margin: 8px 0;">
-              <a routerLink="/admin/login" class="admin-portal-shortcut" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; text-decoration: none; padding: 4px 10px; border-radius: 6px; background: rgba(241, 245, 249, 0.6); transition: all 0.2s ease;">
-                <mat-icon style="font-size: 15px; width: 15px; height: 15px; color: #4f46e5;">admin_panel_settings</mat-icon>
-                <span>Administrative Access (SuperAdmin Console)</span>
-              </a>
-            </div>
-            <p class="copyright">© {{ currentYear }} AppointoCare. All Rights Reserved.</p>
-          </div>
+      <div class="modal-card-footer">
+        <span class="secure-notice">🔒 Sandboxed Enterprise Demonstration Data</span>
+        <button type="button" class="dismiss-btn" (click)="toggleCredentialsModal(false)">Close</button>
       </div>
     </div>
   </div>
