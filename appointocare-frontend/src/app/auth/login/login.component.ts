@@ -29,6 +29,7 @@ export interface InteractiveBalloon {
   gradient: string;
   durationSec: number;
   delaySec: number;
+  swayDuration: number;
   popping?: boolean;
 }
 
@@ -66,10 +67,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   copyToastMsg = '';
   private toastTimer: any = null;
 
-  // Interactive Liquid Press Ripples
+  // Minimal Organic Liquid Press Ripples (Silent)
   ripples: LiquidRipple[] = [];
 
-  // Interactive Falling & Poppable Balloons
+  // Interactive Flowing & Poppable Balloons (Sound on pop only)
   balloons: InteractiveBalloon[] = [];
   popEffects: PopEffect[] = [];
   poppedBalloonCount = 0;
@@ -148,7 +149,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     const savedTheme = localStorage.getItem('appointocare_theme');
     this.isDarkMode = savedTheme === 'dark';
 
-    // Start streaming interactive descending balloons
+    // Start streaming flowing descending balloons immediately
     this.startBalloonStream();
   }
 
@@ -162,11 +163,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================================
-  // Interactive Liquid Press Anywhere on Page
+  // Minimal Liquid Press anywhere on page (Pure visual fluid impression, silent)
   // =========================================================================
   onPageClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    // Don't trigger liquid ripple if clicking directly on a balloon (handled by popBalloon)
+    // Don't trigger liquid ripple if clicking directly on a balloon
     if (target && target.closest('.balloon-item')) {
       return;
     }
@@ -177,61 +178,32 @@ export class LoginComponent implements OnInit, OnDestroy {
       y: event.clientY
     };
     this.ripples.push(ripple);
-    this.playLiquidPressSound();
 
+    // Fade out quickly (500ms) for a crisp, minimal liquid press
     setTimeout(() => {
       this.ripples = this.ripples.filter(r => r.id !== ripple.id);
-    }, 850);
-  }
-
-  private playLiquidPressSound(): void {
-    try {
-      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtxClass) return;
-      if (!this.audioCtx) {
-        this.audioCtx = new AudioCtxClass();
-      }
-      if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume();
-      }
-      const osc = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
-      const now = this.audioCtx.currentTime;
-
-      // Soft water droplet press tone
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(320, now);
-      osc.frequency.exponentialRampToValueAtTime(540, now + 0.08);
-
-      gain.gain.setValueAtTime(0.045, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-
-      osc.connect(gain);
-      gain.connect(this.audioCtx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.08);
-    } catch {}
+    }, 500);
   }
 
   // =========================================================================
-  // Interactive Descending Balloons with Popping Mechanics
+  // Interactive Flowing Balloons (Descending from top, click to pop with audio)
   // =========================================================================
   private startBalloonStream(): void {
-    // Initial staggered balloons
-    for (let i = 0; i < 4; i++) {
-      this.spawnBalloon(true);
+    // Staggered initial balloons already on screen at varied heights
+    const initialDelays = [-1.5, -4.5, -7.5, -10.5, -3.0, -6.0];
+    for (const delay of initialDelays) {
+      this.spawnBalloon(delay);
     }
 
-    // Continuously spawn descending balloons from top
+    // Continuously spawn fresh balloons from the top every 2 seconds
     this.balloonInterval = setInterval(() => {
-      if (this.balloons.length < 10) {
-        this.spawnBalloon(false);
+      if (this.balloons.length < 12) {
+        this.spawnBalloon(0);
       }
-    }, 2400);
+    }, 2000);
   }
 
-  private spawnBalloon(initialSpread: boolean = false): void {
+  private spawnBalloon(delaySec: number = 0): void {
     const themes = [
       { color: '#ec4899', gradient: 'radial-gradient(circle at 35% 28%, #f472b6 0%, #db2777 55%, #9d174d 100%)' },
       { color: '#38bdf8', gradient: 'radial-gradient(circle at 35% 28%, #7dd3fc 0%, #0284c7 55%, #0369a1 100%)' },
@@ -243,10 +215,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     ];
 
     const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
-    const size = Math.floor(Math.random() * 20) + 48; // 48px to 68px
+    const size = Math.floor(Math.random() * 18) + 48; // 48px to 66px
     const leftPercent = Math.floor(Math.random() * 88) + 6; // 6% to 94%
-    const durationSec = Math.floor(Math.random() * 5) + 12; // 12s to 17s
-    const delaySec = initialSpread ? Math.random() * -8 : 0;
+    const durationSec = Math.floor(Math.random() * 4) + 12; // 12s to 16s
+    const swayDuration = Math.random() * 1.5 + 2.5; // 2.5s to 4.0s
 
     const balloon: InteractiveBalloon = {
       id: Date.now() + Math.random(),
@@ -256,17 +228,20 @@ export class LoginComponent implements OnInit, OnDestroy {
       gradient: chosenTheme.gradient,
       durationSec,
       delaySec,
+      swayDuration,
       popping: false
     };
 
     this.balloons.push(balloon);
 
-    // Clean up when descent completes
+    // Auto clean up after fall completes
+    const remainingTimeMs = Math.max(2000, (durationSec + delaySec + 2) * 1000);
     setTimeout(() => {
       this.balloons = this.balloons.filter(b => b.id !== balloon.id);
-    }, (durationSec + 2) * 1000);
+    }, remainingTimeMs);
   }
 
+  // Sound triggers ONLY on popping balloons
   popBalloon(balloon: InteractiveBalloon, event: MouseEvent): void {
     event.stopPropagation();
     event.preventDefault();
@@ -274,10 +249,11 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (balloon.popping) return;
     balloon.popping = true;
 
+    // Play crisp pop sound
     this.playPopSound();
     this.poppedBalloonCount++;
 
-    // Celebratory score label at pop position
+    // Floating celebratory score badge
     const popEffect: PopEffect = {
       id: Date.now() + Math.random(),
       x: event.clientX,
@@ -289,7 +265,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     setTimeout(() => {
       this.popEffects = this.popEffects.filter(p => p.id !== popEffect.id);
-    }, 900);
+    }, 850);
 
     setTimeout(() => {
       this.balloons = this.balloons.filter(b => b.id !== balloon.id);
@@ -312,8 +288,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       // Realistic crisp pitch drop pop
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(620, now);
-      osc.frequency.exponentialRampToValueAtTime(130, now + 0.08);
+      osc.frequency.setValueAtTime(640, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
 
       gain.gain.setValueAtTime(0.35, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
