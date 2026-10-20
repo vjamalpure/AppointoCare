@@ -85,6 +85,16 @@ docker compose up --build -d
 
 All migrations and multi-industry sample data seed automatically on first launch.
 
+### 3. Container & Service Architecture
+
+| Service | Container Name | Port Mapping | Image | Role |
+|---|---|---|---|---|
+| **frontend** | `appointocore-frontend` | `4200:80` | `appointocore-frontend:latest` | Angular 18 Single-Page App served via Nginx with dynamic Gzip |
+| **backend** | `appointocore-backend` | `8000:8000` | `appointocore-backend:latest` | Flask 3.0 REST API with multi-tenant route guards & vaults |
+| **celery** | `appointocore-celery` | Internal | `appointocore-celery:latest` | Celery asynchronous worker for task queue & message dispatch |
+| **db** | `appointocore-postgres-db` | `5432:5432` | `postgres:16` | PostgreSQL 16 relational database (`appointocore_postgres_data`) |
+| **redis** | `appointocore-redis` | `6379:6379` | `redis:7-alpine` | Redis 7 in-memory message broker & Celery result cache |
+
 ---
 
 ## 🔑 Demo Accounts & Credentials
@@ -128,28 +138,28 @@ The project includes end-to-end automated verification suites runnable directly 
 
 ```bash
 # 1. Complete Unit & Integration Test Suite (98 test methods across all services)
-docker exec appointocore-backend-1 python -m unittest discover -s tests -p "test_*.py"
+docker exec appointocore-backend python -m unittest discover -s tests -p "test_*.py"
 
 # 2. Industry Leaders Competitor Matrix Verification Suite (16 Parity Checks)
-docker exec appointocore-backend-1 python -m unittest tests/test_industry_leaders_matrix.py
+docker exec appointocore-backend python -m unittest tests/test_industry_leaders_matrix.py
 
 # 3. 4-Layer Integration Suite (Meta WABA, Razorpay Route, Guards, Token Crypto)
-docker exec appointocore-backend-1 python test_integration_layers.py
+docker exec appointocore-backend python test_integration_layers.py
 
 # 4. Comprehensive Multi-Industry Audit (All 9 sectors, 191 checkpoints)
-docker exec appointocore-backend-1 python test_audit.py
+docker exec appointocore-backend python test_audit.py
 
 # 5. Multi-Tenant Authentication & Add-On Migration Suite
-docker exec appointocore-backend-1 python tests/test_migration_suite.py
+docker exec appointocore-backend python tests/test_migration_suite.py
 ```
 
 ### Reseeding Demo Data
 To re-populate or reset sample data across all 58 domain models at any time:
 ```bash
-docker exec appointocore-backend-1 python sample_data.py
+docker exec appointocore-backend python sample_data.py
 
 # Or wipe and re-seed completely with cascading reset:
-docker exec appointocore-backend-1 python sample_data.py --reset
+docker exec appointocore-backend python sample_data.py --reset
 ```
 
 ---
